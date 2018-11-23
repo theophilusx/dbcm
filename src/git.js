@@ -42,6 +42,20 @@ function getRepository(repoUrl, dst) {
     });
 }
 
+function pullMaster(repo) {
+  const logName = `${moduleName}.pullMaster`;
+
+  return repo.fetchAll(cloneOptions.fetchOpts)
+    .then(() => {
+      repo.mergeBranches("master", "origin/master");
+    })
+    .then(() => {
+      console.log("Updated local master with fresh pull from remote");
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to pull master`);
+    });
+}
 
 function statusString(s) {
   let words = [];
@@ -99,6 +113,7 @@ function setupRepository(repoUrl, repoDest) {
       } else {
         console.log("Nothing needing to be committed - do pull");
       }
+      return pullMaster(repo);
     })
     .then(() => {
       return getReferenceNames(repo);
@@ -113,6 +128,7 @@ function setupRepository(repoUrl, repoDest) {
 
 
 module.exports = {
+  pullMaster,
   statusString,
   getReferenceNames,
   setupRepository
