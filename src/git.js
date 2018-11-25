@@ -22,6 +22,19 @@ const cloneOptions = {
   } 
 };
 
+/**
+ * @async
+ *
+ * Returns an open Repository object. If repository does not exit
+ * it will be cloned from the remote repository and opened.
+ * If it does exist, it will just be opened and the object returned
+ *
+ * @param {string} repoUrl - URL of the remote Git repository.
+ * @param {string} dst - local destination for the repository.
+ *
+ * @return {Object} repo - a repository object
+ * 
+ */
 function getRepository(repoUrl, dst) {
   const logName = `${moduleName}.getRepository`;
   
@@ -42,6 +55,16 @@ function getRepository(repoUrl, dst) {
     });
 }
 
+/**
+ * @async
+ *
+ * Perform a pull i.e. fetch and merge into the local master branch
+ *
+ * @param {Object} repo - an open Repository object.
+ *
+ * @return {boolean} Returns true if pull successful 
+ *
+ */
 function pullMaster(repo) {
   const logName = `${moduleName}.pullMaster`;
 
@@ -57,6 +80,15 @@ function pullMaster(repo) {
     });
 }
 
+/**
+ * Generates a status string for objects which are new, modified etc
+ * Similar to the git status command
+ *
+ * @param {Object} s - a file status object as returned from getStatus()
+ *
+ * @return {string} a status string with status and file path
+ * 
+ */
 function statusString(s) {
   let words = [];
   if (s.isConflicted()) {
@@ -83,14 +115,21 @@ function statusString(s) {
   return `${words.join(" ")} ${s.path()} ${s.status()}`; 
 }
 
+/**
+ * @async
+ *
+ * Return a list of reference names
+ *
+ * @param {Object} repo - a Repository object.
+ *
+ * @return {array} list of reference names
+ * 
+ */
 function getReferenceNames(repo) {
   const logName = `${moduleName}.getReferences`;
 
   return repo.getReferenceNames(Git.Reference.TYPE.LISTALL)
     .then(names => {
-      names.forEach(refName => {
-        console.log(`Reference: ${refName}`);
-      });
       return names;
     })
     .catch(err => {
@@ -98,11 +137,22 @@ function getReferenceNames(repo) {
     });
 }
 
-function addAndCommit(repo, files) {
+/**
+ * @async
+ *
+ * Add (stage) and commit the list of changed objects (files) to
+ * a specific branch in a repository
+ *
+ * @param {Object} repo - a Repository object.
+ * @param {String} branch - the branch name.
+ * @param {Array} files - a list of file status objects.
+ * 
+ */
+function addAndCommit(repo, branch, files) {
   const logName = `${moduleName}.addAndCommit`;
   let index, oid;
   
-  return repo.checkoutBranch("dbcm-local")
+  return repo.checkoutBranch(branch)
     .then(() => {
       return repo.refreshIndex();
     })
@@ -138,9 +188,18 @@ function addAndCommit(repo, files) {
     });
 }
 
+/**
+ * @async
+ *
+ * Setup a repository for DBCM. If teh repository has not yet been
+ * cloned locally, do the cloning, then open it. If the repository has
+ * uncommitted changes, display them. Do a refresh from master into
+ * local master by performing a pull
+ */
 function setupRepository(repoUrl, repoDest) {
   const logName = `${moduleName}.setupRepository`;
   let repo;
+
   return getRepository(repoUrl, repoDest)
     .then(r => {
       repo = r;
@@ -150,17 +209,8 @@ function setupRepository(repoUrl, repoDest) {
       if (statusList.length) {
         console.log("Uncommited changes exist in repository");
         statusList.forEach(f => console.log(statusString(f)));
-        return addAndCommit(repo, statusList)
-          .then(() => {
-            return pullMaster(repo);
-          });
-      } else {
-        console.log("Nothing needing to be committed - do pull");
       }
       return pullMaster(repo);
-    })
-    .then(() => {
-      return getReferenceNames(repo);
     })
     .then(() => {
       return repo;
