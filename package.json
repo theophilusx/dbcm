@@ -29,6 +29,7 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
+    "fse": "^4.0.1",
     "minimist": "^1.2.0",
     "nodegit": "^0.23.0",
     "pg": "^7.6.1",
