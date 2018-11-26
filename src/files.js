@@ -44,10 +44,10 @@ function createChangesDir(rootPath) {
     });
 }
 
-function createValidateDir(rootPath) {
-  const logName = `${moduleName}.createValidateDir`;
-  const contents = "This directory contains SQL scripts to validate DB structure changes";
-  const dir = path.join(rootPath, "validate");
+function createVerifyDir(rootPath) {
+  const logName = `${moduleName}.createVerifyDir`;
+  const contents = "This directory contains SQL scripts to verify DB structure changes";
+  const dir = path.join(rootPath, "verify");
   
   return fse.mkdir(dir)
     .then(() => {
@@ -55,11 +55,11 @@ function createValidateDir(rootPath) {
       return fse.writeFile(filePath, contents, "utf-8");
     })
     .then(() => {
-      console.log("Validate directory created");
+      console.log("Verify directory created");
       return true;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create validate directory in ${rootPath}`);
+      throw new VError(err, `${logName} Failed to create verify directory in ${rootPath}`);
     });
 }
 
@@ -106,7 +106,7 @@ async function initialiseRepo(rootPath) {
   try {
     await createPlansFile(rootPath);
     await createChangesDir(rootPath);
-    await createValidateDir(rootPath);
+    await createVerifyDir(rootPath);
     await createRollbackDir(rootPath);
     return true;
   } catch (err) {
@@ -117,7 +117,7 @@ async function initialiseRepo(rootPath) {
 module.exports = {
   createPlansFile,
   createChangesDir,
-  createValidateDir,
+  createVerifyDir,
   createRollbackDir,
   isInitialised,
   initialiseRepo

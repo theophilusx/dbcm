@@ -2,6 +2,7 @@
 
 const moduleName = "git";
 
+const config = require("rc")("dbcm");
 const VError = require("verror");
 const Git = require("nodegit");
 const files = require("./files");
@@ -11,11 +12,15 @@ const cloneOptions = {
     callbacks: {
       // This is a required callback for OS X machines.  There is a known issue
       // with libgit2 being able to verify certificates from GitHub.
-      certificateCheck: function() { return 1; },
+      certificateCheck: function() {
+        console.log("certificateCheck called");
+        return 1;
+      },
       // Credentials are passed two arguments, url and username. We forward the
       // `userName` argument to the `sshKeyFromAgent` function to validate
       // authentication.
       credentials: function(url, userName) {
+        console.log(`credentials called with url ${url} and userName ${userName}`);
         return Git.Cred.sshKeyFromAgent(userName);
       }
     }
@@ -208,44 +213,28 @@ function deleteBranch(repo, branchName) {
  * @param {Array} files - a list of file status objects.
  * 
  */
-function addAndCommit(repo, branch, files) {
+async function addAndCommit(repo, branch, files, commitMsg) {
   const logName = `${moduleName}.addAndCommit`;
-  let index, oid;
-  
-  return repo.checkoutBranch(branch)
-    .then(() => {
-      return repo.refreshIndex();
-    })
-    .then(idx => {
-      let promises = [];
-      index = idx;
-      files.forEach(f => {
-        promises.push(index.addByPath(f.path()));
-      });
-      return Promise.all(promises);
-    })
-    .then(() => {
-      return index.write();
-    })
-    .then(() => {
-      return index.writeTree();
-    })
-    .then((newOid) => {
-      oid = newOid;
-      return Git.Reference.nameToId(repo, "HEAD");
-    })
-    .then(head => {
-      return repo.getCommit(head);
-    })
-    .then(parent => {
-      let author = Git.Signature.now("Some Author", "author@example.com");
-      let committer = Git.Signature.now("Some Committer", "committer@exaple.com");
-      let msg = "Initial setup";
-      return repo.createCommit("HEAD", author, committer, msg, oid, [parent]);
-    })
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to commit changes`);
+
+  try {
+    await repo.checkoutBranch(branch);
+    let index = await repo.refreshIndex();
+    let promises = [];
+    files.forEach(f => {
+      promises.push(index.addByPath(f.path()));
     });
+    await Promise.all(promises);
+    await index.write();
+    let oid = await index.writeTree();
+    let head = await Git.Reference.nameToId(repo, "HEAD");
+    let parent = await repo.getCommit(head);
+    let author = Git.Signature.now(config.user.name, config.user.email);
+    let committer = Git.Signature.now(config.user.name, config.user.email);
+    let commitOid = await repo.createCommit("HEAD", author, committer, commitMsg, oid, [parent]);
+    return commitOid;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to commit files`);
+  }
 }
 
 /**
@@ -256,41 +245,31 @@ function addAndCommit(repo, branch, files) {
  * uncommitted changes, display them. Do a refresh from master into
  * local master by performing a pull
  */
-function setupRepository(repoUrl, repoDest) {
+async function setupRepository(repoUrl, repoDest) {
   const logName = `${moduleName}.setupRepository`;
-  let repo;
 
-  return getRepository(repoUrl, repoDest)
-    .then(r => {
-      repo = r;
-      return files.isInitialised(repoDest);
-    })
-    .then(status => {
-      if (!status) {
-        console.log("Initialising repository for DBCM");
-        return files.initialiseRepo(repoDest);
-      }
-      return true;
-
-    })
-    .then(() => {
-      return repo.getStatus();            
-    })
-    .then(statusList => {
-      if (statusList.length) {
-        console.log("Uncommited changes exist in repository");
-        statusList.forEach(f => console.log(statusString(f)));
-      }
-      return pullMaster(repo);
-    })
-    .then(() => {
-      return repo;
-    })
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to setup ${repoDest}`);
-    });
+  try {
+    let repo = await getRepository(repoUrl, repoDest);
+    let initialised = await files.isInitialised(repoDest);
+    if (!initialised) {
+      let branchRef = await createBranch(repo, "setup");
+      await repo.checkoutBranch(branchRef);
+      await files.initialiseRepo(repoDest);
+      let fileList = await repo.getStatus();
+      await addAndCommit(repo, "setup", fileList, "DBCM Init");
+      let mergeSig = Git.Signature.now(config.user.name, config.user.email);
+      await repo.mergeBranches("master", "setup", mergeSig);
+      let remote = await repo.getRemote("origin", cloneOptions.fetchOpts.callbacks);
+      await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
+      await deleteBranch(repo, "setup");
+    } else {
+      await pullMaster(repo);
+    }
+    return repo;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to setup repo into ${repoDest}`);
+  }
 }
-
 
 module.exports = {
   pullMaster,
