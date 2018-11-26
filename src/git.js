@@ -4,7 +4,7 @@ const moduleName = "git";
 
 const VError = require("verror");
 const Git = require("nodegit");
-
+const files = require("./files");
 
 const cloneOptions = {
   fetchOpts : {
@@ -263,7 +263,18 @@ function setupRepository(repoUrl, repoDest) {
   return getRepository(repoUrl, repoDest)
     .then(r => {
       repo = r;
-      return repo.getStatus();
+      return files.isInitialised(repoDest);
+    })
+    .then(status => {
+      if (!status) {
+        console.log("Initialising repository for DBCM");
+        return files.initialiseRepo(repoDest);
+      }
+      return true;
+
+    })
+    .then(() => {
+      return repo.getStatus();            
     })
     .then(statusList => {
       if (statusList.length) {
