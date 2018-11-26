@@ -140,6 +140,66 @@ function getReferenceNames(repo) {
 /**
  * @async
  *
+ * Create a new branch. Throw and exception if the branch already exists.
+ * New branch will be made from current HEAD.
+ *
+ * @param {Object} repo - a Repository object.
+ * @param {String} branchName - name for the new branch
+ *
+ * @return {Object} reference to the new branch.
+ * 
+ */
+function createBranch(repo, branchName) {
+  const logName = `${moduleName}.createBranch`;
+
+  return repo.getHeadCommit()
+    .then(commit => {
+      return repo.createBranch(branchName, commit, 0);
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create branch ${branchName}`);
+    });
+}
+
+/**
+ * @async
+ *
+ * Delete a repository. This function will first checkout the master
+ * branch and then delete the nominated branch.
+ *
+ * @param {Object} repo - a Repository object
+ * @param {String} branchName - name of branch to delete.
+ *
+ * @return {boolean} Return true on success - false otherwise
+ * 
+ */
+function deleteBranch(repo, branchName) {
+  const logName = `${moduleName}.deleteBranch`;
+
+  return repo.checkoutBranch("master")
+    .then(() => {
+      return Git.Branch.lookup(repo, branchName, Git.Branch.BRANCH.LOCAL);
+    })
+    .then(ref => {
+      return Git.Branch.delete(ref);
+    })
+    .then(code => {
+      if (code === 0) {
+        console.log("Branch deleted");
+        return true;
+      } else {
+        console.log(`Failed to delete branch: ${code}`);
+        return false;
+      }
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to delete branch`);
+    });
+}
+
+/**
+ * @async
+ *
  * Add (stage) and commit the list of changed objects (files) to
  * a specific branch in a repository
  *
@@ -225,5 +285,8 @@ module.exports = {
   pullMaster,
   statusString,
   getReferenceNames,
+  createBranch,
+  deleteBranch,
+  addAndCommit,
   setupRepository
 };
