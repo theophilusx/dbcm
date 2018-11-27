@@ -13,14 +13,12 @@ const cloneOptions = {
       // This is a required callback for OS X machines.  There is a known issue
       // with libgit2 being able to verify certificates from GitHub.
       certificateCheck: function() {
-        console.log("certificateCheck called");
         return 1;
       },
       // Credentials are passed two arguments, url and username. We forward the
       // `userName` argument to the `sshKeyFromAgent` function to validate
       // authentication.
       credentials: function(url, userName) {
-        console.log(`credentials called with url ${url} and userName ${userName}`);
         return Git.Cred.sshKeyFromAgent(userName);
       }
     }
@@ -259,7 +257,7 @@ async function setupRepository(repoUrl, repoDest) {
       await addAndCommit(repo, "setup", fileList, "DBCM Init");
       let mergeSig = Git.Signature.now(config.user.name, config.user.email);
       await repo.mergeBranches("master", "setup", mergeSig);
-      let remote = await repo.getRemote("origin", cloneOptions.fetchOpts.callbacks);
+      let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
       await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
       await deleteBranch(repo, "setup");
     } else {
