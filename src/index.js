@@ -10,7 +10,6 @@ const repoName = "casi-admin-db";
 const repoUrl = config.dbRepositories[repoName];
 
 let repo;
-let branchRef;
 
 git.setupRepository(repoUrl, path.join(config.dbcmHome, repoName))
   .then(repoObj => {
@@ -20,12 +19,6 @@ git.setupRepository(repoUrl, path.join(config.dbcmHome, repoName))
   })
   .then(refs => {
     refs.forEach(r => console.log(`Reference: ${r}`));
-  })
-  .then(() => {
-    return git.deleteBranch(repo, "dbcm-local");
-  })
-  .then(ref => {
-    branchRef = ref;
     return true;
   })
   .catch(err => {
