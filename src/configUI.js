@@ -51,12 +51,16 @@ function getConfig(config) {
   return inquirer.prompt(questions)
     .then(answers => {
       let newConfig = {
+        version: "1.0.0",
         user: answers.user,
-        dbcmHome: answers.dbcmHome,
-        dbRepositories: config.dbRepositories,
-        dbTargets: config.dbTargets,
-        version: "1.0.0"
+        dbcmHome: answers.dbcmHome
       };
+      if (config.dbRepositories) {
+        newConfig.dbRepositories = config.dbRepositories;
+      }
+      if (config.dbTargets) {
+        newConfig.dbTargets = config.dbTargets;
+      }
       return newConfig;
     })
     .catch(err => {

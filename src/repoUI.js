@@ -8,13 +8,16 @@ const inquirer = require("inquirer");
 function selectRepository(config) {
   const logName = `${moduleName}.selectRepository`;
   const repoChoices = [];
-  
-  for (let db of Object.keys(config.dbRepositories)) {
-    repoChoices.push(db);
+
+  if (config.dbRepositories) {
+    for (let db of Object.keys(config.dbRepositories)) {
+      repoChoices.push(db);
+    }
   }
 
   repoChoices.push(new inquirer.Separator());
   repoChoices.push("Add new database");
+  repoChoices.push("Quit DBCM");
 
   const repoQuesiton = {
     type: "list",
@@ -40,7 +43,7 @@ function selectRepository(config) {
       return answers.repository === "Add new database";
     }
   };
-  
+
   return inquirer.prompt([
     repoQuesiton,
     newRepoNameQuestion,
