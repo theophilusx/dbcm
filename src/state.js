@@ -26,7 +26,8 @@ function readConfig() {
           },
           repositoryHome: undefined,
           repositories: [],
-          targets: []
+          targets: [],
+          psqlPath: undefined
         };
       }
       throw new VError(err, `${logName} Failed to access ${rcPath}`);
@@ -58,6 +59,7 @@ async function setInitialState() {
     appState.set("targets", targetMap);
     appState.set("currentRepository", undefined);
     appState.set("currentTarget", undefined);
+    appState.set("psqlPath", config.psqlPath);
     return appState;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise DBCM state`);
@@ -72,6 +74,7 @@ async function writeConfig(appState) {
     newConfig.version = appState.get("version");
     newConfig.user = appState.get("user");
     newConfig.repositoryHome = appState.get("home");
+    newConfig.psqlPath = appState.get("psqlPath");
     let repoList = [];
     let repoMap = appState.get("repositories");
     for (let repo of repoMap.keys()) {
