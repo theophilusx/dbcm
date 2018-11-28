@@ -4,17 +4,15 @@ const moduleName = "configUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const fse = require("fse");
 const path = require("path");
+const state = require("./state");
 
-function setup(config) {
+function setup(appState) {
   let questions = [{
     type: "input",
     name: "user.name",
     default: () => {
-      if (config.user && config.user.name) {
-        return config.user.name;
-      }
+      return appState.get("user").name;
     },
     message: "Your name:"
   },
@@ -22,63 +20,39 @@ function setup(config) {
     type: "input",
     name: "user.email",
     default: () => {
-      let user = process.env.USER;
-      if (config.user && config.user.email) {
-        return config.user.email;
-      }
-      return `${user}@une.edu.au`;
+      return appState.get("user").email || `${process.env.USER}@une.edu.au`;
     },
     message: "Your email address:"
   },
   {
     type: "input",
-    name: "dbcmHome",
+    name: "repositoryHome",
     default: () => {
-      if (config.dbcmHome) {
-        return config.dbcmHome;
-      }
-      return `${process.env.HOME}/dbcm`;
+      return appState.get("home") || `${path.join(process.env.HOME, "dbcm")}`;
     },
     message: "Where to put repositories:"
   }];
   return questions;
 }
 
-function getConfig(config) {
+function getConfig(appState) {
   const logName = `${moduleName}.getConfig`;
-  const questions = setup(config);
+  const questions = setup(appState);
 
   return inquirer.prompt(questions)
     .then(answers => {
-      let newConfig = {
-        version: "1.0.0",
-        user: answers.user,
-        dbcmHome: answers.dbcmHome
-      };
-      if (config.dbRepositories) {
-        newConfig.dbRepositories = config.dbRepositories;
-      }
-      if (config.dbTargets) {
-        newConfig.dbTargets = config.dbTargets;
-      }
-      return newConfig;
+      appState.set("user", answers.user);
+      appState.set("home", answers.repositoryHome);
+      return state.writeConfig(appState);
+    })
+    .then(() => {
+      return appState;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to get config settings`);
     });
 }
 
-function writeConfig(config) {
-  const logName = `${moduleName}.writeconfig`;
-  const configPath = path.join(process.env.HOME, ".dbcmrc");
-
-  return fse.writeFile(configPath, JSON.stringify(config, null, " "))
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to save config file`);
-    });
-}
-
 module.exports = {
-  getConfig,
-  writeConfig
+  getConfig
 };

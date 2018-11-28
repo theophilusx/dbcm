@@ -4,53 +4,71 @@ const moduleName = "repoUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
+const state = require("./state");
 
-function selectRepository(config) {
-  const logName = `${moduleName}.selectRepository`;
-  const repoChoices = [];
+function setup(appState) {
+  const logName = `${moduleName}.setup`;
 
-  if (config.dbRepositories) {
-    for (let db of Object.keys(config.dbRepositories)) {
-      repoChoices.push(db);
+  try {
+    let repoChoices = [];
+    for (let repo of appState.get("repositories").keys()) {
+        repoChoices.push(repo);
     }
+    repoChoices.push(new inquirer.Separator());
+    repoChoices.push("Add new database");
+    repoChoices.push("Quit DBCM");
+    let questions = [{
+      type: "list",
+      name: "repository",
+      message: "Which Repository:",
+      choices: repoChoices
+    },
+    {
+      type: "input",
+      name: "newName",
+      message: "Name for new repository:",
+      when: answers => {
+        return answers.repository === "Add new database";
+      }
+    },
+    {
+      type: "input",
+      name: "newURL",
+      message: "Git URL of repository:",
+      when: answers => {
+        return answers.repository === "Add new database";
+      }
+    }];
+    return questions;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to setup repository questions`);
   }
+}
 
-  repoChoices.push(new inquirer.Separator());
-  repoChoices.push("Add new database");
-  repoChoices.push("Quit DBCM");
-
-  const repoQuesiton = {
-    type: "list",
-    name: "repository",
-    message: "What Database?",
-    choices: repoChoices
-  };
-
-  const newRepoNameQuestion = {
-    type: "input",
-    name: "newName",
-    message: "Name for new database repository?",
-    when: answers => {
-      return answers.repository === "Add new database";
-    }
-  };
-
-  const newRepoUrl = {
-    type: "input",
-    name: "repoURL",
-    message: "Git URL?",
-    when: answers => {
-      return answers.repository === "Add new database";
-    }
-  };
-
-  return inquirer.prompt([
-    repoQuesiton,
-    newRepoNameQuestion,
-    newRepoUrl
-  ])
-    .then(answers => {
+function selectRepository(appState) {
+  const logName = `${moduleName}.selectRepository`;
+  let questions = setup(appState);
+  let quit = false;
+  let answers;
+  
+  return inquirer.prompt(questions)
+    .then(ans => {
+      answers = ans;
+      if (answers.repository === "Quit DBCM") {
+        quit = true;
+      } else if (answers.repository === "Add new database") {
+        let repoMap = appState.get("repositories");
+        repoMap.set(answers.newName, answers.newURL);
+        appState.set("repositories", repoMap);
+        appState.set("currentRepository", answers.newName);
+        return state.writeConfig(appState);
+      } else {
+        appState.set("currentRepository", answers.repository);
+      }
       return answers;
+    })
+    .then(() => {
+      return [appState, quit];
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to get repository selection`);
