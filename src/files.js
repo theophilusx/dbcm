@@ -6,18 +6,29 @@ const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
 
-function createPlansFile(rootPath) {
-  const logName = `${moduleName}.createPlansFile`;
-  const plans = {
-    name: "plans",
+function createPlanFiles(rootPath) {
+  const logName = `${moduleName}.createPlanFiles`;
+  const committedPlans = {
+    name: "Committed Plans",
     version: "1.0.0",
     plans: []
   };
-  const plansFile = path.join(rootPath, "plans.json");
+  const pendingPlans = {
+    name: "Pending Plans",
+    version: "1.0.0",
+    plans: []
+  };
+  
+  const committedPlansFile = path.join(rootPath, "plans.json");
+  const pendingPlansFile = path.join(rootPath, "pending-plans.json");
 
-  return fse.writeFile(plansFile, JSON.stringify(plans), "utf-8")
+  return fse.writeFile(committedPlansFile, JSON.stringify(committedPlans, null, " "), "utf-8")
     .then(() => {
       console.log("Created plans.json file");
+      return fse.writeFile(pendingPlansFile, JSON.stringify(pendingPlans, null, " "), "utf-8");
+    })
+    .then(() => {
+      console.log("Created pending-plans.json file");
       return true;
     })
     .catch(err => {
@@ -104,7 +115,7 @@ async function initialiseRepo(rootPath) {
   const logName = `${moduleName}.initialiseRepo`;
 
   try {
-    await createPlansFile(rootPath);
+    await createPlanFiles(rootPath);
     await createChangesDir(rootPath);
     await createVerifyDir(rootPath);
     await createRollbackDir(rootPath);
@@ -115,10 +126,6 @@ async function initialiseRepo(rootPath) {
 }
 
 module.exports = {
-  createPlansFile,
-  createChangesDir,
-  createVerifyDir,
-  createRollbackDir,
   isInitialised,
   initialiseRepo
 };
