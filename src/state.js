@@ -58,8 +58,6 @@ async function setInitialState() {
     appState.set("targets", targetMap);
     appState.set("currentRepository", undefined);
     appState.set("currentTarget", undefined);
-    console.log(`${logName} app state`);
-    console.dir(appState);
     return appState;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise DBCM state`);
@@ -92,8 +90,6 @@ async function writeConfig(appState) {
       });
     }
     newConfig.targets = targetList;
-    console.log(`${logName} new config`);
-    console.dir(newConfig);
     await fse.writeFile(rcPath, JSON.stringify(newConfig, null, " "));
   } catch (err) {
     throw new VError(err, `${logName} Failed to write ${rcPath}`);

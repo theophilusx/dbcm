@@ -49,11 +49,9 @@ function selectRepository(appState) {
   const logName = `${moduleName}.selectRepository`;
   let questions = setup(appState);
   let quit = false;
-  let answers;
   
   return inquirer.prompt(questions)
-    .then(ans => {
-      answers = ans;
+    .then(answers => {
       if (answers.repository === "Quit DBCM") {
         quit = true;
       } else if (answers.repository === "Add new database") {

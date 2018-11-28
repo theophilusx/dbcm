@@ -3,6 +3,7 @@
 const path = require("path");
 const git = require("./git");
 const repoui = require("./repoUI");
+const targetui = require("./targetUI");
 const configui = require("./configUI");
 const state = require("./state");
 
@@ -25,10 +26,7 @@ async function main() {
       let repoName = appState.get("currentRepository");
       let localPath = path.join(appState.get("home"), repoName);
       let repo = await git.setupRepository(repositories.get(repoName), localPath);
-      console.log("repo");
-      console.dir(repo);
-      console.log("state");
-      console.dir(appState);
+      [appState, finished] = await targetui.selectTarget(appState);
       // finish here for now
       finished = true;
       continue;
@@ -38,21 +36,6 @@ async function main() {
     throw new Error(err.message);
   }
 }
-
-// git.setupRepository(repoUrl, path.join(config.dbcmHome, repoName))
-//   .then(repoObj => {
-//     repo = repoObj;
-//     console.log("All good");
-//     return git.getReferenceNames(repo);
-//   })
-//   .then(refs => {
-//     refs.forEach(r => console.log(`Reference: ${r}`));
-//     return true;
-//   })
-//   .catch(err => {
-//     console.error(err.message);
-//   });
-
 
 main()
   .catch(err => {
