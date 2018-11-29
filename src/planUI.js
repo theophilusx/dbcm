@@ -7,14 +7,20 @@ const inquirer = require("inquirer");
 const plan = require("./plans");
 
 function displayPlanRecord(record) {
+  function approvedStatus(r) {
+    return `${r.approved ? "Approved" : "Not Approved"} ${r.approvedByName ? r.approvedByName : ""}`
+      + `${r.approvedByEmail ? "<" + r.approvedByEmail + ">" : ""}`;
+  }
+  
   console.log(`
-Date:          ${record.date}
-Author:        ${record.author} <${record.email}>
-Plan Name:     ${record.name} UUID: ${record.uuid}
-Description:   ${record.description}
-Change File:   ${record.change}
-Verify File:   ${record.verify}
-Rollback File: ${record.rollback}`);
+Created Date:    ${record.createdDate}
+Author:          ${record.author} <${record.email}>
+Approval Status: ${approvedStatus(record)}
+Plan Name:       ${record.name} UUID: ${record.uuid}
+Description:     ${record.description}
+Change File:     ${record.change}
+Verify File:     ${record.verify}
+Rollback File:   ${record.rollback}`);
 }
 
 function getPlanDetails(appState) {

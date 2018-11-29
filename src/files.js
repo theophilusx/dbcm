@@ -8,8 +8,8 @@ const fse = require("fse");
 
 function createPlanFiles(rootPath) {
   const logName = `${moduleName}.createPlanFiles`;
-  const committedPlans = {
-    name: "Committed Plans",
+  const approvedPlans = {
+    name: "Approved Plans",
     version: "1.0.0",
     plans: []
   };
@@ -18,17 +18,26 @@ function createPlanFiles(rootPath) {
     version: "1.0.0",
     plans: []
   };
-  
-  const committedPlansFile = path.join(rootPath, "plans.json");
-  const pendingPlansFile = path.join(rootPath, "pending-plans.json");
+  const developmentPlans = {
+    name: "Development Plans",
+    version: "1.0.0",
+    plans: []
+  };
+  const approvedFile = path.join(rootPath, "approved-plans.json");
+  const pendingFile = path.join(rootPath, "pending-plans.json");
+  const developmentFile = path.join(rootPath, "development-plans.json");
 
-  return fse.writeFile(committedPlansFile, JSON.stringify(committedPlans, null, " "), "utf-8")
+  return fse.writeFile(approvedFile, JSON.stringify(approvedPlans, null, " "), "utf-8")
     .then(() => {
-      console.log("Created plans.json file");
-      return fse.writeFile(pendingPlansFile, JSON.stringify(pendingPlans, null, " "), "utf-8");
+      console.log("Created approved-plans.json file");
+      return fse.writeFile(pendingFile, JSON.stringify(pendingPlans, null, " "), "utf-8");
     })
     .then(() => {
       console.log("Created pending-plans.json file");
+      return fse.writeFile(developmentFile, JSON.stringify(developmentPlans, null, " "), "utf-8");
+    })
+    .then(() => {
+      console.log("Created development-plans.json");
       return true;
     })
     .catch(err => {

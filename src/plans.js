@@ -10,6 +10,21 @@ const fse = require("fse");
 const git = require("./git");
 const files = require("./files");
 
+function planObjectToMap(pobj) {
+  const logName = `${moduleName}.planObjectToMap`;
+
+  try {
+    let plans = pobj.plans;
+    let planMap = new Map();
+    for (let p of plans) {
+      planMap.set(p.uuid, p);
+    }
+    return planMap;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to convert plan object to map`);
+  }
+}
+
 function planMapToObject(pmap, name) {
   const logName = `${moduleName}.planMapToObject`;
 
@@ -38,9 +53,9 @@ function readPlanFile(planFile) {
     });
 }
 
-function readCommittedPlans(appState) {
-  const logName = `${moduleName}.readCommittedPlans`;
-  const planFile = path.join(appState.get("home"), appState.get("currentRepository"), "plans.json");
+function readApprovedPlans(appState) {
+  const logName = `${moduleName}.readApprovedPlans`;
+  const planFile = path.join(appState.get("home"), appState.get("currentRepository"), "approved-plans.json");
 
   return readPlanFile(planFile)
     .catch(err => {
@@ -58,49 +73,36 @@ function readPendingPlans(appState) {
     });
 }
 
+function readDevelopmentPlans(appState) {
+  const logName = `${moduleName}.readPendingPlans`;
+  const planFile = path.join(appState.get("home"), appState.get("currentRepository"), "development-plans.json");
+  
+  return readPlanFile(planFile)
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to read pending plan file for ${appState.get("currentRepository")}`);
+    });
+}
+
 function initPlans(appState) {
   const logName = `${moduleName}.initPlans`;
 
-  return readCommittedPlans(appState)
+  return readApprovedPlans(appState)
     .then(planData => {
-      let plans = planData.plans;
-      let plansMap = new Map();
-      for (let p of plans) {
-        plansMap.set(p.uuid, {
-          uuid: p.uuid,
-          date: p.date,
-          author: p.author,
-          email: p.email,
-          name: p.name,
-          description: p.description,
-          change: p.change,
-          verify: p.verify,
-          rollback: p.rollback
-        });
-      }
-      appState.set("plans", plansMap);
+      let plansMap = planObjectToMap(planData);
+      appState.set("approvedPlans", plansMap);
       return appState;
     })
     .then(() => {
       return readPendingPlans(appState);
     })
     .then(planData => {
-      let plans = planData.plans;
-      let plansMap = new Map();
-      for (let p of plans) {
-        plansMap.set(p.uuid, {
-          uuid: p.uuid,
-          date: p.date,
-          author: p.author,
-          email: p.email,
-          name: p.name,
-          description: p.description,
-          change: p.change,
-          verify: p.verify,
-          rollback: p.rollback
-        });
-      }
+      let plansMap = planObjectToMap(planData);
       appState.set("pendingPlans", plansMap);
+      return readDevelopmentPlans(appState);
+    })
+    .then(planData => {
+      let plansMap = planObjectToMap(planData);
+      appState.set("developmentPlans", plansMap);
       return appState;
     })
     .catch(err => {
@@ -114,9 +116,13 @@ function createChangeRecord(appState, name, desc) {
   try {
     let newUUID = short().new();
     let plan = {
-      date: moment().format(fmt),
+      createdDate: moment().format(fmt),
       author: appState.get("user").name,
-      email: appState.get("user").email,
+      authorEmail: appState.get("user").email,
+      approved: false,
+      approvedDate: undefined,
+      approvedByName: undefined,
+      approvedByEmail: undefined,
       name: name,
       description: desc,
       uuid: newUUID,
@@ -133,14 +139,20 @@ function createChangeRecord(appState, name, desc) {
 function writePlanFiles(appState) {
   const logName = `${moduleName}.writePlanFiles`;
 
-  let committedPlans = appState.get("plans");
-  let planObj = planMapToObject(committedPlans, "Committed Plans");
-  let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "plans.json");
+  let approvedPlans = appState.get("approvedPlans");
+  let planObj = planMapToObject(approvedPlans, "Approved Plans");
+  let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "approved-plans.json");
   return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8")
     .then(() => {
       let pendingPlans = appState.get("pendingPlans");
       let planObj = planMapToObject(pendingPlans, "Pending Plans");
       let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "pending-plans.json");
+      return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
+    })
+    .then(() => {
+      let developmentPlans = appState.get("developmentPlans");
+      let planObj = planMapToObject(developmentPlans, "Development Plans");
+      let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "development-plans.json");
       return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
     })
     .catch(err => {
@@ -166,7 +178,7 @@ function createChangePlan(appState, repo, newPlan) {
       return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${newPlan.name}`);
     })
     .then(() => {
-      appState.get("pendingPlans").set(newPlan.uuid, newPlan);
+      appState.get("developmentPlans").set(newPlan.uuid, newPlan);
       return writePlanFiles(appState);
     })
     .then(() => {
