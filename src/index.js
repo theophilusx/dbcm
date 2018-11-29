@@ -8,7 +8,7 @@ const configui = require("./configUI");
 const state = require("./state");
 const plans = require("./plans");
 const planui = require("./planUI");
-const files = require("./files");
+const mainui = require("./mainUI");
 
 let appState = new Map();
 
@@ -32,14 +32,31 @@ async function main() {
       //appState.set("repoObject", repo);
       [appState, finished] = await targetui.selectTarget(appState);
       appState = await plans.initPlans(appState);
-      let newPlan = await planui.getPlanDetails(appState);
-      if (newPlan) {
-        appState = await plans.createChangePlan(appState, repo, newPlan);
+      let exitMain = false;
+      while (!exitMain && !finished) {
+        let newPlan;
+        let choice = await mainui.mainMenu(appState);
+        switch (choice) {
+        case "exit":
+          exitMain = true;
+          finished = true;
+          continue;
+        case "exitMenu":
+          exitMain = true;
+          continue;
+        // case "newSet":
+        //   console.log("Create new change set");
+        //   newPlan = await planui.getPlanDetails(appState);
+        //   if (newPlan) {
+        //     appState = await plans.createChangePlan(appState, repo, newPlan);
+        //   }
+        //   break;
+        default:
+          console.log(`Unhandled menu option: ${choice}`);
+        }
       }
       // finish here for now
       console.dir(appState);
-      finished = true;
-      continue;
     }
     console.log("Exiting DBCM");
   } catch (err) {
