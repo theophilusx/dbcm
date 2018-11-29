@@ -125,7 +125,99 @@ async function initialiseRepo(rootPath) {
   }
 }
 
+function makeChangeFile(rootPath, changeRecord) {
+  const logName = `${moduleName}.makeChangeFile`;
+  const changeFile = path.join(rootPath, `${changeRecord.change}`);
+  const content = `
+-- Name:   ${changeRecord.name}
+-- Author: ${changeRecord.author} <${changeRecord.email}>
+-- Date:   ${changeRecord.date}
+-- Type:   Changes
+
+\\echo Executing ${changeRecord.change}
+
+BEGIN;
+
+-- changes go here
+
+COMMIT;
+
+\\echo End ${changeRecord.change}
+`;
+
+  return fse.writeFile(changeFile, content, "utf-8")
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create change file ${changeRecord.change}`);
+    });
+}
+
+function makeVerifyFile(rootPath, changeRecord) {
+  const logName = `${moduleName}.makeVerifyFile`;
+  const verifyFile = path.join(rootPath, `${changeRecord.verify}`);
+  const content = `
+-- Name:   ${changeRecord.name}
+-- Author: ${changeRecord.author} <${changeRecord.email}>
+-- Date:   ${changeRecord.date}
+-- Type:   Verify
+
+\\echo Executing ${changeRecord.verify}
+
+-- verify code go here
+
+\\echo End ${changeRecord.verify}
+`;
+
+  return fse.writeFile(verifyFile, content, "utf-8")
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create verify file ${changeRecord.change}`);
+    });
+}
+
+function makeRollbackFile(rootPath, changeRecord) {
+  const logName = `${moduleName}.makeRollbackFile`;
+  const rollbackFile = path.join(rootPath, `${changeRecord.rollback}`);
+  const content = `
+-- Name:   ${changeRecord.name}
+-- Author: ${changeRecord.author} <${changeRecord.email}>
+-- Date:   ${changeRecord.date}
+-- Type:   Rollback
+
+\\echo Executing ${changeRecord.rollback}
+
+BEGIN;
+
+-- rollback of changes go here
+
+COMMIT;
+
+\\echo End ${changeRecord.rollback}
+`;
+
+  return fse.writeFile(rollbackFile, content, "utf-8")
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create rollback file ${changeRecord.rollback}`);
+    });
+}
+
+
+function createChangeFiles(appState, changeRecord) {
+  const logName = `${moduleName}.createchangeFiles`;
+  const root = path.join(appState.get("home"), appState.get("currentRepository"));
+
+  return makeChangeFile(root, changeRecord)
+    .then(() => {
+      return makeVerifyFile(root, changeRecord);
+    })
+    .then(() => {
+      return makeRollbackFile(root, changeRecord);
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create change files`);
+    });
+}
+
 module.exports = {
   isInitialised,
-  initialiseRepo
+  initialiseRepo,
+  createChangeFiles
 };

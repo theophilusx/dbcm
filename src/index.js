@@ -6,6 +6,9 @@ const repoui = require("./repoUI");
 const targetui = require("./targetUI");
 const configui = require("./configUI");
 const state = require("./state");
+const plans = require("./plans");
+const planui = require("./planUI");
+const files = require("./files");
 
 let appState = new Map();
 
@@ -26,8 +29,15 @@ async function main() {
       let repoName = appState.get("currentRepository");
       let localPath = path.join(appState.get("home"), repoName);
       let repo = await git.setupRepository(repositories.get(repoName), localPath);
+      //appState.set("repoObject", repo);
       [appState, finished] = await targetui.selectTarget(appState);
+      appState = await plans.initPlans(appState);
+      let newPlan = await planui.getPlanDetails(appState);
+      if (newPlan) {
+        appState = await plans.createChangePlan(appState, repo, newPlan);
+      }
       // finish here for now
+      console.dir(appState);
       finished = true;
       continue;
     }
