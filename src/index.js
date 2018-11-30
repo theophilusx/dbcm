@@ -1,5 +1,6 @@
 "use strict";
 
+const VError = require("verror");
 const path = require("path");
 const git = require("./git");
 const repoui = require("./repoUI");
@@ -14,6 +15,7 @@ let appState = new Map();
 
 async function main() {
   let finished = false;
+  let repo;
 
   try {
     appState = await state.setInitialState();
@@ -21,14 +23,13 @@ async function main() {
       appState = await configui.getConfig(appState);
     }
     while (!finished) {
+      console.log("call selectRepository");
       [appState, finished] = await repoui.selectRepository(appState);
       if (finished) {
         continue;
       }
-      let repositories = appState.get("repositories");
-      let repoName = appState.get("currentRepository");
-      let localPath = path.join(appState.get("home"), repoName);
-      let repo = await git.setupRepository(repositories.get(repoName), localPath);
+      console.log("Setup repo");
+      [appState, repo] = await git.setupRepository(appState);
       //appState.set("repoObject", repo);
       [appState, finished] = await targetui.selectTarget(appState);
       appState = await plans.initPlans(appState);
@@ -37,7 +38,7 @@ async function main() {
         let newPlan;
         let choice = await mainui.mainMenu(appState);
         switch (choice) {
-        case "exit":
+        case "exitProgram":
           exitMain = true;
           finished = true;
           continue;
@@ -56,11 +57,10 @@ async function main() {
         }
       }
       // finish here for now
-      console.dir(appState);
     }
     console.log("Exiting DBCM");
   } catch (err) {
-    throw new Error(err.message);
+    throw new VError(err, `main: Error`);
   }
 }
 

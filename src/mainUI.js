@@ -172,57 +172,17 @@ function mainMenu(appState) {
   console.log("");
   return inquirer.prompt(questions)
     .then(answers => {
-      switch (answers.choice) {
-      case "manageSets":
-        switch (answers.setChoice) {
-        case "pendingSets":
-          switch (answers.setAction) {
-          case "newSet":
-          case "selectSet":
-          case "commitSet":
-          case "testSet":
-          case "finaliseSet":
-          case "listPending":
-          case "exitMenu":
-            return answers.setAction;
-          default:
-            console.log(`Unrecognised action: ${answers.setAction}`);
-            return "exitMenu";
-          }
-        case "finalisedSets":
-          switch (answers.setAction) {
-          case "listFinalised":
-          case "reworkFinalised":
-          case "exitMenu":
-            return answers.setAction;
-          default:
-            console.log(`Unrecognised action: ${answers.setAction}`);
-            return "exitMenu";
-          }
-        case "exitMenu":
-          console.log("Exit menu - setChoice");
-          return "exitMenu";
-        default:
-          console.log(`Unrecognised value; ${answers.setChoice}`);
-          return "exitMenu";
+      if (answers.choice === "manageSets") {
+        if (answers.setChoice === "pendingSets" || answers.setChoice === "finalisedSets") {
+          return answers.setAction;
+        } else {
+          return answers.setChoice;
         }
-      case "manageTargets":
-        switch (answers.targetChoice) {
-        case "listChanges":
-        case "listUnapplied":
-        case "listChangelog":
-        case "applyChanges":
-        case "rollbackChanges":
-        case "selectNewTarget":
-        case "exitMenu":
-          return answers.targetChoice;
-        default:
-          console.log(`Unknown option - ${answers.targetChoice}`);
-          return "exitMenu";
-        }
+      } else if (answers.choice === "manageTargets") {
+        return answers.targetChoice;
+      } else {
+        return answers.choice;
       }
-      console.log(`Should never get here - ${JSON.stringify(answers, null, " ")}`);
-      return "exitMenu";
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to select choice`);

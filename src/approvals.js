@@ -18,6 +18,7 @@ function readApprovalsFile(appState) {
       }
       appState.set("approvalType", data.type);
       appState.set("approvers", approverMap);
+      return appState;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to read approvals.json`);

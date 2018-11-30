@@ -39,10 +39,13 @@ async function setInitialState() {
   const appState = new Map();
 
   try {
+    console.log("read config file");
     let config = await readConfig();
+    console.log("set basic appState values");
     appState.set("user", config.user);
     appState.set("version", config.version);
     appState.set("home", config.repositoryHome);
+    console.log("Set repository data");
     let repoMap = new Map();
     if (config.repositories.length) {
       for (let repo of config.repositories) {
@@ -50,6 +53,7 @@ async function setInitialState() {
       }
     }
     appState.set("repositories", repoMap);
+    console.log("Set target data");
     let targetMap = new Map();
     if (config.targets.length) {
       for (let target of config.targets) {
@@ -57,9 +61,15 @@ async function setInitialState() {
       }
     }
     appState.set("targets", targetMap);
+    console.log("Set some defaults");
     appState.set("currentRepository", undefined);
     appState.set("currentTarget", undefined);
     appState.set("psqlPath", config.psqlPath);
+    appState.set("approvalType", "none");
+    appState.set("approvers", new Map());
+    appState.set("developmentPlans", new Map());
+    appState.set("pendingPlans", new Map());
+    appState.set("approvedPlans", new Map());
     return appState;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise DBCM state`);
