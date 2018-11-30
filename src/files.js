@@ -45,6 +45,26 @@ function createPlanFiles(rootPath) {
     });
 }
 
+function createApproverFile(rootPath) {
+  const logName = `${moduleName}.createApproverFile`;
+  const approverFile = path.join(rootPath, "approvals.json");
+  const content = {
+    name: "Change Approvals",
+    version: "1.0.0",
+    type: "none",
+    approvers: []
+  };
+
+  return fse.writeFile(approverFile, JSON.stringify(content, null, " "), "utf-8")
+    .then(() => {
+      console.log("Created approvals.json");
+      return true;
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create approvals.json file`);
+    });
+}
+
 function createChangesDir(rootPath) {
   const logName = `${moduleName}.createChangesDir`;
   const contents = "This directory contains SQL scripts representing DB structure changes";
@@ -105,7 +125,7 @@ function createRollbackDir(rootPath) {
 function isInitialised(rootPath) {
   const logName = `${moduleName}.isInitialised`;
 
-  return fse.access(path.join(rootPath, "plans.json"), fse.constants.R_OK | fse.constants.W_OK)
+  return fse.access(path.join(rootPath, "approved-plans.json"), fse.constants.R_OK | fse.constants.W_OK)
     .then(() => {
       console.log("Repository is initialised for DBCM");
       return true;
@@ -125,6 +145,7 @@ async function initialiseRepo(rootPath) {
 
   try {
     await createPlanFiles(rootPath);
+    await createApproverFile(rootPath);
     await createChangesDir(rootPath);
     await createVerifyDir(rootPath);
     await createRollbackDir(rootPath);
