@@ -126,12 +126,26 @@ function getRepositoryDefinition(appState, repoName) {
   return appState.get("repositories").get(repoName);
 }
 
+function setRepositoryDefinition(appState, repoName, defObj) {
+  appState.get("repositories").set(repoName, defObj);
+  return appState;
+}
+
 function getRepositoryTargets(appState, repoName) {
   return getRepositoryDefinition(appState, repoName).targets;
 }
 
+function setRepositoryTargets(appState, repoName, targetMap) {
+  appState.get("repositories").get(repoName).targets = targetMap;
+}
+
 function getTargetDefinition(appState, repoName, targetName) {
   return getRepositoryTargets(appState, repoName).get(targetName);
+}
+
+function setTargetDefinition(appState, repoName, targetName, defObj) {
+  appState.get("repositories").get(repoName).set(targetName, defObj);
+  return appState;
 }
 
 module.exports = {
@@ -139,5 +153,8 @@ module.exports = {
   writeConfig,
   getRepositoryDefinition,
   getRepositoryTargets,
-  getTargetDefinition
+  setRepositoryDefinition,
+  getTargetDefinition,
+  setRepositoryTargets,
+  setTargetDefinition
 };
