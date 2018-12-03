@@ -23,12 +23,10 @@ async function main() {
       appState = await configui.getConfig(appState);
     }
     while (!finished) {
-      console.log("call selectRepository");
       [appState, finished] = await repoui.selectRepository(appState);
       if (finished) {
         continue;
       }
-      console.log("Setup repo");
       [appState, repo] = await git.setupRepository(appState);
       //appState.set("repoObject", repo);
       [appState, finished] = await targetui.selectTarget(appState);

@@ -5,6 +5,7 @@ const moduleName = "targetUI";
 const VError = require("verror");
 const inquirer = require("inquirer");
 const state = require("./state");
+const targets = require("./targets");
 
 function setup(appState) {
   const logName = `${moduleName}.setup`;
@@ -108,6 +109,19 @@ function selectTarget(appState) {
       return appState;
     })
     .then(() => {
+      let params = appState.get("targets").get(appState.get("currentTarget"));
+      return targets.isInitialised(params.database, params.user, params.password);
+    })
+    .then(initState => {
+      if (!initState) {
+        console.log(`Target database ${appState.get("currentTarget")} needs to be initialised for DBCM`);
+        console.log("Please either run the shell script in bin/dbcm-init.sh");
+        console.log("or execute the SQL script in sql/dbcm-init.sql in the target database");
+        console.log("Note that if you use the SQL script, you also need to add the dbcm_user role");
+        console.log("to the user you will be connecting with to apply database changes");
+      } else {
+        console.log("Target database is already initialised for DBCM");
+      }
       return [appState, quit];
     })
     .catch(err => {
