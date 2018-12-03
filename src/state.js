@@ -26,7 +26,6 @@ function readConfig() {
           },
           repositoryHome: undefined,
           repositories: [],
-          targets: [],
           psqlPath: undefined
         };
       }
@@ -49,18 +48,25 @@ async function setInitialState() {
     let repoMap = new Map();
     if (config.repositories.length) {
       for (let repo of config.repositories) {
-        repoMap.set(repo.name, repo.url);
+        let targetMap = new Map();
+        for (let t of repo.targets) {
+          let targetName = t.database;
+          let params = {
+            database: t.database,
+            host: t.host,
+            port: t.port,
+            user: t.user,
+            password: t.password
+          };
+          targetMap.set(targetName, params);
+        }
+        repoMap.set(repo.name, {
+          url: repo.url,
+          targets: targetMap
+        });
       }
     }
     appState.set("repositories", repoMap);
-    console.log("Set target data");
-    let targetMap = new Map();
-    if (config.targets.length) {
-      for (let target of config.targets) {
-        targetMap.set(target.name, target.parameters);
-      }
-    }
-    appState.set("targets", targetMap);
     console.log("Set some defaults");
     appState.set("currentRepository", undefined);
     appState.set("currentTarget", undefined);
@@ -87,22 +93,28 @@ async function writeConfig(appState) {
     newConfig.psqlPath = appState.get("psqlPath");
     let repoList = [];
     let repoMap = appState.get("repositories");
-    for (let repo of repoMap.keys()) {
+    for (let repoName of repoMap.keys()) {
+      let repo = repoMap.get(repoName);
+      let url = repo.url;
+      let targets = [];
+      for (let targetName of repo.targets.keys()) {
+        let params = repo.targets.get(targetName);
+        targets.push({
+          database: params.database,
+          host: params.host,
+          port: params.port,
+          user: params.user,
+          password: params.password
+        });
+        
+      }
       repoList.push({
-        name: repo,
-        url: repoMap.get(repo)
+        name: repoName,
+        url: url,
+        targets: targets
       });
     }
     newConfig.repositories = repoList;
-    let targetList = [];
-    let targetMap = appState.get("targets");
-    for (let target of targetMap.keys()) {
-      targetList.push({
-        name: target,
-        parameters: targetMap.get(target)
-      });
-    }
-    newConfig.targets = targetList;
     await fse.writeFile(rcPath, JSON.stringify(newConfig, null, " "));
   } catch (err) {
     throw new VError(err, `${logName} Failed to write ${rcPath}`);
