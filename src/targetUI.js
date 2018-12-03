@@ -92,7 +92,7 @@ function selectTarget(appState) {
       if (answers.target === "Quit DBCM") {
         quit = true;
       } else if (answers.target === "Add new target") {
-        let targetMap = appState.get("repositories").get(appState.get("currentRepository")).targets;
+        let targetMap = state.getRepositoryTargets(appState, appState.get("currentRepository"));
         let params = {
           database: answers.database,
           host: answers.host,
@@ -101,7 +101,7 @@ function selectTarget(appState) {
           password: answers.password
         };
         targetMap.set(answers.targetName, params);
-        appState.get("repositories").get(appState.get("currentRepository")).targets = targetMap;
+        state.setRepositoryTargets(appState, appState.get("currentRepository"), targetMap);
         appState.set("currentTarget", answers.targetName);
         return state.writeConfig(appState);
       } else {

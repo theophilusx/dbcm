@@ -53,11 +53,9 @@ function selectRepository(appState) {
 
   return inquirer.prompt(questions)
     .then(answers => {
-      console.log(`Answer.repository = ${answers.repository}`);
       if (answers.repository === "Quit DBCM") {
         quit = true;
       } else if (answers.repository === "Add new repository") {
-        console.log("adding new repo");
         let repoMap = appState.get("repositories");
         repoMap.set(answers.newName, {
           url: answers.newURL,
@@ -67,7 +65,6 @@ function selectRepository(appState) {
         appState.set("currentRepository", answers.newName);
         return state.writeConfig(appState);
       } else {
-        console.log("setting current repo");
         appState.set("currentRepository", answers.repository);
       }
       return answers;

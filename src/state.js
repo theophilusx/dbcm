@@ -131,6 +131,14 @@ function setRepositoryDefinition(appState, repoName, defObj) {
   return appState;
 }
 
+function getRepositoryUrl(appState, repoName) {
+  return getRepositoryDefinition(appState, repoName).url;
+}
+
+function setRepositoryUrl(appState, repoName, url) {
+  getRepositoryDefinition(appState, repoName).url = url;
+}
+
 function getRepositoryTargets(appState, repoName) {
   return getRepositoryDefinition(appState, repoName).targets;
 }
@@ -144,7 +152,7 @@ function getTargetDefinition(appState, repoName, targetName) {
 }
 
 function setTargetDefinition(appState, repoName, targetName, defObj) {
-  appState.get("repositories").get(repoName).set(targetName, defObj);
+  getRepositoryTargets(appState, repoName).set(targetName, defObj);
   return appState;
 }
 
@@ -152,9 +160,11 @@ module.exports = {
   setInitialState,
   writeConfig,
   getRepositoryDefinition,
-  getRepositoryTargets,
   setRepositoryDefinition,
-  getTargetDefinition,
+  getRepositoryUrl,
+  setRepositoryUrl,
+  getRepositoryTargets,
   setRepositoryTargets,
+  getTargetDefinition,
   setTargetDefinition
 };
