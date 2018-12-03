@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Very simple script to initialise DBCM
-
 echo "Configure DBCM"
 echo ""
 read -p "Database Name: " PGDATABASE
