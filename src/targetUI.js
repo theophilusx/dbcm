@@ -12,7 +12,8 @@ function setup(appState) {
 
   try {
     let choices = [];
-    for (let target of appState.get("targets").keys()) {
+    let targetMap = state.getRepositoryTargets(appState, appState.get("currentRepository"));
+    for (let target of targetMap.keys()) {
       choices.push(target);
     }
     choices.push(new inquirer.Separator());
@@ -91,7 +92,7 @@ function selectTarget(appState) {
       if (answers.target === "Quit DBCM") {
         quit = true;
       } else if (answers.target === "Add new target") {
-        let targetMap = appState.get("targets");
+        let targetMap = appState.get("repositories").get(appState.get("currentRepository")).targets;
         let params = {
           database: answers.database,
           host: answers.host,
@@ -100,7 +101,7 @@ function selectTarget(appState) {
           password: answers.password
         };
         targetMap.set(answers.targetName, params);
-        appState.set("targets", targetMap);
+        appState.get("repositories").get(appState.get("currentRepository")).targets = targetMap;
         appState.set("currentTarget", answers.targetName);
         return state.writeConfig(appState);
       } else {
@@ -109,7 +110,7 @@ function selectTarget(appState) {
       return appState;
     })
     .then(() => {
-      let params = appState.get("targets").get(appState.get("currentTarget"));
+      let params = state.getTargetDefinition(appState, appState.get("currentRepository"), appState.get("currentTarget"));
       return targets.isInitialised(params.database, params.user, params.password);
     })
     .then(initState => {

@@ -254,7 +254,7 @@ async function setupRepository(appState) {
     console.log("Setup repo");
     let repositories = appState.get("repositories");
     let repoName = appState.get("currentRepository");
-    let repoUrl = repositories.get(repoName);
+    let repoUrl = repositories.get(repoName).url;
     let repoDest = path.join(appState.get("home"), repoName);
     let repo = await getRepository(repoUrl, repoDest);
     let initialised = await files.isInitialised(repoDest);

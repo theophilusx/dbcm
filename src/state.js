@@ -50,7 +50,7 @@ async function setInitialState() {
       for (let repo of config.repositories) {
         let targetMap = new Map();
         for (let t of repo.targets) {
-          let targetName = t.database;
+          let targetName = t.targetName;
           let params = {
             database: t.database,
             host: t.host,
@@ -97,16 +97,17 @@ async function writeConfig(appState) {
       let repo = repoMap.get(repoName);
       let url = repo.url;
       let targets = [];
-      for (let targetName of repo.targets.keys()) {
-        let params = repo.targets.get(targetName);
+      let targetMap = repo.targets;
+      for (let targetName of targetMap.keys()) {
+        let params = targetMap.get(targetName);
         targets.push({
+          targetName: targetName,
           database: params.database,
           host: params.host,
           port: params.port,
           user: params.user,
           password: params.password
         });
-        
       }
       repoList.push({
         name: repoName,
@@ -121,7 +122,22 @@ async function writeConfig(appState) {
   }
 }
 
+function getRepositoryDefinition(appState, repoName) {
+  return appState.get("repositories").get(repoName);
+}
+
+function getRepositoryTargets(appState, repoName) {
+  return getRepositoryDefinition(appState, repoName).targets;
+}
+
+function getTargetDefinition(appState, repoName, targetName) {
+  return getRepositoryTargets(appState, repoName).get(targetName);
+}
+
 module.exports = {
   setInitialState,
-  writeConfig
+  writeConfig,
+  getRepositoryDefinition,
+  getRepositoryTargets,
+  getTargetDefinition
 };
