@@ -26,10 +26,6 @@ function buildChoices(choiceData) {
       name: "Leave menu",
       value: "exitMenu"
     });
-    choices.push({
-      name: "Exit DBCM",
-      value: "exitProgram"
-    });
     return choices;
   } catch (err) {
     throw new VError(err, `${logName} Failed to build choice list`);
@@ -51,13 +47,8 @@ function defaultAction(answer) {
   const logName = `${moduleName}.defaultAction`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
-    if (doExit(choice)) {
-      finished = true;
-      return [finished, choice];
-    }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Error in default menu action`);
   }
@@ -80,7 +71,7 @@ function displayListMenu(title, prompt, choices, actionFN = defaultAction) {
 }
 
 function doExit(choice) {
-  if (choice === "exitMenu" || choice === "exitProgram") {
+  if (choice === "exitMenu") {
     return true;
   }
   return false;
