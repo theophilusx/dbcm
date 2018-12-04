@@ -45,14 +45,13 @@ const dbTargetChoices = menu.buildChoices([
   ["Select New Database Target", "selectDbTarget"] 
 ]);
 
-function developmentSetAction(answer) {
+async function developmentSetAction(answer) {
   const logName = `${moduleName}.developmentSetAction`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
     if (menu.doExit(choice)) {
-      finished = true;
+      return choice;
     } else {
       switch (choice) {
       case "newSet":
@@ -75,7 +74,7 @@ function developmentSetAction(answer) {
         break;
       }
     }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Failed to display development set menu`);
   }
@@ -85,10 +84,9 @@ function pendingSetAction(answer) {
   const logName = `${moduleName}.pendingSetAction`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
     if (menu.doExit(choice)) {
-      finished = true;
+      return choice;
     } else {
       switch (choice) {
       case "listPendingSets":
@@ -105,7 +103,7 @@ function pendingSetAction(answer) {
         break;
       }
     }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Failed to display pending set menu`);
   }
@@ -115,10 +113,9 @@ function finalisedSetAction(answer) {
   const logName = `${moduleName}.finalisedSetActions`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
     if (menu.doExit(choice)) {
-      finished = true;
+      return choice;
     } else {
       switch (choice) {
       case "listFinalisedSets":
@@ -132,7 +129,7 @@ function finalisedSetAction(answer) {
         break;
       }
     }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Failed to display finalised set menu`);
   }
@@ -142,10 +139,9 @@ function targetAction(answer) {
   const logName = `${moduleName}.targetAction`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
     if (menu.doExit(choice)) {
-      finished = true;
+      return choice;
     } else {
       switch (choice) {
       case "listAppliedchanges":
@@ -174,7 +170,7 @@ function targetAction(answer) {
         break;
       }
     }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Failed to display target menu`);
   }
@@ -184,42 +180,46 @@ async function setTypeAction(answer) {
   const logName = `${moduleName}.setAction`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
     if (menu.doExit(choice)) {
-      finished = true;
+      return choice;
     } else {
       switch (choice) {
       case "developmentSets":
-        [finished, choice] = await menu.displayListMenu(
-          "Development Set Menu",
-          "Select Set Action",
-          developmentSetChoices,
-          developmentSetAction
-        );
+        do {
+          choice = await menu.displayListMenu(
+            "Development Set Menu",
+            "Select Set Action",
+            developmentSetChoices,
+            developmentSetAction
+          );
+        } while (!menu.doExit(choice));
         break;
       case "pendingSets":
-        [finished, choice] = await menu.displayListMenu(
-          "Pending Set Menu",
-          "Select Set Action",
-          pendingSetChoices,
-          pendingSetAction
-        );
+        do {
+          choice = await menu.displayListMenu(
+            "Pending Set Menu",
+            "Select Set Action",
+            pendingSetChoices,
+            pendingSetAction
+          );
+        } while (!menu.doExit(choice));
         break;
       case "approvedSets":
-        [finished, choice] = await menu.displayListMenu(
-          "Approved Set Menu",
-          "Selet Set Action",
-          finalisedSetChoices,
-          finalisedSetAction
-        );
+        do {
+          choice = await menu.displayListMenu(
+            "Approved Set Menu",
+            "Selet Set Action",
+            finalisedSetChoices,
+            finalisedSetAction
+          );
+        } while (!menu.doExit(choice));
         break;
       default:
         console.log(`Unrecognised set type choice: ${choice}`);
-        finished = true;
       }
     }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Error in set type choice`);
   }
@@ -229,36 +229,36 @@ async function mainAction(answer) {
   const logName = `${moduleName}.mainAction`;
 
   try {
-    let finished = false;
     let choice = answer.choice;
     if (menu.doExit(choice)) {
-      finished = true;
+      return choice;
     } else {
       switch (choice) {
       case "manageSets":
-        console.log("manage set choice");
-        [finished, choice] = await menu.displayListMenu(
-          "Set Menu",
-          "Select Change Set Group",
-          setTypeChoices,
-          setTypeAction
-        );
+        do {
+          choice = await menu.displayListMenu(
+            "Set Menu",
+            "Select Change Set Group",
+            setTypeChoices,
+            setTypeAction
+          );
+        } while (!menu.doExit(choice));
         break;
       case "manageTargets":
-        console.log("manage targets choice");
-        [finished, choice] = await menu.displayListMenu(
-          "Database Target Menu",
-          "Select Target Action",
-          dbTargetChoices,
-          targetAction
-        );
+        do {
+          choice = await menu.displayListMenu(
+            "Database Target Menu",
+            "Select Target Action",
+            dbTargetChoices,
+            targetAction
+          );
+        } while (!menu.doExit(choice));
         break;
       default:
         console.log(`Unrecognised choice: ${choice}`);
-        finished = true;
       }
     }
-    return [finished, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName} Failed to run main menu action`);
   }
@@ -268,20 +268,15 @@ async function mainMenu() {
   const logName = `${moduleName}.mainMenu`;
 
   try {
-    let finished = false;
     let choice;
     do {
-      [finished, choice] = await menu.displayListMenu(
+      choice = await menu.displayListMenu(
         "Main Menu",
         "Select Action",
         mainChoices,
         mainAction
       );
-      if (menu.doExit(choice)) {
-        finished = true;
-        continue;
-      }
-    } while (!finished);
+    } while (choice != "exitMenu" && choice != "exitProgram");
     return choice;
   } catch (err) {
     throw new VError(err, `${logName} Main menu failure`);
