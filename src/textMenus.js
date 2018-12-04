@@ -4,6 +4,7 @@ const moduleName = "textMenus";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
+const chalk = require("chalk");
 
 function buildChoices(choiceData) {
   const logName = `${moduleName}.buildChoices`;
@@ -38,7 +39,7 @@ function buildChoices(choiceData) {
 function displayMenu(title, question, actionFN) {
   const logName = `${moduleName}.displayMenu`;
 
-  console.log(`\n\t${title}\n`);
+  console.log(chalk.yellow(`\n\t${title}\n`));
   return inquirer.prompt(question)
     .then(actionFN)
     .catch(err => {
