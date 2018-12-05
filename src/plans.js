@@ -9,6 +9,7 @@ const moment = require("moment");
 const fse = require("fse");
 const git = require("./git");
 const files = require("./files");
+const planui = require("./planUI");
 
 function planObjectToMap(pobj) {
   const logName = `${moduleName}.planObjectToMap`;
@@ -53,72 +54,93 @@ function readPlanFile(planFile) {
     });
 }
 
-function readApprovedPlans(appState) {
+function readApprovedPlans(state) {
   const logName = `${moduleName}.readApprovedPlans`;
-  const planFile = path.join(appState.get("home"), appState.get("currentRepository"), "approved-plans.json");
+  const planFile = path.join(state.home, state.currentRepository, "approved-plans.json");
 
   return readPlanFile(planFile)
     .catch(err => {
-      throw new VError(err, `${logName} Failed to read plan file for ${appState.get("currentRepository")}`);
+      throw new VError(err, `${logName} Failed to read plan file for ${state.currentRepository}`);
     });
 }
 
-function readPendingPlans(appState) {
+function readPendingPlans(state) {
   const logName = `${moduleName}.readPendingPlans`;
-  const planFile = path.join(appState.get("home"), appState.get("currentRepository"), "pending-plans.json");
+  const planFile = path.join(state.home, state.currentRepository, "pending-plans.json");
   
   return readPlanFile(planFile)
     .catch(err => {
-      throw new VError(err, `${logName} Failed to read pending plan file for ${appState.get("currentRepository")}`);
+      throw new VError(err, `${logName} Failed to read pending plan file for ${state.currentRepository}`);
     });
 }
 
-function readDevelopmentPlans(appState) {
+function readDevelopmentPlans(state) {
   const logName = `${moduleName}.readPendingPlans`;
-  const planFile = path.join(appState.get("home"), appState.get("currentRepository"), "development-plans.json");
+  const planFile = path.join(state.home, state.currentRepository, "development-plans.json");
   
   return readPlanFile(planFile)
     .catch(err => {
-      throw new VError(err, `${logName} Failed to read pending plan file for ${appState.get("currentRepository")}`);
+      throw new VError(err, `${logName} Failed to read pending plan file for ${state.currentRepository}`);
     });
 }
 
-function initPlans(appState) {
+function readPlanFiles(state) {
   const logName = `${moduleName}.initPlans`;
 
-  return readApprovedPlans(appState)
+  return readApprovedPlans(state)
     .then(planData => {
       let plansMap = planObjectToMap(planData);
-      appState.set("approvedPlans", plansMap);
-      return appState;
-    })
-    .then(() => {
-      return readPendingPlans(appState);
+      state.setApprovedPlans(plansMap);
+      return readPendingPlans(state);
     })
     .then(planData => {
       let plansMap = planObjectToMap(planData);
-      appState.set("pendingPlans", plansMap);
-      return readDevelopmentPlans(appState);
+      state.setPendingPlans(plansMap);
+      return readDevelopmentPlans(state);
     })
     .then(planData => {
       let plansMap = planObjectToMap(planData);
-      appState.set("developmentPlans", plansMap);
-      return appState;
+      state.setDevelopmentPlans(plansMap);
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to initialise plans`);
     });
 }
 
-function createChangeRecord(appState, name, desc) {
+function writePlanFiles(state) {
+  const logName = `${moduleName}.writePlanFiles`;
+
+  let approvedPlans = state.approvedPlans;
+  let planObj = planMapToObject(approvedPlans, "Approved Plans");
+  let planFile = path.join(state.home, state.currentRepository, "approved-plans.json");
+  return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8")
+    .then(() => {
+      let pendingPlans = state.pendingPlans;
+      let planObj = planMapToObject(pendingPlans, "Pending Plans");
+      let planFile = path.join(state.home, state.currentRepository, "pending-plans.json");
+      return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
+    })
+    .then(() => {
+      let developmentPlans = state.developmentPlans;
+      let planObj = planMapToObject(developmentPlans, "Development Plans");
+      let planFile = path.join(state.home, state.currentRepository, "development-plans.json");
+      return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to write plans to files`);
+    });
+}
+
+function createChangeRecord(state, name, desc) {
   const logName = `${moduleName}.createChangeRecord`;
   const fmt = "YYYY-MM-DD HH:mm:ss";
   try {
     let newUUID = short().new();
     let plan = {
       createdDate: moment().format(fmt),
-      author: appState.get("user").name,
-      authorEmail: appState.get("user").email,
+      author: state.username,
+      authorEmail: state.email,
       approved: false,
       approvals: [],
       name: name,
@@ -134,62 +156,54 @@ function createChangeRecord(appState, name, desc) {
   }
 }
 
-function writePlanFiles(appState) {
-  const logName = `${moduleName}.writePlanFiles`;
-
-  let approvedPlans = appState.get("approvedPlans");
-  let planObj = planMapToObject(approvedPlans, "Approved Plans");
-  let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "approved-plans.json");
-  return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8")
-    .then(() => {
-      let pendingPlans = appState.get("pendingPlans");
-      let planObj = planMapToObject(pendingPlans, "Pending Plans");
-      let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "pending-plans.json");
-      return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
-    })
-    .then(() => {
-      let developmentPlans = appState.get("developmentPlans");
-      let planObj = planMapToObject(developmentPlans, "Development Plans");
-      let planFile = path.join(appState.get("home"), appState.get("currentRepository"), "development-plans.json");
-      return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
-    })
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to write plans to files`);
-    });
-}
-
-function createChangePlan(appState, repo, newPlan) {
+function createChangePlan(state) {
   const logName = `${moduleName}.createChangePlan`;
-  const newBranch = `${newPlan.name.replace(" ", "-")}-${newPlan.uuid}`;
 
-  return git.createBranch(repo, newBranch)
-    .then(branchRef => {
-      return repo.checkoutBranch(branchRef);
+  const repo = state.get("repoObject");
+
+  return planui.getPlanDetails(state)
+    .then(newPlan => {
+      if (newPlan) {
+        let newBranch = `${newPlan.name.replace(" ", "-")}-${newPlan.uuid}`;
+        return git.createBranch(repo, newBranch)
+          .then(branchRef => {
+            return repo.checkoutBranch(branchRef);
+          })
+          .then(() => {
+            return files.createChangeFiles(state, newPlan);
+          })
+          .then(() => {
+            return repo.getStatus();
+          })
+          .then(fileList => {
+            return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${newPlan.name}`);
+          })
+          .then(() => {
+            let planMap = state.developmentPlans;
+            planMap.set(newPlan.uuid, newPlan);
+            state.setDevelopmentPlans(planMap);
+            return writePlanFiles(state);
+          })
+          .then(() => {
+            return state;
+          })
+          .catch(err => {
+            throw new VError(err, `${logName} Failed to create new plan`);
+          });
+      }
+      return state;
     })
     .then(() => {
-      return files.createChangeFiles(appState, newPlan);
-    })
-    .then(() => {
-      return repo.getStatus();
-    })
-    .then(fileList => {
-      return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${newPlan.name}`);
-    })
-    .then(() => {
-      appState.get("developmentPlans").set(newPlan.uuid, newPlan);
-      return writePlanFiles(appState);
-    })
-    .then(() => {
-      return appState;
+      return state;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create change plan for ${newPlan.name}`);
+      throw new VError(err, `${logName}`);
     });
 }
 
 module.exports = {
-  initPlans,
-  createChangeRecord,
+  readPlanFiles,
   writePlanFiles,
+  createChangeRecord,
   createChangePlan
 };
