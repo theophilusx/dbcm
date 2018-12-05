@@ -9,7 +9,6 @@ const moment = require("moment");
 const fse = require("fse");
 const git = require("./git");
 const files = require("./files");
-const planui = require("./planUI");
 
 function planObjectToMap(pobj) {
   const logName = `${moduleName}.planObjectToMap`;
@@ -132,7 +131,7 @@ function writePlanFiles(state) {
     });
 }
 
-function createChangeRecord(state, name, desc) {
+function makePlanRecord(state, name, desc) {
   const logName = `${moduleName}.createChangeRecord`;
   const fmt = "YYYY-MM-DD HH:mm:ss";
   try {
@@ -156,54 +155,32 @@ function createChangeRecord(state, name, desc) {
   }
 }
 
-function createChangePlan(state) {
+function createChangePlan(state, plan) {
   const logName = `${moduleName}.createChangePlan`;
-
   const repo = state.get("repoObject");
+  const newBranch = `${plan.name.replace(" ", "-")}-${plan.uuid}`;
 
-  return planui.getPlanDetails(state)
-    .then(newPlan => {
-      if (newPlan) {
-        let newBranch = `${newPlan.name.replace(" ", "-")}-${newPlan.uuid}`;
-        return git.createBranch(repo, newBranch)
-          .then(branchRef => {
-            return repo.checkoutBranch(branchRef);
-          })
-          .then(() => {
-            return files.createChangeFiles(state, newPlan);
-          })
-          .then(() => {
-            return repo.getStatus();
-          })
-          .then(fileList => {
-            return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${newPlan.name}`);
-          })
-          .then(() => {
-            let planMap = state.developmentPlans();
-            planMap.set(newPlan.uuid, newPlan);
-            state.setDevelopmentPlans(planMap);
-            return writePlanFiles(state);
-          })
-          .then(() => {
-            return state;
-          })
-          .catch(err => {
-            throw new VError(err, `${logName} Failed to create new plan`);
-          });
-      }
-      return state;
+  return git.createBranch(repo, newBranch)
+    .then(branchRef => {
+      return repo.checkoutBranch(branchRef);
     })
     .then(() => {
-      return state;
+      return files.createChangeFiles(state, plan);
+    })
+    .then(() => {
+      return repo.getStatus();
+    })
+    .then(fileList => {
+      return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${plan.name}`);
     })
     .catch(err => {
-      throw new VError(err, `${logName}`);
+      throw new VError(err, `${logName} Failed to create new plan`);
     });
 }
 
 module.exports = {
   readPlanFiles,
   writePlanFiles,
-  createChangeRecord,
+  makePlanRecord,
   createChangePlan
 };

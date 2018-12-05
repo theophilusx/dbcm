@@ -4,7 +4,7 @@ const moduleName = "planUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const plan = require("./plans");
+const plans = require("./plans");
 const menu = require("./textMenus");
 
 function displayPlanRecord(record) {
@@ -18,7 +18,7 @@ function displayPlanRecord(record) {
   
   console.log(`
 Created Date:    ${record.createdDate}
-Author:          ${record.author} <${record.email}>
+Author:          ${record.author} <${record.authorEmail}>
 Plan Name:       ${record.name} UUID: ${record.uuid}
 Description:     ${record.description}
 Change File:     ${record.change}
@@ -27,8 +27,8 @@ Rollback File:   ${record.rollback}
 Approval Status: ${record.approved ? "Approved" : "Not Approved"}` + approvedList(record));
 }
 
-function getPlanDetails(state) {
-  const logName = `${moduleName}.getPlanDetils`;
+function createPlan(state) {
+  const logName = `${moduleName}.createPlan`;
   const questions = [
     {
       type: "input",
@@ -44,7 +44,7 @@ function getPlanDetails(state) {
   
   return inquirer.prompt(questions)
     .then(answers => {
-      planRecord = plan.createChangeRecord(state, answers.name, answers.description);
+      planRecord = plans.makePlanRecord(state, answers.name, answers.description);
       displayPlanRecord(planRecord);
       return inquirer.prompt([{
         type: "confirm",
@@ -55,10 +55,22 @@ function getPlanDetails(state) {
     .then(answers => {
       if (answers.createPlan) {
         console.log("Create Plan");
-        return planRecord;
+        return plans.createChangePlan(state, planRecord)
+          .then(() => {
+            let planMap = state.developmentPlans();
+            planMap.set(planRecord.uuid, planRecord);
+            state.setDevelopmentPlans(planMap);
+            return plans.writePlanFiles(state);
+          })
+          .catch(err => {
+            throw new VError(err, `${logName} Failed to create new plan ${planRecord.name}`);
+          });
       } 
-      console.log("Cancel Plan");
+      console.log("Cancelled Plan");
       return undefined;
+    })
+    .then(() => {
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to create new change plan`);
@@ -107,6 +119,6 @@ async function listPlans(state, planType) {
 
 module.exports = {
   displayPlanRecord,
-  getPlanDetails,
+  createPlan,
   listPlans
 };
