@@ -6,6 +6,7 @@ const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
 const plans = require("./plans");
+const approvals = require("./approals");
 
 const rcPath = path.join(process.env.HOME, ".dbcmrc");
 
@@ -146,6 +147,9 @@ async function createApplicationState() {
       currentRepositoryDef: state.get("repositories").get(state.get("currentRepository")),
       currentRepositoryUrl: state.get("repositories").get(state.get("currentRepository")).url,
       currentRepositoryTargets: state.get("repositories").get(state.get("currentRepository")).targets,
+      setCurrentRepositoryTargets: targetMap => {
+        return state.get("repositories").get(state.get("currentRepository")).targets = targetMap;
+      },
       currentTarget: state.get("currentTarget"),
       setCurrentTarget: targetName => {
         return state.set("currentTarget", targetName);
@@ -185,13 +189,13 @@ async function createApplicationState() {
       saveState: async () => {
         await writeConfig(state);
         await plans.writePlanFiles(state);
+        await approvals.writeApprovalsFile(state);
       }
     };
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise DBCM state`);
   }
 }
-
 
 module.exports = {
   createApplicationState
