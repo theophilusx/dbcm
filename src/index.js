@@ -17,12 +17,9 @@ async function main() {
     }
     do {
       appState = await repoui.selectRepository(appState);
-      console.log("main state");
-      appState.dump();
       if (appState.menuChoice() === "exitMenu") {
         continue;
       }
-      console.log(`Current Repository: ${appState.currentRepository()}`);
       appState = await targetui.selectTarget(appState);
       if (appState.menuChoice() === "exitMenu") {
         continue;

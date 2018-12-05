@@ -57,7 +57,6 @@ function selectRepository(state) {
 
   return inquirer.prompt(questions)
     .then(answers => {
-      console.log(`Selected repository; ${answers.choice}`);
       state.setMenuChoice(answers.choice);
       if (answers.choice === "exitMenu") {
         return state;
@@ -72,7 +71,6 @@ function selectRepository(state) {
         state.setCurrentRepository(answers.newName);
         return state.writeConfig(state);
       } else {
-        console.log(`Setting current repository to ${answers.choice}`);
         state.setCurrentRepository(answers.choice);
       }
       return state;

@@ -184,7 +184,7 @@ function targetAction(state) {
   };
 }
 
-async function setTypeAction(state) {
+function setTypeAction(state) {
   const logName = `${moduleName}.setAction`;
 
   return async answer => {
@@ -197,6 +197,7 @@ async function setTypeAction(state) {
         case "developmentSets":
           do {
             state = await menu.displayListMenu(
+              state,
               "Development Set Menu",
               "Select Set Action",
               developmentSetChoices,
@@ -207,6 +208,7 @@ async function setTypeAction(state) {
         case "pendingSets":
           do {
             state = await menu.displayListMenu(
+              state,
               "Pending Set Menu",
               "Select Set Action",
               pendingSetChoices,
@@ -217,6 +219,7 @@ async function setTypeAction(state) {
         case "approvedSets":
           do {
             state = await menu.displayListMenu(
+              state,
               "Approved Set Menu",
               "Selet Set Action",
               finalisedSetChoices,
@@ -235,7 +238,7 @@ async function setTypeAction(state) {
   };
 }
 
-async function mainAction(state) {
+function mainAction(state) {
   const logName = `${moduleName}.mainAction`;
 
   return async answer => {
@@ -248,6 +251,7 @@ async function mainAction(state) {
         case "manageSets":
           do {
             state = await menu.displayListMenu(
+              state,
               "Set Menu",
               "Select Change Set Group",
               setTypeChoices,
@@ -258,6 +262,7 @@ async function mainAction(state) {
         case "manageTargets":
           do {
             state = await menu.displayListMenu(
+              state,
               "Database Target Menu",
               "Select Target Action",
               dbTargetChoices,
@@ -266,7 +271,7 @@ async function mainAction(state) {
           } while (!menu.doExit(state.menuChoice()));
           break;
         default:
-          console.log(`Unrecognised choice: ${answer.choice}`);
+          console.log(`${logName} Unrecognised choice: ${answer.choice}`);
         }
       }
       return state;

@@ -110,7 +110,7 @@ function selectTarget(state) {
         state.setCurrentTarget(answers.targetName);
         return state.writeConfigFile();
       } else {
-        state.setCurrentTarget(answers.targetName);
+        state.setCurrentTarget(answers.choice);
       }
       return state;
     })

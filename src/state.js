@@ -158,25 +158,25 @@ async function createApplicationState() {
         return state.set("currentRepository", repoName);
       },
       currentRepositoryDef: () => {
-        return state.get("repositories").get(state.currentRepository());
+        return state.get("repositories").get(state.get("currentRepository"));
       },
       currentRepositoryUrl: () => {
-        if (state.currentRepository()) {
-          return state.get("repositories").get(state.currentRepository()).url;
+        if (state.get("currentRepository")) {
+          return state.get("repositories").get(state.get("currentRepository")).url;
         } else {
           throw new VError(`${logName} current repository not defined`);
         }
       },        
       currentRepositoryTargets: () => {
-        if (state.currentRepository()) {
-          return state.get("repositories").get(state.currentRepository()).targets;
+        if (state.get("currentRepository")) {
+          return state.get("repositories").get(state.get("currentRepository")).targets;
         } else {
           throw new VError(`${logName} current repository not defined`);
         }
       },
       setCurrentRepositoryTargets: targetMap => {
-        if (state.currentRepository()) {
-          state.get("repositories").get(state.currentRepository()).targets = targetMap; 
+        if (state.get("currentRepository")) {
+          state.get("repositories").get(state.get("currentRepository")).targets = targetMap; 
         } else {
           throw new VError(`${logName} Current repository not set`);
         }
@@ -188,10 +188,11 @@ async function createApplicationState() {
         return state.set("currentTarget", targetName);
       },
       currentTargetDef: () => {
-        if (state.currentRepository() && state.currentTarget()) {
-          return state.get("repositories").get(state.currentRepository()).targets.get(state.currentTarget());
+        if (state.get("currentRepository") && state.get("currentTarget")) {
+          return state.get("repositories").get(state.get("currentRepository")).targets.get(state.get("currentTarget"));
         } else {
-          throw new VError(`${logName} Both currentRepository and currentTarget need to be defined`);
+          throw new VError(`${logName} Both currentRepository and currentTarget need to be defined `
+                           + `repo: ${state.get("currentRepository")} target: ${state.get("currentTarget")}`);
         }
       },
       psqlPath: () => {
