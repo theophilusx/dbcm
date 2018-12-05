@@ -2,9 +2,7 @@
 
 const VError = require("verror");
 const moduleName = "mainUI";
-const inquirer = require("inquirer");
 const menu = require("./textMenus");
-const planui = require("./planUI");
 const plans = require("./plans");
 
 const mainChoices = menu.buildChoices([
@@ -52,7 +50,7 @@ function developmentSetActions(state) {
 
   return async answer => {
     try {
-      state.set("menuChoice", answer.choice);
+      state.setMenuChoice(answer.choice);
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
@@ -89,7 +87,7 @@ function pendingSetActions(state) {
 
   return async answer => {
     try {
-      state.set("menuChoice", answer.choice);
+      state.setMenuChoice(answer.choice);
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
@@ -120,7 +118,7 @@ function finalisedSetActions(state) {
 
   return async answer => {
     try {
-      state.set("menuChoice", answer.choice);
+      state.setMenuChoice(answer.choice);
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
@@ -148,7 +146,7 @@ function targetAction(state) {
 
   return async answer => {
     try {
-      state.set("menuChoice", answer.choice);
+      state.setMenuChoice(answer.choice);
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
@@ -191,7 +189,7 @@ async function setTypeAction(state) {
 
   return async answer => {
     try {
-      state.set("menuChoice", answer.choice);
+      state.setMenuChoice(answer.choice);
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
@@ -204,7 +202,7 @@ async function setTypeAction(state) {
               developmentSetChoices,
               developmentSetActions(state)
             );
-          } while (!menu.doExit(state.get("menuChoice")));
+          } while (!menu.doExit(state.menuChoice));
           break;
         case "pendingSets":
           do {
@@ -214,7 +212,7 @@ async function setTypeAction(state) {
               pendingSetChoices,
               pendingSetActions(state)
             );
-          } while (!menu.doExit(state.get("menuChoice")));
+          } while (!menu.doExit(state.menuChoice));
           break;
         case "approvedSets":
           do {
@@ -224,10 +222,10 @@ async function setTypeAction(state) {
               finalisedSetChoices,
               finalisedSetActions(state)
             );
-          } while (!menu.doExit(choice));
+          } while (!menu.doExit(state.menuChoice));
           break;
         default:
-          console.log(`Unrecognised set type choice: ${choice}`);
+          console.log(`Unrecognised set type choice: ${answer.choice}`);
         }
       }
       return state;
@@ -242,7 +240,7 @@ async function mainAction(state) {
 
   return async answer => {
     try {
-      state.set("menuChoice", answer.choice);
+      state.setMenuChoice(answer.choice);
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
@@ -255,7 +253,7 @@ async function mainAction(state) {
               setTypeChoices,
               setTypeAction(state)
             );
-          } while (!menu.doExit(state.get("menuChoice")));
+          } while (!menu.doExit(state.menuChoice));
           break;
         case "manageTargets":
           do {
@@ -265,7 +263,7 @@ async function mainAction(state) {
               dbTargetChoices,
               targetAction
             );
-          } while (!menu.doExit(state.get("menuChoice")));
+          } while (!menu.doExit(state.menuChoice));
           break;
         default:
           console.log(`Unrecognised choice: ${answer.choice}`);
