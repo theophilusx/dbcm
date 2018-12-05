@@ -230,9 +230,9 @@ COMMIT;
 }
 
 
-function createChangeFiles(appState, changeRecord) {
+function createChangeFiles(state, changeRecord) {
   const logName = `${moduleName}.createchangeFiles`;
-  const root = path.join(appState.get("home"), appState.get("currentRepository"));
+  const root = path.join(state.home, state.currentRepository);
 
   return makeChangeFile(root, changeRecord)
     .then(() => {
