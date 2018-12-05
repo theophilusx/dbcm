@@ -1,64 +1,37 @@
 "use strict";
 
 const VError = require("verror");
-const path = require("path");
-const git = require("./git");
 const repoui = require("./repoUI");
 const targetui = require("./targetUI");
 const configui = require("./configUI");
 const state = require("./state");
-const plans = require("./plans");
-const planui = require("./planUI");
 const mainui = require("./mainUI");
 
-let appState = new Map();
-
 async function main() {
-  let finished = false;
-  let repo;
+  let appState;
 
   try {
-    appState = await state.setInitialState();
-    if (!appState.get("user").name) {
+    appState = await state.createApplicationState();
+    if (!appState.username) {
       appState = await configui.getConfig(appState);
     }
-    while (!finished) {
-      [appState, finished] = await repoui.selectRepository(appState);
-      if (finished) {
+    do {
+      appState = await repoui.selectRepository(appState);
+      if (appState.menuChoice === "exitMenu") {
         continue;
       }
-      [appState, repo] = await git.setupRepository(appState);
-      //appState.set("repoObject", repo);
-      [appState, finished] = await targetui.selectTarget(appState);
-      appState = await plans.initPlans(appState);
-      let exitMain = false;
-      while (!exitMain && !finished) {
-        let newPlan;
-        let choice = await mainui.mainMenu(appState);
-        switch (choice) {
-        case "exitProgram":
-          exitMain = true;
-          finished = true;
-          continue;
-        case "exitMenu":
-          exitMain = true;
-          continue;
-        // case "newSet":
-        //   console.log("Create new change set");
-        //   newPlan = await planui.getPlanDetails(appState);
-        //   if (newPlan) {
-        //     appState = await plans.createChangePlan(appState, repo, newPlan);
-        //   }
-        //   break;
-        default:
-          console.log(`Unhandled menu option: ${choice}`);
-        }
+      console.log(`Current Repository: ${appState.currentRepository}`);
+      appState = await targetui.selectTarget(appState);
+      if (appState.menuChoice === "exitMenu") {
+        continue;
       }
-      // finish here for now
-    }
+      do {
+        appState = await mainui.mainMenu(appState);
+      } while (appState.menuChoice != "exitMenu");
+    } while (appState.menuChoice != "exitMenu");
     console.log("Exiting DBCM");
   } catch (err) {
-    throw new VError(err, `main: Error`);
+    throw new VError(err, "Main loop error");
   }
 }
 
