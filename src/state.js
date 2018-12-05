@@ -6,7 +6,7 @@ const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
 const plans = require("./plans");
-const approvals = require("./approals");
+const approvals = require("./approvals");
 
 const rcPath = path.join(process.env.HOME, ".dbcmrc");
 
@@ -90,6 +90,8 @@ async function createApplicationState() {
     let repoMap = new Map();
     if (config.repositories.length) {
       for (let repo of config.repositories) {
+        console.log("Processing repo");
+        console.dir(repo);
         let targetMap = new Map();
         for (let t of repo.targets) {
           let targetName = t.targetName;
@@ -120,6 +122,7 @@ async function createApplicationState() {
     state.set("approvedPlans", new Map());
     state.set("menuChoice", "unknown");
     state.set("repoObject", undefined);
+    console.log("State configured");
     return {
       get: key => {
         return state.get(key);
@@ -127,10 +130,18 @@ async function createApplicationState() {
       set: (key, value) => {
         return state.set(key, value);
       },
-      username: state.get("user").name,
-      email: state.get("user").email,
-      home: state.get("home"),
-      repositories: state.get("repositories"),
+      username: () => {
+        return state.get("user").name;
+      },
+      email: () => {
+        return state.get("user").email;
+      },
+      home: () => {
+        return state.get("home");
+      },
+      repositories: () => {
+        return state.get("repositories");
+      },
       setRepositories: repoMap => {
         return state.set("repositories", repoMap);
       },
@@ -140,46 +151,88 @@ async function createApplicationState() {
       setRepositoryDef: (repoName, defObject) => {
         return state.get("repositories").set(repoName, defObject);
       },
-      currentRepository: state.get("currentRepository"),
+      currentRepository: () => {
+        return state.get("currentRepository");
+      },
       setCurrentRepository: repoName => {
         return state.set("currentRepository", repoName);
       },
-      currentRepositoryDef: state.get("repositories").get(state.get("currentRepository")),
-      currentRepositoryUrl: state.get("repositories").get(state.get("currentRepository")).url,
-      currentRepositoryTargets: state.get("repositories").get(state.get("currentRepository")).targets,
-      setCurrentRepositoryTargets: targetMap => {
-        return state.get("repositories").get(state.get("currentRepository")).targets = targetMap;
+      currentRepositoryDef: () => {
+        return state.get("repositories").get(state.get("currentRepository"));
       },
-      currentTarget: state.get("currentTarget"),
+      currentRepositoryUrl: () => {
+        if (state.currentRepository) {
+          return state.get("repositories").get(state.currentRepository).url;
+        } else {
+          throw new VError(`${logName} current repository not defined`);
+        }
+      },        
+      currentRepositoryTargets: () => {
+        if (state.currentRepository) {
+          return state.get("repositories").get(state.currentRepository).targets;
+        } else {
+          throw new VError(`${logName} current repository not defined`);
+        }
+      },
+      setCurrentRepositoryTargets: targetMap => {
+        if (state.currentRepository) {
+          state.get("repositories").get(state.currentRepository).targets = targetMap; 
+        } else {
+          throw new VError(`${logName} Current repository not set`);
+        }
+      },
+      currentTarget: () => {
+        return state.get("currentTarget");
+      },
       setCurrentTarget: targetName => {
         return state.set("currentTarget", targetName);
       },
-      currentTargetDef: state.get("repositories").get(state.get("currentRepository").targets.get(state.get("currentTarget"))),
-      psqlPath: state.get("psqlPath"),
+      currentTargetDef: () => {
+        if (state.currentRepository && state.currentTarget) {
+          return state.get("repositories").get(state.currentRepository).targets.get(state.currentTarget);
+        } else {
+          throw new VError(`${logName} Both currentRepository and currentTarget need to be defined`);
+        }
+      },
+      psqlPath: () => {
+        return state.get("psqlPath");
+      },
       setPsqlPath: psql => {
         return state.set("psqlPath", psql);
       },
-      approvalType: state.get("approvalType"),
+      approvalType: () => {
+        return state.get("approvalType");
+      },
       setApprovalType: type => {
         return state.set("approvalType", type);
       },
-      approvers: state.get("approvers"),
+      approvers: () => {
+        return state.get("approvers");
+      },
       setApprovers: appMap => {
         return state.set("approvers", appMap);
       },
-      developmentPlans: state.get("developmentPlans"),
+      developmentPlans: () => {
+        return state.get("developmentPlans");
+      },
       setDevelopmentPlans: planMap => {
         return state.set("developmentPlans", planMap);
       },
-      pendingPlans: state.get("pendingPlans"),
+      pendingPlans: () => {
+        return state.get("pendingPlans");
+      },
       setPendingPlans: planMap => {
         return state.set("pendingPlans", planMap);
       },
-      approvedPlans: state.get("approvedPlans"),
+      approvedPlans: () => {
+        return state.get("approvedPlans");
+      },
       setApprovedPlans: planMap => {
         return state.set("approvedPlans", planMap);
       },
-      menuChoice: state.get("menuChoice"),
+      menuChoice: () => {
+        return state.get("menuChoice");
+      },
       setMenuChoice: choice => {
         return state.set("menuChoice", choice);
       },
@@ -190,6 +243,9 @@ async function createApplicationState() {
         await writeConfig(state);
         await plans.writePlanFiles(state);
         await approvals.writeApprovalsFile(state);
+      },
+      dump: () => {
+        console.dir(state); 
       }
     };
   } catch (err) {
