@@ -39,7 +39,7 @@ function displayMenu(title, question, actionFN) {
   return inquirer.prompt(question)
     .then(actionFN)
     .catch(err => {
-      throw new VError(err, `${logName} Failed to display menu ${title}`);
+      throw new VError(err, `${logName} Error processing menu ${title}`);
     });
 }
 
@@ -68,7 +68,7 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
   
   return displayMenu(title, question, fn)
     .catch(err => {
-      throw new VError(err, `${logName} Failed to display list menu`);
+      throw new VError(err, `${logName} Failed to display menu ${title}`);
     });
 }
 

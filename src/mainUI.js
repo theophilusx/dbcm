@@ -3,7 +3,7 @@
 const VError = require("verror");
 const moduleName = "mainUI";
 const menu = require("./textMenus");
-const plans = require("./plans");
+const planui = require("./planUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Sets", "manageSets"],
@@ -46,7 +46,7 @@ const dbTargetChoices = menu.buildChoices([
 ]);
 
 function developmentSetActions(state) {
-  const logName = `${moduleName}.developmentSetActions`;
+  const logName = "developmentSetActions";
 
   return async answer => {
     try {
@@ -56,7 +56,7 @@ function developmentSetActions(state) {
       } else {
         switch (answer.choice) {
         case "newSet":
-          state = await plans.createChangePlan(state);
+          state = await planui.createPlan(state);
           break;
         case "selectDevSet":
           console.log("select new dev set action");
@@ -71,19 +71,19 @@ function developmentSetActions(state) {
           console.log("list dev sets");
           break;
         default:
-          console.log(`Unrecognised choice ${answer.choice}`);
+          console.log(`${logName} Unrecognised choice ${answer.choice}`);
           break;
         }
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Failed to display development set menu`);
+      throw new VError(err, `${logName} Menu process failure`);
     }
   };
 }
 
 function pendingSetActions(state) {
-  const logName = `${moduleName}.pendingSetActions`;
+  const logName = "pendingSetActions";
 
   return async answer => {
     try {
@@ -102,19 +102,19 @@ function pendingSetActions(state) {
           console.log("reject pending set action");
           break;
         default:
-          console.log(`Unrecognised choice ${answer.choice}`);
+          console.log(`${logName} Unrecognised choice ${answer.choice}`);
           break;
         }
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Failed to display pending set menu`);
+      throw new VError(err, `${logName} Menu process failure`);
     }
   };
 }
 
 function finalisedSetActions(state) {
-  const logName = `${moduleName}.finalisedSetActions`;
+  const logName = "finalisedSetActions";
 
   return async answer => {
     try {
@@ -130,19 +130,19 @@ function finalisedSetActions(state) {
           console.log("rework finalised set action");
           break;
         default:
-          console.log(`Unrecognised choice ${answer.choice}`);
+          console.log(`${logName} Unrecognised choice ${answer.choice}`);
           break;
         }
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Failed to display finalised set menu`);
+      throw new VError(err, `${logName} Menu process failure`);
     }
   };
 }
 
 function targetAction(state) {
-  const logName = `${moduleName}.targetAction`;
+  const logName = "targetAction";
 
   return async answer => {
     try {
@@ -173,19 +173,19 @@ function targetAction(state) {
           console.log("select DB target");
           break;
         default:
-          console.log(`Unrecognised choice ${answer.choice}`);
+          console.log(`${logName} Unrecognised choice ${answer.choice}`);
           break;
         }
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Failed to display target menu`);
+      throw new VError(err, `${logName} Menu process failure`);
     }
   };
 }
 
 function setTypeAction(state) {
-  const logName = `${moduleName}.setAction`;
+  const logName = "setTypeAction";
 
   return async answer => {
     try {
@@ -228,18 +228,18 @@ function setTypeAction(state) {
           } while (!menu.doExit(state.menuChoice()));
           break;
         default:
-          console.log(`Unrecognised set type choice: ${answer.choice}`);
+          console.log(`${logName} Unrecognised set type choice: ${answer.choice}`);
         }
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Error in set type choice`);
+      throw new VError(err, `${logName} Menu process failure`);
     }
   };
 }
 
 function mainAction(state) {
-  const logName = `${moduleName}.mainAction`;
+  const logName = "mainAction";
 
   return async answer => {
     try {
@@ -276,7 +276,7 @@ function mainAction(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Failed to run main menu action`);
+      throw new VError(err, `${logName} Menu process failure`);
     }
   };
 }
@@ -294,7 +294,7 @@ async function mainMenu(appState) {
     );
     return appState;
   } catch (err) {
-    throw new VError(err, `${logName} Main menu failure`);
+    throw new VError(err, `${logName} Menu process failure`);
   }
 }
 
