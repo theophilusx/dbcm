@@ -4,24 +4,29 @@ const moduleName = "repoUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const state = require("./state");
 const approvals = require("./approvals");
 
-function setup(appState) {
+function setup(state) {
   const logName = `${moduleName}.setup`;
 
   try {
     let repoChoices = [];
-    for (let repo of appState.get("repositories").keys()) {
+    for (let repo of state.repositories.keys()) {
       repoChoices.push(repo);
     }
     repoChoices.push(new inquirer.Separator());
-    repoChoices.push("Add new repository");
-    repoChoices.push("Quit DBCM");
+    repoChoices.push({
+      name: "Add new repository",
+      value: "newRepository"
+    });
+    repoChoices.push({
+      name: "Exit Menu",
+      value: "exitMenu"
+    });
     let questions = [{
       type: "list",
-      name: "repository",
-      message: "Which Repository:",
+      name: "choice",
+      message: "Select Change Repository:",
       choices: repoChoices
     },
     {
@@ -29,7 +34,7 @@ function setup(appState) {
       name: "newName",
       message: "Name for new repository:",
       when: answers => {
-        return answers.repository === "Add new repository";
+        return answers.choice === "newRepository";
       }
     },
     {
@@ -37,7 +42,7 @@ function setup(appState) {
       name: "newURL",
       message: "Git URL of repository:",
       when: answers => {
-        return answers.repository === "Add new repository";
+        return answers.choice === "newRepository";
       }
     }];
     return questions;
@@ -46,38 +51,35 @@ function setup(appState) {
   }
 }
 
-function selectRepository(appState) {
+function selectRepository(state) {
   const logName = `${moduleName}.selectRepository`;
-  let questions = setup(appState);
-  let quit = false;
+  let questions = setup(state);
 
   return inquirer.prompt(questions)
     .then(answers => {
-      if (answers.repository === "Quit DBCM") {
-        quit = true;
-      } else if (answers.repository === "Add new repository") {
-        let repoMap = appState.get("repositories");
+      state.setMenuChoice(answers.choice);
+      if (answers.choice === "exitMenu") {
+        return state;
+      } else if (answers.repository === "newRepository") {
+        let repoMap = state.repositories;
         repoMap.set(answers.newName, {
           url: answers.newURL,
           targets: new Map()
         });
-        appState.set("repositories", repoMap);
-        appState.set("currentRepository", answers.newName);
-        return state.writeConfig(appState);
+        state.setRepositories(repoMap);
+        state.setCurrentRepository(answers.newName);
+        return state.writeConfig(state);
       } else {
-        appState.set("currentRepository", answers.repository);
+        state.setCurrentRepository(answers.repository);
       }
-      return answers;
-    })
-    .then(() => {
-      return [appState, quit];
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to get repository selection`);
     });
 }
 
-function selectApprovers(appState) {
+function selectApprovers(state) {
   const logName = `${moduleName}.selectApprovers`;
   const question = [
     {
@@ -136,10 +138,10 @@ function selectApprovers(appState) {
           }
         }
       }
-      appState.set("approvalType", approvalType);
-      appState.set("approvers", approverMap);
-      await approvals.writeApprovalsFile(appState);
-      return appState;
+      state.setApprovalType(approvalType);
+      state.setApprovers(approverMap);
+      await approvals.writeApprovalsFile(state);
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed getting approval settings`);
