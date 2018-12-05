@@ -43,20 +43,22 @@ function displayMenu(title, question, actionFN) {
     });
 }
 
-function defaultAction(answer) {
-  const logName = `${moduleName}.defaultAction`;
 
-  try {
-    let choice = answer.choice;
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Error in default menu action`);
-  }
-}
-
-function displayListMenu(title, prompt, choices, actionFN = defaultAction) {
+function displayListMenu(state, title, prompt, choices, actionFN) {
   const logName = `${moduleName}.displayListMenu`;
 
+  function defaultAction(answer) {
+    const logName = `${moduleName}.defaultAction`;
+
+    try {
+      state.setMmenuChoice(answer.choice);
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Error in default menu action`);
+    }
+  }
+
+  let fn = actionFN || defaultAction;
   let question = [{
     type: "list",
     name: "choice",
@@ -64,7 +66,7 @@ function displayListMenu(title, prompt, choices, actionFN = defaultAction) {
     message: prompt
   }];
   
-  return displayMenu(title, question, actionFN)
+  return displayMenu(title, question, fn)
     .catch(err => {
       throw new VError(err, `${logName} Failed to display list menu`);
     });
