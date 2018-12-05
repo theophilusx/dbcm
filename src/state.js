@@ -5,6 +5,7 @@ const moduleName = "state";
 const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
+const plans = require("./plans");
 
 const rcPath = path.join(process.env.HOME, ".dbcmrc");
 
@@ -33,54 +34,6 @@ function readConfig() {
     });
 }
 
-async function setInitialState() {
-  const logName = `${moduleName}.setInitialState`;
-  const appState = new Map();
-
-  try {
-    console.log("read config file");
-    let config = await readConfig();
-    console.log("set basic appState values");
-    appState.set("user", config.user);
-    appState.set("version", config.version);
-    appState.set("home", config.repositoryHome);
-    console.log("Set repository data");
-    let repoMap = new Map();
-    if (config.repositories.length) {
-      for (let repo of config.repositories) {
-        let targetMap = new Map();
-        for (let t of repo.targets) {
-          let targetName = t.targetName;
-          let params = {
-            database: t.database,
-            host: t.host,
-            port: t.port,
-            user: t.user,
-            password: t.password
-          };
-          targetMap.set(targetName, params);
-        }
-        repoMap.set(repo.name, {
-          url: repo.url,
-          targets: targetMap
-        });
-      }
-    }
-    appState.set("repositories", repoMap);
-    console.log("Set some defaults");
-    appState.set("currentRepository", undefined);
-    appState.set("currentTarget", undefined);
-    appState.set("psqlPath", config.psqlPath);
-    appState.set("approvalType", "none");
-    appState.set("approvers", new Map());
-    appState.set("developmentPlans", new Map());
-    appState.set("pendingPlans", new Map());
-    appState.set("approvedPlans", new Map());
-    return appState;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to initialise DBCM state`);
-  }
-}
 
 async function writeConfig(appState) {
   const logName = `${moduleName}.writeState`;
@@ -122,49 +75,124 @@ async function writeConfig(appState) {
   }
 }
 
-function getRepositoryDefinition(appState, repoName) {
-  return appState.get("repositories").get(repoName);
+async function createApplicationState() {
+  const logName = `${moduleName}.createApplicationState`;
+  const state = new Map();
+
+  try {
+    console.log("read config file");
+    let config = await readConfig();
+    console.log("set basic appState values");
+    state.set("user", config.user);
+    state.set("home", config.repositoryHome);
+    console.log("Set repository data");
+    let repoMap = new Map();
+    if (config.repositories.length) {
+      for (let repo of config.repositories) {
+        let targetMap = new Map();
+        for (let t of repo.targets) {
+          let targetName = t.targetName;
+          let params = {
+            database: t.database,
+            host: t.host,
+            port: t.port,
+            user: t.user,
+            password: t.password
+          };
+          targetMap.set(targetName, params);
+        }
+        repoMap.set(repo.name, {
+          url: repo.url,
+          targets: targetMap
+        });
+      }
+    }
+    state.set("repositories", repoMap);
+    console.log("Set some defaults");
+    state.set("currentRepository", undefined);
+    state.set("currentTarget", undefined);
+    state.set("psqlPath", config.psqlPath);
+    state.set("approvalType", "none");
+    state.set("approvers", new Map());
+    state.set("developmentPlans", new Map());
+    state.set("pendingPlans", new Map());
+    state.set("approvedPlans", new Map());
+    state.set("menuChoice", "unknown");
+    state.set("repoObject", undefined);
+    return {
+      get: key => {
+        return state.get(key);
+      },
+      set: (key, value) => {
+        return state.set(key, value);
+      },
+      username: state.get("user").name,
+      email: state.get("user").email,
+      home: state.get("home"),
+      repositories: state.get("repositories"),
+      setRepositories: repoMap => {
+        return state.set("repositories", repoMap);
+      },
+      repositoryDef: repoName => {
+        return state.get("repositories").get(repoName);
+      },
+      setRepositoryDef: (repoName, defObject) => {
+        return state.get("repositories").set(repoName, defObject);
+      },
+      currentRepository: state.get("currentRepository"),
+      setCurrentRepository: repoName => {
+        return state.set("currentRepository", repoName);
+      },
+      currentRepositoryDef: state.get("repositories").get(state.get("currentRepository")),
+      currentRepositoryUrl: state.get("repositories").get(state.get("currentRepository")).url,
+      currentRepositoryTargets: state.get("repositories").get(state.get("currentRepository")).targets,
+      currentTarget: state.get("currentTarget"),
+      setCurrentTarget: targetName => {
+        return state.set("currentTarget", targetName);
+      },
+      currentTargetDef: state.get("repositories").get(state.get("currentRepository").targets.get(state.get("currentTarget"))),
+      psqlPath: state.get("psqlPath"),
+      setPsqlPath: psql => {
+        return state.set("psqlPath", psql);
+      },
+      approvalType: state.get("approvalType"),
+      setApprovalType: type => {
+        return state.set("approvalType", type);
+      },
+      approvers: state.get("approvers"),
+      setApprovers: appMap => {
+        return state.set("approvers", appMap);
+      },
+      developmentPlans: state.get("developmentPlans"),
+      setDevelopmentPlans: planMap => {
+        return state.set("developmentPlans", planMap);
+      },
+      pendingPlans: state.get("pendingPlans"),
+      setPendingPlans: planMap => {
+        return state.set("pendingPlans", planMap);
+      },
+      approvedPlans: state.get("approvedPlans"),
+      setApprovedPlans: planMap => {
+        return state.set("approvedPlans", planMap);
+      },
+      menuChoice: state.get("menuChoice"),
+      setMenuChoice: choice => {
+        return state.set("menuChoice", choice);
+      },
+      writeConfigFile: async () => {
+        await writeConfig(state);
+      },
+      saveState: async () => {
+        await writeConfig(state);
+        await plans.writePlanFiles(state);
+      }
+    };
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to initialise DBCM state`);
+  }
 }
 
-function setRepositoryDefinition(appState, repoName, defObj) {
-  appState.get("repositories").set(repoName, defObj);
-  return appState;
-}
-
-function getRepositoryUrl(appState, repoName) {
-  return getRepositoryDefinition(appState, repoName).url;
-}
-
-function setRepositoryUrl(appState, repoName, url) {
-  getRepositoryDefinition(appState, repoName).url = url;
-}
-
-function getRepositoryTargets(appState, repoName) {
-  return getRepositoryDefinition(appState, repoName).targets;
-}
-
-function setRepositoryTargets(appState, repoName, targetMap) {
-  appState.get("repositories").get(repoName).targets = targetMap;
-}
-
-function getTargetDefinition(appState, repoName, targetName) {
-  return getRepositoryTargets(appState, repoName).get(targetName);
-}
-
-function setTargetDefinition(appState, repoName, targetName, defObj) {
-  getRepositoryTargets(appState, repoName).set(targetName, defObj);
-  return appState;
-}
 
 module.exports = {
-  setInitialState,
-  writeConfig,
-  getRepositoryDefinition,
-  setRepositoryDefinition,
-  getRepositoryUrl,
-  setRepositoryUrl,
-  getRepositoryTargets,
-  setRepositoryTargets,
-  getTargetDefinition,
-  setTargetDefinition
+  createApplicationState
 };
