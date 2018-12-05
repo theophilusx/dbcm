@@ -4,27 +4,32 @@ const moduleName = "targetUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const state = require("./state");
 const targets = require("./targets");
 
-function setup(appState) {
+function setup(state) {
   const logName = `${moduleName}.setup`;
 
   try {
     let choices = [];
-    let targetMap = state.getRepositoryTargets(appState, appState.get("currentRepository"));
+    let targetMap = state.currentRepositoryTargets;
     for (let target of targetMap.keys()) {
       choices.push(target);
     }
     choices.push(new inquirer.Separator());
-    choices.push("Add new target");
-    choices.push("Quit DBCM");
+    choices.push({
+      name: "Add New DB Target",
+      value: "newTarget"
+    });
+    choices.push({
+      name: "Exit Menu",
+      value: "exitMenu"
+    });
 
     const questions = [
       {
         type: "list",
-        name: "target",
-        message: "Which DB target:",
+        name: "choice",
+        message: "Select DB target:",
         choices: choices
       },
       {
@@ -32,7 +37,7 @@ function setup(appState) {
         name: "targetName",
         message: "Target name:",
         when: answers => {
-          return answers.target === "Add new target";
+          return answers.choice === "newTarget";
         }
       },
       {
@@ -40,7 +45,7 @@ function setup(appState) {
         name: "database",
         message: "Target database name:",
         when: answers => {
-          return answers.target === "Add new target";
+          return answers.choice === "newTarget";
         }
       },
       {
@@ -48,7 +53,7 @@ function setup(appState) {
         name: "host",
         message: "Target database host:",
         when: answers => {
-          return answers.target === "Add new target";
+          return answers.choice === "newTarget";
         }
       },
       {
@@ -57,7 +62,7 @@ function setup(appState) {
         message: "Target database port:",
         default: 5432,
         when: answers => {
-          return answers.target === "Add new target";
+          return answers.choice === "newTarget";
         }
       },
       {
@@ -65,7 +70,7 @@ function setup(appState) {
         name: "user",
         message: "Target database user:",
         when: answers => {
-          return answers.target === "Add new target";
+          return answers.choice === "newTarget";
         }
       },
       {
@@ -73,7 +78,7 @@ function setup(appState) {
         name: "password",
         message: "Target database password:",
         when: answers => {
-          return answers.target === "Add new target";
+          return answers.choice === "newTarget";
         }
       }];
     return questions;
@@ -82,17 +87,17 @@ function setup(appState) {
   }
 }
 
-function selectTarget(appState) {
+function selectTarget(state) {
   const logName = `${moduleName}.selectTarget`;
-  const questions = setup(appState);
-  let quit = false;
+  const questions = setup(state);
   
   return inquirer.prompt(questions)
     .then(answers => {
-      if (answers.target === "Quit DBCM") {
-        quit = true;
-      } else if (answers.target === "Add new target") {
-        let targetMap = state.getRepositoryTargets(appState, appState.get("currentRepository"));
+      state.setMenuChoice(answers.choice);
+      if (answers.choice === "exitMenu") {
+        return state;
+      } else if (answers.choice === "newTarget") {
+        let targetMap = state.currentRepositoryTargets;
         let params = {
           database: answers.database,
           host: answers.host,
@@ -101,21 +106,21 @@ function selectTarget(appState) {
           password: answers.password
         };
         targetMap.set(answers.targetName, params);
-        state.setRepositoryTargets(appState, appState.get("currentRepository"), targetMap);
-        appState.set("currentTarget", answers.targetName);
-        return state.writeConfig(appState);
+        state.setCurrentRepositoryTargets(targetMap);
+        state.setCurrentTarget(answers.targetName);
+        return state.writeConfigFile();
       } else {
-        appState.set("currentTarget", answers.target);
+        state.setCurrentTarget(answers.targetName);
       }
-      return appState;
+      return state;
     })
     .then(() => {
-      let params = state.getTargetDefinition(appState, appState.get("currentRepository"), appState.get("currentTarget"));
+      let params = state.currentTargetDef;
       return targets.isInitialised(params.database, params.user, params.password);
     })
     .then(initState => {
       if (!initState) {
-        console.log(`Target database ${appState.get("currentTarget")} needs to be initialised for DBCM`);
+        console.log(`Target database ${state.currentTarget} needs to be initialised for DBCM`);
         console.log("Please either run the shell script in bin/dbcm-init.sh");
         console.log("or execute the SQL script in sql/dbcm-init.sql in the target database");
         console.log("Note that if you use the SQL script, you also need to add the dbcm_user role");
@@ -123,7 +128,7 @@ function selectTarget(appState) {
       } else {
         console.log("Target database is already initialised for DBCM");
       }
-      return [appState, quit];
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to select target`);
