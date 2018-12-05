@@ -4,6 +4,8 @@ const VError = require("verror");
 const moduleName = "mainUI";
 const inquirer = require("inquirer");
 const menu = require("./textMenus");
+const planui = require("./planUI");
+const plans = require("./plans");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Sets", "manageSets"],
@@ -45,239 +47,249 @@ const dbTargetChoices = menu.buildChoices([
   ["Select New Database Target", "selectDbTarget"] 
 ]);
 
-async function developmentSetAction(answer) {
-  const logName = `${moduleName}.developmentSetAction`;
+function developmentSetActions(state) {
+  const logName = `${moduleName}.developmentSetActions`;
 
-  try {
-    let choice = answer.choice;
-    if (menu.doExit(choice)) {
-      return choice;
-    } else {
-      switch (choice) {
-      case "newSet":
-        console.log("new set action");
-        break;
-      case "selectDevSet":
-        console.log("select new dev set action");
-        break;
-      case "testDevSet":
-        console.log("test a dev set");
-        break;
-      case "commitSet":
-        console.log("commit set for approval");
-        break;
-      case "listDevSets":
-        console.log("list dev sets");
-        break;
-      default:
-        console.log(`Unrecognised choice ${choice}`);
-        break;
+  return async answer => {
+    try {
+      state.set("menuChoice", answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "newSet":
+          state = await plans.createChangePlan(state);
+          break;
+        case "selectDevSet":
+          console.log("select new dev set action");
+          break;
+        case "testDevSet":
+          console.log("test a dev set");
+          break;
+        case "commitSet":
+          console.log("commit set for approval");
+          break;
+        case "listDevSets":
+          console.log("list dev sets");
+          break;
+        default:
+          console.log(`Unrecognised choice ${answer.choice}`);
+          break;
+        }
       }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Failed to display development set menu`);
     }
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to display development set menu`);
-  }
+  };
 }
 
-function pendingSetAction(answer) {
-  const logName = `${moduleName}.pendingSetAction`;
+function pendingSetActions(state) {
+  const logName = `${moduleName}.pendingSetActions`;
 
-  try {
-    let choice = answer.choice;
-    if (menu.doExit(choice)) {
-      return choice;
-    } else {
-      switch (choice) {
-      case "listPendingSets":
-        console.log("list pending set action");
-        break;
-      case "approvePendingSet":
-        console.log("approve pending set action");
-        break;
-      case "rejectPendingSet":
-        console.log("reject pending set action");
-        break;
-      default:
-        console.log(`Unrecognised choice ${choice}`);
-        break;
+  return async answer => {
+    try {
+      state.set("menuChoice", answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "listPendingSets":
+          console.log("list pending set action");
+          break;
+        case "approvePendingSet":
+          console.log("approve pending set action");
+          break;
+        case "rejectPendingSet":
+          console.log("reject pending set action");
+          break;
+        default:
+          console.log(`Unrecognised choice ${answer.choice}`);
+          break;
+        }
       }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Failed to display pending set menu`);
     }
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to display pending set menu`);
-  }
+  };
 }
 
-function finalisedSetAction(answer) {
+function finalisedSetActions(state) {
   const logName = `${moduleName}.finalisedSetActions`;
 
-  try {
-    let choice = answer.choice;
-    if (menu.doExit(choice)) {
-      return choice;
-    } else {
-      switch (choice) {
-      case "listFinalisedSets":
-        console.log("list finalised set action");
-        break;
-      case "reworkFinalisedSet":
-        console.log("rework finalised set action");
-        break;
-      default:
-        console.log(`Unrecognised choice ${choice}`);
-        break;
+  return async answer => {
+    try {
+      state.set("menuChoice", answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "listFinalisedSets":
+          console.log("list finalised set action");
+          break;
+        case "reworkFinalisedSet":
+          console.log("rework finalised set action");
+          break;
+        default:
+          console.log(`Unrecognised choice ${answer.choice}`);
+          break;
+        }
       }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Failed to display finalised set menu`);
     }
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to display finalised set menu`);
-  }
+  };
 }
 
-function targetAction(answer) {
+function targetAction(state) {
   const logName = `${moduleName}.targetAction`;
 
-  try {
-    let choice = answer.choice;
-    if (menu.doExit(choice)) {
-      return choice;
-    } else {
-      switch (choice) {
-      case "listAppliedchanges":
-        console.log("list applied changes");
-        break;
-      case "listUnappliedChanges":
-        console.log("List unapplied changes");
-        break;
-      case "applyNextChange":
-        console.log("apply next change");
-        break;
-      case "applyAllChanges":
-        console.log("apply all outstanding changes");
-        break;
-      case "rollbackChange":
-        console.log("rollback change");
-        break;
-      case "displayChangelog":
-        console.log("display changelog");
-        break;
-      case "selectDbTarget":
-        console.log("select DB target");
-        break;
-      default:
-        console.log(`Unrecognised choice ${choice}`);
-        break;
+  return async answer => {
+    try {
+      state.set("menuChoice", answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "listAppliedchanges":
+          console.log("list applied changes");
+          break;
+        case "listUnappliedChanges":
+          console.log("List unapplied changes");
+          break;
+        case "applyNextChange":
+          console.log("apply next change");
+          break;
+        case "applyAllChanges":
+          console.log("apply all outstanding changes");
+          break;
+        case "rollbackChange":
+          console.log("rollback change");
+          break;
+        case "displayChangelog":
+          console.log("display changelog");
+          break;
+        case "selectDbTarget":
+          console.log("select DB target");
+          break;
+        default:
+          console.log(`Unrecognised choice ${answer.choice}`);
+          break;
+        }
       }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Failed to display target menu`);
     }
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to display target menu`);
-  }
+  };
 }
 
-async function setTypeAction(answer) {
+async function setTypeAction(state) {
   const logName = `${moduleName}.setAction`;
 
-  try {
-    let choice = answer.choice;
-    if (menu.doExit(choice)) {
-      return choice;
-    } else {
-      switch (choice) {
-      case "developmentSets":
-        do {
-          choice = await menu.displayListMenu(
-            "Development Set Menu",
-            "Select Set Action",
-            developmentSetChoices,
-            developmentSetAction
-          );
-        } while (!menu.doExit(choice));
-        break;
-      case "pendingSets":
-        do {
-          choice = await menu.displayListMenu(
-            "Pending Set Menu",
-            "Select Set Action",
-            pendingSetChoices,
-            pendingSetAction
-          );
-        } while (!menu.doExit(choice));
-        break;
-      case "approvedSets":
-        do {
-          choice = await menu.displayListMenu(
-            "Approved Set Menu",
-            "Selet Set Action",
-            finalisedSetChoices,
-            finalisedSetAction
-          );
-        } while (!menu.doExit(choice));
-        break;
-      default:
-        console.log(`Unrecognised set type choice: ${choice}`);
+  return async answer => {
+    try {
+      state.set("menuChoice", answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "developmentSets":
+          do {
+            state = await menu.displayListMenu(
+              "Development Set Menu",
+              "Select Set Action",
+              developmentSetChoices,
+              developmentSetActions(state)
+            );
+          } while (!menu.doExit(state.get("menuChoice")));
+          break;
+        case "pendingSets":
+          do {
+            state = await menu.displayListMenu(
+              "Pending Set Menu",
+              "Select Set Action",
+              pendingSetChoices,
+              pendingSetActions(state)
+            );
+          } while (!menu.doExit(state.get("menuChoice")));
+          break;
+        case "approvedSets":
+          do {
+            state = await menu.displayListMenu(
+              "Approved Set Menu",
+              "Selet Set Action",
+              finalisedSetChoices,
+              finalisedSetActions(state)
+            );
+          } while (!menu.doExit(choice));
+          break;
+        default:
+          console.log(`Unrecognised set type choice: ${choice}`);
+        }
       }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Error in set type choice`);
     }
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Error in set type choice`);
-  }
+  };
 }
 
-async function mainAction(answer) {
+async function mainAction(state) {
   const logName = `${moduleName}.mainAction`;
 
-  try {
-    let choice = answer.choice;
-    if (menu.doExit(choice)) {
-      return choice;
-    } else {
-      switch (choice) {
-      case "manageSets":
-        do {
-          choice = await menu.displayListMenu(
-            "Set Menu",
-            "Select Change Set Group",
-            setTypeChoices,
-            setTypeAction
-          );
-        } while (!menu.doExit(choice));
-        break;
-      case "manageTargets":
-        do {
-          choice = await menu.displayListMenu(
-            "Database Target Menu",
-            "Select Target Action",
-            dbTargetChoices,
-            targetAction
-          );
-        } while (!menu.doExit(choice));
-        break;
-      default:
-        console.log(`Unrecognised choice: ${choice}`);
+  return async answer => {
+    try {
+      state.set("menuChoice", answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "manageSets":
+          do {
+            state = await menu.displayListMenu(
+              "Set Menu",
+              "Select Change Set Group",
+              setTypeChoices,
+              setTypeAction(state)
+            );
+          } while (!menu.doExit(state.get("menuChoice")));
+          break;
+        case "manageTargets":
+          do {
+            state = await menu.displayListMenu(
+              "Database Target Menu",
+              "Select Target Action",
+              dbTargetChoices,
+              targetAction
+            );
+          } while (!menu.doExit(state.get("menuChoice")));
+          break;
+        default:
+          console.log(`Unrecognised choice: ${answer.choice}`);
+        }
       }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Failed to run main menu action`);
     }
-    return choice;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to run main menu action`);
-  }
+  };
 }
 
-async function mainMenu() {
+async function mainMenu(appState) {
   const logName = `${moduleName}.mainMenu`;
 
   try {
-    let choice;
-    do {
-      choice = await menu.displayListMenu(
-        "Main Menu",
-        "Select Action",
-        mainChoices,
-        mainAction
-      );
-    } while (choice != "exitMenu" && choice != "exitProgram");
-    return choice;
+    appState = await menu.displayListMenu(
+      appState,
+      "Main Menu",
+      "Select Action",
+      mainChoices,
+      mainAction(appState)
+    );
+    return appState;
   } catch (err) {
     throw new VError(err, `${logName} Main menu failure`);
   }
