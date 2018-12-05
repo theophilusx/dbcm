@@ -11,7 +11,7 @@ function setup(state) {
 
   try {
     let repoChoices = [];
-    for (let repo of state.repositories.keys()) {
+    for (let repo of state.repositories().keys()) {
       repoChoices.push(repo);
     }
     repoChoices.push(new inquirer.Separator());
@@ -57,11 +57,13 @@ function selectRepository(state) {
 
   return inquirer.prompt(questions)
     .then(answers => {
+      console.log(`Selected repository; ${answers.choice}`);
       state.setMenuChoice(answers.choice);
       if (answers.choice === "exitMenu") {
         return state;
-      } else if (answers.repository === "newRepository") {
-        let repoMap = state.repositories;
+      } else if (answers.choice === "newRepository") {
+        console.log("adding new repository");
+        let repoMap = state.repositories();
         repoMap.set(answers.newName, {
           url: answers.newURL,
           targets: new Map()
@@ -70,8 +72,12 @@ function selectRepository(state) {
         state.setCurrentRepository(answers.newName);
         return state.writeConfig(state);
       } else {
-        state.setCurrentRepository(answers.repository);
+        console.log(`Setting current repository to ${answers.choice}`);
+        state.setCurrentRepository(answers.choice);
       }
+      return state;
+    })
+    .then(() => {
       return state;
     })
     .catch(err => {

@@ -8,7 +8,7 @@ const fse = require("fse");
 
 function readApprovalsFile(state) {
   const logName = `${moduleName}.readApprovalsFile`;
-  const filePath = path.join(state.home, state.currentRepository, "approvals.json");
+  const filePath = path.join(state.home(), state.currentRepository(), "approvals.json");
 
   return fse.readJson(filePath)
     .then(data => {
@@ -27,14 +27,14 @@ function readApprovalsFile(state) {
 
 function writeApprovalsFile(state) {
   const logName = `${moduleName}.writeApprovalsFile`;
-  const filePath = path.join(state.home, state.currentRepository, "approvals.json");
+  const filePath = path.join(state.home(), state.currentRepository(), "approvals.json");
   let content = {
     name: "Change Approvals",
     version: "1.0.0",
     type: state.approvalType
   };
   let approvers = [];
-  let appMap = state.approvers;
+  let appMap = state.approvers();
   
   for (let email of appMap.keys()) {
     approvers.push({

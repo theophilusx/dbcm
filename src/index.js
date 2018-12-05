@@ -12,23 +12,25 @@ async function main() {
 
   try {
     appState = await state.createApplicationState();
-    if (!appState.username) {
+    if (!appState.username()) {
       appState = await configui.getConfig(appState);
     }
     do {
       appState = await repoui.selectRepository(appState);
-      if (appState.menuChoice === "exitMenu") {
+      console.log("main state");
+      appState.dump();
+      if (appState.menuChoice() === "exitMenu") {
         continue;
       }
-      console.log(`Current Repository: ${appState.currentRepository}`);
+      console.log(`Current Repository: ${appState.currentRepository()}`);
       appState = await targetui.selectTarget(appState);
-      if (appState.menuChoice === "exitMenu") {
+      if (appState.menuChoice() === "exitMenu") {
         continue;
       }
       do {
         appState = await mainui.mainMenu(appState);
-      } while (appState.menuChoice != "exitMenu");
-    } while (appState.menuChoice != "exitMenu");
+      } while (appState.menuChoice() != "exitMenu");
+    } while (appState.menuChoice() != "exitMenu");
     console.log("Exiting DBCM");
   } catch (err) {
     throw new VError(err, "Main loop error");

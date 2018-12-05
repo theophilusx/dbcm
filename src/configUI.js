@@ -16,7 +16,7 @@ function setup(state) {
         type: "input",
         name: "user.name",
         default: () => {
-          return state.username;
+          return state.username();
         },
         message: "Your name:"
       },
@@ -24,7 +24,7 @@ function setup(state) {
         type: "input",
         name: "user.email",
         default: () => {
-          return state.email || `${process.env.USER}@une.edu.au`;
+          return state.email() || `${process.env.USER}@une.edu.au`;
         },
         message: "Your email address:"
       },
@@ -32,7 +32,7 @@ function setup(state) {
         type: "input",
         name: "repositoryHome",
         default: () => {
-          return state.home || `${path.join(process.env.HOME, "dbcm")}`;
+          return state.home() || `${path.join(process.env.HOME, "dbcm")}`;
         },
         message: "Where to put repositories:"
       },

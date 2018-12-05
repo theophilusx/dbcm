@@ -11,7 +11,7 @@ function setup(state) {
 
   try {
     let choices = [];
-    let targetMap = state.currentRepositoryTargets;
+    let targetMap = state.currentRepositoryTargets();
     for (let target of targetMap.keys()) {
       choices.push(target);
     }
@@ -97,7 +97,7 @@ function selectTarget(state) {
       if (answers.choice === "exitMenu") {
         return state;
       } else if (answers.choice === "newTarget") {
-        let targetMap = state.currentRepositoryTargets;
+        let targetMap = state.currentRepositoryTargets();
         let params = {
           database: answers.database,
           host: answers.host,
@@ -115,7 +115,7 @@ function selectTarget(state) {
       return state;
     })
     .then(() => {
-      let params = state.currentTargetDef;
+      let params = state.currentTargetDef();
       return targets.isInitialised(params.database, params.user, params.password);
     })
     .then(initState => {

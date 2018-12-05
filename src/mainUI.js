@@ -202,7 +202,7 @@ async function setTypeAction(state) {
               developmentSetChoices,
               developmentSetActions(state)
             );
-          } while (!menu.doExit(state.menuChoice));
+          } while (!menu.doExit(state.menuChoice()));
           break;
         case "pendingSets":
           do {
@@ -212,7 +212,7 @@ async function setTypeAction(state) {
               pendingSetChoices,
               pendingSetActions(state)
             );
-          } while (!menu.doExit(state.menuChoice));
+          } while (!menu.doExit(state.menuChoice()));
           break;
         case "approvedSets":
           do {
@@ -222,7 +222,7 @@ async function setTypeAction(state) {
               finalisedSetChoices,
               finalisedSetActions(state)
             );
-          } while (!menu.doExit(state.menuChoice));
+          } while (!menu.doExit(state.menuChoice()));
           break;
         default:
           console.log(`Unrecognised set type choice: ${answer.choice}`);
@@ -253,7 +253,7 @@ async function mainAction(state) {
               setTypeChoices,
               setTypeAction(state)
             );
-          } while (!menu.doExit(state.menuChoice));
+          } while (!menu.doExit(state.menuChoice()));
           break;
         case "manageTargets":
           do {
@@ -263,7 +263,7 @@ async function mainAction(state) {
               dbTargetChoices,
               targetAction
             );
-          } while (!menu.doExit(state.menuChoice));
+          } while (!menu.doExit(state.menuChoice()));
           break;
         default:
           console.log(`Unrecognised choice: ${answer.choice}`);

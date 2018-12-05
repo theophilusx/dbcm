@@ -158,25 +158,25 @@ async function createApplicationState() {
         return state.set("currentRepository", repoName);
       },
       currentRepositoryDef: () => {
-        return state.get("repositories").get(state.get("currentRepository"));
+        return state.get("repositories").get(state.currentRepository());
       },
       currentRepositoryUrl: () => {
-        if (state.currentRepository) {
-          return state.get("repositories").get(state.currentRepository).url;
+        if (state.currentRepository()) {
+          return state.get("repositories").get(state.currentRepository()).url;
         } else {
           throw new VError(`${logName} current repository not defined`);
         }
       },        
       currentRepositoryTargets: () => {
-        if (state.currentRepository) {
-          return state.get("repositories").get(state.currentRepository).targets;
+        if (state.currentRepository()) {
+          return state.get("repositories").get(state.currentRepository()).targets;
         } else {
           throw new VError(`${logName} current repository not defined`);
         }
       },
       setCurrentRepositoryTargets: targetMap => {
-        if (state.currentRepository) {
-          state.get("repositories").get(state.currentRepository).targets = targetMap; 
+        if (state.currentRepository()) {
+          state.get("repositories").get(state.currentRepository()).targets = targetMap; 
         } else {
           throw new VError(`${logName} Current repository not set`);
         }
@@ -188,8 +188,8 @@ async function createApplicationState() {
         return state.set("currentTarget", targetName);
       },
       currentTargetDef: () => {
-        if (state.currentRepository && state.currentTarget) {
-          return state.get("repositories").get(state.currentRepository).targets.get(state.currentTarget);
+        if (state.currentRepository() && state.currentTarget()) {
+          return state.get("repositories").get(state.currentRepository()).targets.get(state.currentTarget());
         } else {
           throw new VError(`${logName} Both currentRepository and currentTarget need to be defined`);
         }

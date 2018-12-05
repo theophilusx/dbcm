@@ -252,10 +252,10 @@ async function setupRepository(state) {
 
   try {
     console.log("Setup repo");
-    let repositories = state.repositories;
-    let repoName = state.currentRepository;
+    let repositories = state.repositories();
+    let repoName = state.currentRepository();
     let repoUrl = repositories.get(repoName).url;
-    let repoDest = path.join(state.home, repoName);
+    let repoDest = path.join(state.home(), repoName);
     let repo = await getRepository(repoUrl, repoDest);
     let initialised = await files.isInitialised(repoDest);
     if (!initialised) {
@@ -279,7 +279,7 @@ async function setupRepository(state) {
     state = await approvals.readApprovalsFile(state);
     return state;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to setup ${state.currentRepository}`);
+    throw new VError(err, `${logName} Failed to setup ${state.currentRepository()}`);
   }
 }
 

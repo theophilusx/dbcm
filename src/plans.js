@@ -56,7 +56,7 @@ function readPlanFile(planFile) {
 
 function readApprovedPlans(state) {
   const logName = `${moduleName}.readApprovedPlans`;
-  const planFile = path.join(state.home, state.currentRepository, "approved-plans.json");
+  const planFile = path.join(state.home(), state.currentRepository(), "approved-plans.json");
 
   return readPlanFile(planFile)
     .catch(err => {
@@ -66,7 +66,7 @@ function readApprovedPlans(state) {
 
 function readPendingPlans(state) {
   const logName = `${moduleName}.readPendingPlans`;
-  const planFile = path.join(state.home, state.currentRepository, "pending-plans.json");
+  const planFile = path.join(state.home(), state.currentRepository(), "pending-plans.json");
   
   return readPlanFile(planFile)
     .catch(err => {
@@ -76,7 +76,7 @@ function readPendingPlans(state) {
 
 function readDevelopmentPlans(state) {
   const logName = `${moduleName}.readPendingPlans`;
-  const planFile = path.join(state.home, state.currentRepository, "development-plans.json");
+  const planFile = path.join(state.home(), state.currentRepository(), "development-plans.json");
   
   return readPlanFile(planFile)
     .catch(err => {
@@ -111,20 +111,20 @@ function readPlanFiles(state) {
 function writePlanFiles(state) {
   const logName = `${moduleName}.writePlanFiles`;
 
-  let approvedPlans = state.approvedPlans;
+  let approvedPlans = state.approvedPlans();
   let planObj = planMapToObject(approvedPlans, "Approved Plans");
-  let planFile = path.join(state.home, state.currentRepository, "approved-plans.json");
+  let planFile = path.join(state.home(), state.currentRepository(), "approved-plans.json");
   return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8")
     .then(() => {
-      let pendingPlans = state.pendingPlans;
+      let pendingPlans = state.pendingPlans();
       let planObj = planMapToObject(pendingPlans, "Pending Plans");
-      let planFile = path.join(state.home, state.currentRepository, "pending-plans.json");
+      let planFile = path.join(state.home(), state.currentRepository(), "pending-plans.json");
       return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
     })
     .then(() => {
-      let developmentPlans = state.developmentPlans;
+      let developmentPlans = state.developmentPlans();
       let planObj = planMapToObject(developmentPlans, "Development Plans");
-      let planFile = path.join(state.home, state.currentRepository, "development-plans.json");
+      let planFile = path.join(state.home(), state.currentRepository(), "development-plans.json");
       return fse.writeFile(planFile, JSON.stringify(planObj, null, " "), "utf-8");
     })
     .catch(err => {
@@ -139,8 +139,8 @@ function createChangeRecord(state, name, desc) {
     let newUUID = short().new();
     let plan = {
       createdDate: moment().format(fmt),
-      author: state.username,
-      authorEmail: state.email,
+      author: state.username(),
+      authorEmail: state.email(),
       approved: false,
       approvals: [],
       name: name,
@@ -179,7 +179,7 @@ function createChangePlan(state) {
             return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${newPlan.name}`);
           })
           .then(() => {
-            let planMap = state.developmentPlans;
+            let planMap = state.developmentPlans();
             planMap.set(newPlan.uuid, newPlan);
             state.setDevelopmentPlans(planMap);
             return writePlanFiles(state);
