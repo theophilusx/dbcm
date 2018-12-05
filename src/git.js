@@ -247,15 +247,15 @@ async function addAndCommit(repo, branch, files, commitMsg) {
  * uncommitted changes, display them. Do a refresh from master into
  * local master by performing a pull
  */
-async function setupRepository(appState) {
+async function setupRepository(state) {
   const logName = `${moduleName}.setupRepository`;
 
   try {
     console.log("Setup repo");
-    let repositories = appState.get("repositories");
-    let repoName = appState.get("currentRepository");
+    let repositories = state.repositories;
+    let repoName = state.currentRepository;
     let repoUrl = repositories.get(repoName).url;
-    let repoDest = path.join(appState.get("home"), repoName);
+    let repoDest = path.join(state.home, repoName);
     let repo = await getRepository(repoUrl, repoDest);
     let initialised = await files.isInitialised(repoDest);
     if (!initialised) {
@@ -263,7 +263,7 @@ async function setupRepository(appState) {
       let branchRef = await createBranch(repo, "setup");
       await repo.checkoutBranch(branchRef);
       await files.initialiseRepo(repoDest);
-      appState = await repoui.selectApprovers(appState);
+      state = await repoui.selectApprovers(state);
       let fileList = await repo.getStatus();
       await addAndCommit(repo, "setup", fileList, "DBCM Init");
       let mergeSig = Git.Signature.now(config.user.name, config.user.email);
@@ -274,11 +274,12 @@ async function setupRepository(appState) {
     } else {
       await pullMaster(repo);
     }
-    appState = await plans.initPlans(appState);
-    appState = await approvals.readApprovalsFile(appState);
-    return [appState, repo];
+    state.set("repoObject", repo);
+    state = await plans.initPlans(state);
+    state = await approvals.readApprovalsFile(state);
+    return state;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to setup ${appState.get("currentRepository")}`);
+    throw new VError(err, `${logName} Failed to setup ${state.currentRepository}`);
   }
 }
 
