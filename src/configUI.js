@@ -5,10 +5,9 @@ const moduleName = "configUI";
 const VError = require("verror");
 const inquirer = require("inquirer");
 const path = require("path");
-const state = require("./state");
 const utils = require("./utils");
 
-function setup(appState) {
+function setup(state) {
   const logName = `${moduleName}.setup`;
   
   try {
@@ -17,7 +16,7 @@ function setup(appState) {
         type: "input",
         name: "user.name",
         default: () => {
-          return appState.get("user").name;
+          return state.username;
         },
         message: "Your name:"
       },
@@ -25,7 +24,7 @@ function setup(appState) {
         type: "input",
         name: "user.email",
         default: () => {
-          return appState.get("user").email || `${process.env.USER}@une.edu.au`;
+          return state.email || `${process.env.USER}@une.edu.au`;
         },
         message: "Your email address:"
       },
@@ -33,7 +32,7 @@ function setup(appState) {
         type: "input",
         name: "repositoryHome",
         default: () => {
-          return appState.get("home") || `${path.join(process.env.HOME, "dbcm")}`;
+          return state.home || `${path.join(process.env.HOME, "dbcm")}`;
         },
         message: "Where to put repositories:"
       },
@@ -51,18 +50,18 @@ function setup(appState) {
   }
 }
 
-function getConfig(appState) {
+function getConfig(state) {
   const logName = `${moduleName}.getConfig`;
-  const questions = setup(appState);
+  const questions = setup(state);
   return inquirer.prompt(questions)
     .then(answers => {
-      appState.set("user", answers.user);
-      appState.set("home", answers.repositoryHome);
-      appState.set("psqlPath", answers.psqlPath);
-      return state.writeConfig(appState);
+      state.set("user", answers.user);
+      state.set("home", answers.repositoryHome);
+      state.set("psqlPath", answers.psqlPath);
+      return state.writeConfigFile();
     })
     .then(() => {
-      return appState;
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to get config settings`);
