@@ -127,15 +127,12 @@ function isInitialised(rootPath) {
 
   return fse.access(path.join(rootPath, "approved-plans.json"), fse.constants.R_OK | fse.constants.W_OK)
     .then(() => {
-      console.log("Repository is initialised for DBCM");
       return true;
     })
     .catch(err => {
       if (err.code === "ENOENT") {
-        console.log("Repository is not initialized");
         return false;
       }
-      console.dir(err);
       throw new VError(err, `${logName} Failed to test repo init status`);
     });
 }
@@ -160,8 +157,8 @@ function makeChangeFile(rootPath, changeRecord) {
   const changeFile = path.join(rootPath, `${changeRecord.change}`);
   const content = `
 -- Name:   ${changeRecord.name}
--- Author: ${changeRecord.author} <${changeRecord.email}>
--- Date:   ${changeRecord.date}
+-- Author: ${changeRecord.author} <${changeRecord.authorEmail}>
+-- Date:   ${changeRecord.createdDate}
 -- Type:   Changes
 
 \\echo Executing ${changeRecord.change}
@@ -186,8 +183,8 @@ function makeVerifyFile(rootPath, changeRecord) {
   const verifyFile = path.join(rootPath, `${changeRecord.verify}`);
   const content = `
 -- Name:   ${changeRecord.name}
--- Author: ${changeRecord.author} <${changeRecord.email}>
--- Date:   ${changeRecord.date}
+-- Author: ${changeRecord.author} <${changeRecord.authorEmail}>
+-- Date:   ${changeRecord.createdDate}
 -- Type:   Verify
 
 \\echo Executing ${changeRecord.verify}
@@ -208,8 +205,8 @@ function makeRollbackFile(rootPath, changeRecord) {
   const rollbackFile = path.join(rootPath, `${changeRecord.rollback}`);
   const content = `
 -- Name:   ${changeRecord.name}
--- Author: ${changeRecord.author} <${changeRecord.email}>
--- Date:   ${changeRecord.date}
+-- Author: ${changeRecord.author} <${changeRecord.authorEmail}>
+-- Date:   ${changeRecord.createdDate}
 -- Type:   Rollback
 
 \\echo Executing ${changeRecord.rollback}
