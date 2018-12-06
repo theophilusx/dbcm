@@ -16,7 +16,7 @@ function readApprovalsFile(state) {
       for (let ap of data.approvers) {
         approverMap.set(ap.email, ap.name);
       }
-      state.setApproverType(data.type); 
+      state.setApprovalType(data.type); 
       state.setApprovers(approverMap);
       return state;
     })
@@ -31,11 +31,10 @@ function writeApprovalsFile(state) {
   let content = {
     name: "Change Approvals",
     version: "1.0.0",
-    type: state.approvalType
+    type: state.approvalType()
   };
   let approvers = [];
   let appMap = state.approvers();
-  
   for (let email of appMap.keys()) {
     approvers.push({
       name: appMap.get(email),
