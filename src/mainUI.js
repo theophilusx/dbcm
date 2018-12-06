@@ -6,6 +6,7 @@ const menu = require("./textMenus");
 const planui = require("./planUI");
 const path = require("path");
 const edit = require("./edit");
+const targetui = require("./targetUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -168,8 +169,9 @@ function targetAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listAppliedchanges":
-          console.log("list applied changes");
+        case "listAppliedChanges":
+          console.log("Listing applied changes");
+          state = await targetui.listAppliedChanges(state);
           break;
         case "listUnappliedChanges":
           console.log("List unapplied changes");
@@ -287,7 +289,7 @@ function mainAction(state) {
               "Database Target Menu",
               "Select Target Action",
               dbTargetChoices,
-              targetAction
+              targetAction(state)
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");

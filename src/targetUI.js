@@ -5,6 +5,7 @@ const moduleName = "targetUI";
 const VError = require("verror");
 const inquirer = require("inquirer");
 const targets = require("./targets");
+const queries = require("./database");
 
 function setup(state) {
   const logName = `${moduleName}.setup`;
@@ -144,7 +145,25 @@ function selectTarget(state) {
     });
 }
 
+async function listAppliedChanges(state) {
+  const logName = `${moduleName}.listAppliedChanges`;
+
+  try {
+    let changes = await queries.getAppliedChanges(state);
+    if (changes.length) {
+      for (let c of changes) {
+        console.log(`${c.set_name} ${c.applied_dt} ${c.status}`);
+      }
+    } else {
+      console.log("No applied changes");
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to get applied changes`);
+  }
+}
 module.exports = {
-  selectTarget  
+  selectTarget,
+  listAppliedChanges
 };
 

@@ -5,13 +5,15 @@ const moduleName = "db";
 const VError = require("verror");
 const {Client} = require("pg");
 
-function getClient(database, user, password) {
+function getClient(database, host, port, user, password) {
   const logName = `${moduleName}.getAdminClient`;
   var client;
 
   try {
     client = new Client({
       database: database,
+      host: host,
+      port: port,
       user: user,
       password: password,
       application_name: "dbcm"
