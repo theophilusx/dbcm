@@ -81,17 +81,12 @@ async function createApplicationState() {
   const state = new Map();
 
   try {
-    console.log("read config file");
     let config = await readConfig();
-    console.log("set basic appState values");
     state.set("user", config.user);
     state.set("home", config.repositoryHome);
-    console.log("Set repository data");
     let repoMap = new Map();
     if (config.repositories.length) {
       for (let repo of config.repositories) {
-        console.log("Processing repo");
-        console.dir(repo);
         let targetMap = new Map();
         for (let t of repo.targets) {
           let targetName = t.targetName;
@@ -111,7 +106,6 @@ async function createApplicationState() {
       }
     }
     state.set("repositories", repoMap);
-    console.log("Set some defaults");
     state.set("currentRepository", undefined);
     state.set("currentTarget", undefined);
     state.set("psqlPath", config.psqlPath);
@@ -122,7 +116,6 @@ async function createApplicationState() {
     state.set("approvedPlans", new Map());
     state.set("menuChoice", "unknown");
     state.set("repoObject", undefined);
-    console.log("State configured");
     return {
       get: key => {
         return state.get(key);

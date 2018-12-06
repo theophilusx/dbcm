@@ -50,7 +50,6 @@ function getRepository(repoUrl, dst) {
     .catch(err => {
       if (err.errno === -4) {
         // looks like repo already there - try opening and pull
-        console.log(`Repository ${dst} already exists`);
         return Git.Repository.open(dst)
           .catch(err => {
             throw new VError(err, `${logName} Failed to open repo ${dst}`);
@@ -77,11 +76,8 @@ function pullMaster(repo) {
     .then(() => {
       repo.mergeBranches("master", "origin/master");
     })
-    .then(() => {
-      console.log("Updated local master with fresh pull from remote");
-    })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to pull master`);
+      throw new VError(err, `${logName} Failed to pull from master`);
     });
 }
 
@@ -190,10 +186,8 @@ function deleteBranch(repo, branchName) {
     })
     .then(code => {
       if (code === 0) {
-        console.log("Branch deleted");
         return true;
       } else {
-        console.log(`Failed to delete branch: ${code}`);
         return false;
       }
     })
@@ -249,7 +243,6 @@ async function setupRepository(state) {
   const logName = `${moduleName}.setupRepository`;
 
   try {
-    console.log("Setup repo");
     let repositories = state.repositories();
     let repoName = state.currentRepository();
     let repoUrl = repositories.get(repoName).url;
@@ -257,7 +250,6 @@ async function setupRepository(state) {
     let repo = await getRepository(repoUrl, repoDest);
     let initialised = await files.isInitialised(repoDest);
     if (!initialised) {
-      console.log("Initialise repo");
       let branchRef = await createBranch(repo, "setup");
       await repo.checkoutBranch(branchRef);
       await files.initialiseRepo(repoDest);
