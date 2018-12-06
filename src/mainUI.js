@@ -261,7 +261,7 @@ function mainAction(state) {
               setTypeAction(state)
             );
           } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChange("");
+          state.setMenuChoice("");
           break;
         case "manageTargets":
           do {
@@ -273,7 +273,7 @@ function mainAction(state) {
               targetAction
             );
           } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChange("");
+          state.setMenuChoice("");
           break;
         default:
           console.log(`${logName} Unrecognised choice: ${answer.choice}`);
