@@ -6,6 +6,9 @@ const targetui = require("./targetUI");
 const configui = require("./configUI");
 const state = require("./state");
 const mainui = require("./mainUI");
+const git = require("./git");
+const plans = require("./plans");
+const approvals = require("./approvals");
 
 async function main() {
   let appState;
@@ -20,6 +23,9 @@ async function main() {
       if (appState.menuChoice() === "exitMenu") {
         continue;
       }
+      appState = await git.setupRepository(appState);
+      appState = await plans.readPlanFiles(appState);
+      appState = await approvals.readApprovalsFile(appState);
       appState = await targetui.selectTarget(appState);
       if (appState.menuChoice() === "exitMenu") {
         continue;

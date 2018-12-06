@@ -8,8 +8,6 @@ const path = require("path");
 const Git = require("nodegit");
 const files = require("./files");
 const repoui = require("./repoUI");
-const plans = require("./plans");
-const approvals = require("./approvals");
 
 const cloneOptions = {
   fetchOpts : {
@@ -275,8 +273,6 @@ async function setupRepository(state) {
       await pullMaster(repo);
     }
     state.set("repoObject", repo);
-    state = await plans.initPlans(state);
-    state = await approvals.readApprovalsFile(state);
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to setup ${state.currentRepository()}`);
