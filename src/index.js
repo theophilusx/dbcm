@@ -30,9 +30,7 @@ async function main() {
       if (appState.menuChoice() === "exitMenu") {
         continue;
       }
-      do {
-        appState = await mainui.mainMenu(appState);
-      } while (appState.menuChoice() != "exitMenu");
+      appState = await mainui.mainMenu(appState);
     } while (appState.menuChoice() != "exitMenu");
     console.log("Exiting DBCM");
   } catch (err) {

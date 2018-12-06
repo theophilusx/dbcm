@@ -204,6 +204,7 @@ function setTypeAction(state) {
               developmentSetActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChoice("");
           break;
         case "pendingSets":
           do {
@@ -215,6 +216,7 @@ function setTypeAction(state) {
               pendingSetActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChoice("");
           break;
         case "approvedSets":
           do {
@@ -226,6 +228,7 @@ function setTypeAction(state) {
               finalisedSetActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChoice("");
           break;
         default:
           console.log(`${logName} Unrecognised set type choice: ${answer.choice}`);
@@ -258,6 +261,7 @@ function mainAction(state) {
               setTypeAction(state)
             );
           } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChange("");
           break;
         case "manageTargets":
           do {
@@ -269,6 +273,7 @@ function mainAction(state) {
               targetAction
             );
           } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChange("");
           break;
         default:
           console.log(`${logName} Unrecognised choice: ${answer.choice}`);
@@ -285,13 +290,17 @@ async function mainMenu(appState) {
   const logName = `${moduleName}.mainMenu`;
 
   try {
-    appState = await menu.displayListMenu(
-      appState,
-      "Main Menu",
-      "Select Action",
-      mainChoices,
-      mainAction(appState)
-    );
+    do {
+      appState = await menu.displayListMenu(
+        appState,
+        "Main Menu",
+        "Select Action",
+        mainChoices,
+        mainAction(appState)
+      );
+      
+    } while (!menu.doExit(appState.menuChoice()));
+    appState.setMenuChoice("");
     return appState;
   } catch (err) {
     throw new VError(err, `${logName} Menu process failure`);
