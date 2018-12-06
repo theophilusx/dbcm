@@ -96,22 +96,25 @@ function buildPlanListUI(pMap) {
 }
 
 async function listPlans(state, planType) {
-  const logName = `${moduleName}.listPlanSummary`;
+  const logName = `${moduleName}.listPlans`;
 
   try {
     let planMap = state.get(planType);
+    console.dir(planMap);
     let planChoices = buildPlanListUI(planMap);
-    let choice;
     do {
-      choice = await menu.displayListMenu(
+      state = await menu.displayListMenu(
+        state,
         `Plan List - ${planType}`,
         "Selet Plan:",
         planChoices
       );
-      if (choice != "exitMenu") {
-        displayPlanRecord(planMap.get(choice));
+      if (!menu.doExit(state.menuChoice())) {
+        displayPlanRecord(planMap.get(state.menuChoice()));
       }
-    } while (choice != "exitMenu");
+    } while (!menu.doExit(state.menuChoice()));
+    state.setMenuChoice("");
+    return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to display list menu`);
   }

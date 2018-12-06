@@ -68,7 +68,7 @@ function developmentSetActions(state) {
           console.log("commit set for approval");
           break;
         case "listDevSets":
-          console.log("list dev sets");
+          state = await planui.listPlans(state, "developmentPlans");
           break;
         default:
           console.log(`${logName} Unrecognised choice ${answer.choice}`);

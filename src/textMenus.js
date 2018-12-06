@@ -51,7 +51,7 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
     const logName = `${moduleName}.defaultAction`;
 
     try {
-      state.setMmenuChoice(answer.choice);
+      state.setMenuChoice(answer.choice);
       return state;
     } catch (err) {
       throw new VError(err, `${logName} Error in default menu action`);
