@@ -105,8 +105,8 @@ async function listPlans(state, planType) {
     do {
       state = await menu.displayListMenu(
         state,
-        `Plan List - ${planType}`,
-        "Selet Plan:",
+        `Change Sets - (${planType})`,
+        "Selet Set:",
         planChoices
       );
       if (!menu.doExit(state.menuChoice())) {
@@ -120,8 +120,32 @@ async function listPlans(state, planType) {
   }
 }
 
+async function selectPlan(state, planType) {
+  const logName = `${moduleName}.selectPlan`;
+
+  try {
+    let planMap = state.get(planType);
+    let planChoices = buildPlanListUI(planMap);
+    state = await menu.displayListMenu(
+      state,
+      `Change Set - (${planType})`,
+      "Select Set:",
+      planChoices
+    );
+    if (!menu.doExit(state.menuChoice())) {
+      let plan = planMap.get(state.menuChoice());
+      state.setCurrentPlan(planType, plan.name);      
+    }
+    state.setMenuChoice("");
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Error selecting change set`);
+  }
+}
+
 module.exports = {
   displayPlanRecord,
   createPlan,
-  listPlans
+  listPlans,
+  selectPlan
 };

@@ -6,38 +6,38 @@ const menu = require("./textMenus");
 const planui = require("./planUI");
 
 const mainChoices = menu.buildChoices([
-  ["Manage Change Sets", "manageSets"],
+  ["Manage Change Plans", "managePlans"],
   ["Manage DB Targets", "manageTargets"]
 ]);
 
-const setTypeChoices = menu.buildChoices([
-  ["Development Change Sets", "developmentSets"],
-  ["Pending Change Sets", "pendingSets"],
-  ["Approved Change Sets", "approvedSets"]
+const planTypeChoices = menu.buildChoices([
+  ["Development Change Plans", "developmentPlans"],
+  ["Pending Change Plans", "pendingPlans"],
+  ["Approved Change Plans", "approvedPlans"]
 ]);
 
-const developmentSetChoices = menu.buildChoices([
-  ["Create New Change Set", "newSet"],
-  ["Select Existing Development Change Set", "selectDevSet"],
-  ["Test Current Change Set On Target", "testDevSet"],
-  ["Commit Current Change Set for Approval", "commitSet"],
-  ["List Development Change Sets", "listDevSets"]
+const developmentPlanChoices = menu.buildChoices([
+  ["Create New Change Plan", "newPlan"],
+  ["Select Development Plan", "selectDevPlan"],
+  ["Test Current Change Plan", "testDevPlan"],
+  ["Commit Current Change Plan for Approval", "commitPlan"],
+  ["List Development Change Plans", "listDevPlans"]
 ]);
 
-const pendingSetChoices = menu.buildChoices([
-  ["List Pending Change Sets", "listPendingSets"],
-  ["Approve Change Set", "approvePendingSet"],
-  ["Reject Change Set", "rejectPendingSet"]
+const pendingPlanChoices = menu.buildChoices([
+  ["List Pending Change Plans", "listPendingPlans"],
+  ["Approve Change Plan", "approvePendingPlan"],
+  ["Reject Change Plan", "rejectPendingPlan"]
 ]);
 
-const finalisedSetChoices = menu.buildChoices([
-  ["List Finalised Change Sets", "listFinaliasedSets"],
-  ["Rweork Finalised Change Set", "reworkFinalisedSet"]
+const finalisedPlanChoices = menu.buildChoices([
+  ["List Approved Change Plans", "listFinaliasedPlans"],
+  ["Rweork Approved Change Plan", "reworkFinalisedPlan"]
 ]);
 
 const dbTargetChoices = menu.buildChoices([
-  ["List Applied Change Sets", "listAppliedChanges"],
-  ["List Unapplied Change Sets", "listUnappliedChanges"],
+  ["List Applied Change Plans", "listAppliedChanges"],
+  ["List Unapplied Change Plans", "listUnappliedChanges"],
   ["Apply Next Unapplied Change", "applyNextChange"],
   ["Apply All Unapplied Changes", "applyAllChanges"],
   ["Rollback Applied Change", "rollbackChange"],
@@ -45,8 +45,8 @@ const dbTargetChoices = menu.buildChoices([
   ["Select New Database Target", "selectDbTarget"] 
 ]);
 
-function developmentSetActions(state) {
-  const logName = "developmentSetActions";
+function developmentPlanActions(state) {
+  const logName = "developmentPlanActions";
 
   return async answer => {
     try {
@@ -55,19 +55,19 @@ function developmentSetActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "newSet":
+        case "newPlan":
           state = await planui.createPlan(state);
           break;
-        case "selectDevSet":
-          console.log("select new dev set action");
+        case "selectDevPlan":
+          state = await planui.selectPlan(state, "developmentPlans");
           break;
-        case "testDevSet":
+        case "testDevPlan":
           console.log("test a dev set");
           break;
-        case "commitSet":
+        case "commitPlan":
           console.log("commit set for approval");
           break;
-        case "listDevSets":
+        case "listDevPlans":
           state = await planui.listPlans(state, "developmentPlans");
           break;
         default:
@@ -82,8 +82,8 @@ function developmentSetActions(state) {
   };
 }
 
-function pendingSetActions(state) {
-  const logName = "pendingSetActions";
+function pendingPlanActions(state) {
+  const logName = "pendingPlanActions";
 
   return async answer => {
     try {
@@ -92,13 +92,13 @@ function pendingSetActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listPendingSets":
+        case "listPendingPlans":
           console.log("list pending set action");
           break;
-        case "approvePendingSet":
+        case "approvePendingPlan":
           console.log("approve pending set action");
           break;
-        case "rejectPendingSet":
+        case "rejectPendingPlan":
           console.log("reject pending set action");
           break;
         default:
@@ -113,8 +113,8 @@ function pendingSetActions(state) {
   };
 }
 
-function finalisedSetActions(state) {
-  const logName = "finalisedSetActions";
+function finalisedPlanActions(state) {
+  const logName = "finalisedPlanActions";
 
   return async answer => {
     try {
@@ -123,10 +123,10 @@ function finalisedSetActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listFinalisedSets":
+        case "listFinalisedPlans":
           console.log("list finalised set action");
           break;
-        case "reworkFinalisedSet":
+        case "reworkFinalisedPlan":
           console.log("rework finalised set action");
           break;
         default:
@@ -184,7 +184,7 @@ function targetAction(state) {
   };
 }
 
-function setTypeAction(state) {
+function planTypeAction(state) {
   const logName = "setTypeAction";
 
   return async answer => {
@@ -194,38 +194,38 @@ function setTypeAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "developmentSets":
+        case "developmentPlans":
           do {
             state = await menu.displayListMenu(
               state,
-              "Development Set Menu",
-              "Select Set Action",
-              developmentSetChoices,
-              developmentSetActions(state)
+              "Development Plan Menu",
+              "Select Plan Action",
+              developmentPlanChoices,
+              developmentPlanActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");
           break;
-        case "pendingSets":
+        case "pendingPlans":
           do {
             state = await menu.displayListMenu(
               state,
-              "Pending Set Menu",
-              "Select Set Action",
-              pendingSetChoices,
-              pendingSetActions(state)
+              "Pending Plan Menu",
+              "Select Plan Action",
+              pendingPlanChoices,
+              pendingPlanActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");
           break;
-        case "approvedSets":
+        case "approvedPlans":
           do {
             state = await menu.displayListMenu(
               state,
-              "Approved Set Menu",
-              "Selet Set Action",
-              finalisedSetChoices,
-              finalisedSetActions(state)
+              "Approved Plan Menu",
+              "Selet Plan Action",
+              finalisedPlanChoices,
+              finalisedPlanActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");
@@ -251,14 +251,14 @@ function mainAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "manageSets":
+        case "managePlans":
           do {
             state = await menu.displayListMenu(
               state,
-              "Set Menu",
-              "Select Change Set Group",
-              setTypeChoices,
-              setTypeAction(state)
+              "Plan Menu",
+              "Select Change Plan Group",
+              planTypeChoices,
+              planTypeAction(state)
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");

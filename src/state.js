@@ -224,6 +224,12 @@ async function createApplicationState() {
       setApprovedPlans: planMap => {
         return state.set("approvedPlans", planMap);
       },
+      currentPlan: () => {
+        return state.get("currentSet");
+      },
+      setCurrentPlan: (type, id) => {
+        return state.set("currentSet", `${type}:${id}`);
+      },
       menuChoice: () => {
         return state.get("menuChoice");
       },

@@ -66,7 +66,9 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
     message: prompt
   }];
 
-  console.log(`\nRepository: ${chalk.bold(state.currentRepository())} Target: ${chalk.bold(state.currentTarget())}`);
+  console.log(`\nRepository: ${chalk.bold(state.currentRepository())} Target: ${chalk.bold(state.currentTarget())}`
+              + ` Change Set: ${chalk.bold(state.currentPlan())}`);
+  
   return displayMenu(title, question, fn)
     .catch(err => {
       throw new VError(err, `${logName} Failed to display menu ${title}`);
