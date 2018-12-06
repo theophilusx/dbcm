@@ -60,7 +60,7 @@ function createPlan(state) {
             let planMap = state.developmentPlans();
             planMap.set(planRecord.uuid, planRecord);
             state.setDevelopmentPlans(planMap);
-            state.setCurrentPlan("developmentPlans", planRecord.name);
+            state.setCurrentPlan("developmentPlans", planRecord.name, planRecord.uuid);
             return plans.writePlanFiles(state);
           })
           .catch(err => {
@@ -135,7 +135,7 @@ async function selectPlan(state, planType) {
     );
     if (!menu.doExit(state.menuChoice())) {
       let plan = planMap.get(state.menuChoice());
-      state.setCurrentPlan(planType, plan.name);      
+      state.setCurrentPlan(planType, plan.name, plan.uuid);      
     }
     state.setMenuChoice("");
     return state;

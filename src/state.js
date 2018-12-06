@@ -225,10 +225,10 @@ async function createApplicationState() {
         return state.set("approvedPlans", planMap);
       },
       currentPlan: () => {
-        return state.get("currentSet");
+        return state.get("currentPlan") ? state.get("currentPlan") : "?:?:?";
       },
-      setCurrentPlan: (type, id) => {
-        return state.set("currentSet", `${type}:${id}`);
+      setCurrentPlan: (type, name, id) => {
+        return state.set("currentPlan", `${type}:${name}:${id}`);
       },
       menuChoice: () => {
         return state.get("menuChoice");

@@ -65,9 +65,9 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
     choices: choices,
     message: prompt
   }];
-
+  let [pType, pName, pId] = state.currentPlan().split(":");
   console.log(`\nRepository: ${chalk.bold(state.currentRepository())} Target: ${chalk.bold(state.currentTarget())}`
-              + ` Change Set: ${chalk.bold(state.currentPlan())}`);
+              + ` Plan: ${chalk.bold(pName)} ${pType} (${pId})`);
   
   return displayMenu(title, question, fn)
     .catch(err => {

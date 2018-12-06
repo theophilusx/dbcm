@@ -4,6 +4,8 @@ const VError = require("verror");
 const moduleName = "mainUI";
 const menu = require("./textMenus");
 const planui = require("./planUI");
+const path = require("path");
+const edit = require("./edit");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -19,6 +21,7 @@ const planTypeChoices = menu.buildChoices([
 const developmentPlanChoices = menu.buildChoices([
   ["Create New Change Plan", "newPlan"],
   ["Select Development Plan", "selectDevPlan"],
+  ["Edit Current Plan", "editPlan"],
   ["Test Current Change Plan", "testDevPlan"],
   ["Commit Current Change Plan for Approval", "commitPlan"],
   ["List Development Change Plans", "listDevPlans"]
@@ -61,6 +64,20 @@ function developmentPlanActions(state) {
         case "selectDevPlan":
           state = await planui.selectPlan(state, "developmentPlans");
           break;
+        case "editPlan":
+          if (state.currentPlan() === "?:?:?") {
+            console.log("You mus select a plan before it can be editied");
+          } else {
+            let pId = state.currentPlan().split(":")[2];
+            let plan = state.developmentPlans().get(pId);
+            let files = [
+              path.join(state.home(), state.currentRepository(), plan.change),
+              path.join(state.home(), state.currentRepository(), plan.verify),
+              path.join(state.home(), state.currentRepository(), plan.rollback)
+            ];
+            edit.editFiles(files);
+          }
+          return state;
         case "testDevPlan":
           console.log("test a dev set");
           break;
