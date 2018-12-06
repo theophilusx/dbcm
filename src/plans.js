@@ -145,9 +145,9 @@ function makePlanRecord(state, name, desc) {
       name: name,
       description: desc,
       uuid: newUUID,
-      change: path.join("changes", `${name.replace(" ", "-")}-${newUUID}.sql`),
-      verify: path.join("verify", `${name.replace(" ", "-")}-${newUUID}.sql`),
-      rollback: path.join("rollback", `${name.replace(" ", "-")}-${newUUID}.sql`)
+      change: path.join("changes", `${name.replace(/\s+/g, "-")}-${newUUID}.sql`),
+      verify: path.join("verify", `${name.replace(/\s+/g, "-")}-${newUUID}.sql`),
+      rollback: path.join("rollback", `${name.replace(/\s+/g, "-")}-${newUUID}.sql`)
     };
     return plan;
   } catch (err) {
@@ -158,7 +158,7 @@ function makePlanRecord(state, name, desc) {
 function createChangePlan(state, plan) {
   const logName = `${moduleName}.createChangePlan`;
   const repo = state.get("repoObject");
-  const newBranch = `${plan.name.replace(" ", "-")}-${plan.uuid}`;
+  const newBranch = `${plan.name.replace(/\s+/g, "-")}-${plan.uuid}`;
 
   return git.createBranch(repo, newBranch)
     .then(branchRef => {
