@@ -60,6 +60,7 @@ function createPlan(state) {
             let planMap = state.developmentPlans();
             planMap.set(planRecord.uuid, planRecord);
             state.setDevelopmentPlans(planMap);
+            state.setCurrentPlan("developmentPlans", planRecord.name);
             return plans.writePlanFiles(state);
           })
           .catch(err => {
