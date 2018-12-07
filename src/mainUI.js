@@ -78,9 +78,9 @@ function developmentPlanActions(state) {
             ];
             edit.editFiles(files);
           }
-          return state;
+          break;
         case "testDevPlan":
-          console.log("test a dev set");
+          state = await planui.applyTestPlan(state);
           break;
         case "commitPlan":
           console.log("commit set for approval");

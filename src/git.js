@@ -2,7 +2,6 @@
 
 const moduleName = "git";
 
-const config = require("rc")("dbcm");
 const VError = require("verror");
 const path = require("path");
 const Git = require("nodegit");
@@ -200,18 +199,18 @@ function deleteBranch(repo, branchName) {
  * @async
  *
  * Add (stage) and commit the list of changed objects (files) to
- * a specific branch in a repository
+ * the currently active branch
  *
- * @param {Object} repo - a Repository object.
- * @param {String} branch - the branch name.
+ * @param {Object} state - Application state object
  * @param {Array} files - a list of file status objects.
+ * @param {string} commitMsg - a commit message.
  * 
  */
-async function addAndCommit(repo, branch, files, commitMsg) {
+async function addAndCommit(state, files, commitMsg) {
   const logName = `${moduleName}.addAndCommit`;
 
   try {
-    await repo.checkoutBranch(branch);
+    let repo = state.get("repoObject");
     let index = await repo.refreshIndex();
     let promises = [];
     files.forEach(f => {
@@ -222,8 +221,8 @@ async function addAndCommit(repo, branch, files, commitMsg) {
     let oid = await index.writeTree();
     let head = await Git.Reference.nameToId(repo, "HEAD");
     let parent = await repo.getCommit(head);
-    let author = Git.Signature.now(config.user.name, config.user.email);
-    let committer = Git.Signature.now(config.user.name, config.user.email);
+    let author = Git.Signature.now(state.username(), state.email());
+    let committer = Git.Signature.now(state.username(), state.email());
     let commitOid = await repo.createCommit("HEAD", author, committer, commitMsg, oid, [parent]);
     return commitOid;
   } catch (err) {
@@ -253,10 +252,11 @@ async function setupRepository(state) {
       let branchRef = await createBranch(repo, "setup");
       await repo.checkoutBranch(branchRef);
       await files.initialiseRepo(repoDest);
+      // FIXME: move repoui.selectApprovers to better location
       state = await repoui.selectApprovers(state);
       let fileList = await repo.getStatus();
-      await addAndCommit(repo, "setup", fileList, "DBCM Init");
-      let mergeSig = Git.Signature.now(config.user.name, config.user.email);
+      await addAndCommit(state, fileList, "DBCM Init");
+      let mergeSig = Git.Signature.now(state.username(), state.email());
       await repo.mergeBranches("master", "setup", mergeSig);
       let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
       await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);

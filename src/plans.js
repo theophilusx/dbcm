@@ -171,7 +171,7 @@ function createChangePlan(state, plan) {
       return repo.getStatus();
     })
     .then(fileList => {
-      return git.addAndCommit(repo, newBranch, fileList, `Initial commit for ${plan.name}`);
+      return git.addAndCommit(state, fileList, `Initial commit for ${plan.name}`);
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to create new plan`);
