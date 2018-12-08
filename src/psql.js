@@ -13,14 +13,18 @@ function psqlExec(state, script) {
     try {
       let psql = state.psqlPath();
       let target = state.currentTargetDef();
+      let env = {
+        PGDATABASE: target.database,
+        PGHOST: target.host,
+        PGPORT: target.port,
+        PGUSER: target.user,
+        PGPASSWORD: target.password
+      };
       let args = [
-        `-U ${target.user}`,
-        `-h ${target.host}`,
-        `-p ${target.port}`,
         `-f ${script}`,
         `${target.database}`
       ];
-      let child = execFile(psql, args, {shell: true}, (err, stdout, stderr) => {
+      let child = execFile(psql, args, {env: env, shell: true}, (err, stdout, stderr) => {
         if (err) {
           reject(err.message);
         }
