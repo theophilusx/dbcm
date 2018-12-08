@@ -247,6 +247,7 @@ async function setupRepository(state) {
     let repoUrl = repositories.get(repoName).url;
     let repoDest = path.join(state.home(), repoName);
     let repo = await getRepository(repoUrl, repoDest);
+    state.set("repoObject", repo);
     let initialised = await files.isInitialised(repoDest);
     if (!initialised) {
       let branchRef = await createBranch(repo, "setup");
@@ -264,7 +265,7 @@ async function setupRepository(state) {
     } else {
       await pullMaster(repo);
     }
-    state.set("repoObject", repo);
+
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to setup ${state.currentRepository()}`);

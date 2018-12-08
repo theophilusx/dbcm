@@ -41,7 +41,7 @@ async function writeConfig(appState) {
   let newConfig = {};
 
   try {
-    newConfig.version = appState.get("version");
+    newConfig.version = "1.0.0";
     newConfig.user = appState.get("user");
     newConfig.repositoryHome = appState.get("home");
     newConfig.psqlPath = appState.get("psqlPath");

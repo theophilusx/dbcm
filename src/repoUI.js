@@ -69,7 +69,7 @@ function selectRepository(state) {
         });
         state.setRepositories(repoMap);
         state.setCurrentRepository(answers.newName);
-        return state.writeConfig(state);
+        return state.writeConfigFile();
       } else {
         state.setCurrentRepository(answers.choice);
       }

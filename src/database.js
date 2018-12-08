@@ -12,7 +12,7 @@ async function getAppliedChanges(state) {
   
   try {
     let target = state.currentTargetDef();
-    let client = db.getClient(target.database, target.host, target.port, target.user, target.password);
+    let client = db.getClient(target);
     await client.connect();
     let rslt = await db.execSQL(client, sql);
     client.end();

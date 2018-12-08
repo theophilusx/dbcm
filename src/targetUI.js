@@ -6,6 +6,19 @@ const VError = require("verror");
 const inquirer = require("inquirer");
 const targets = require("./targets");
 const queries = require("./database");
+const chalk = require("chalk");
+
+function initWarning(state) {
+  console.log(`
+\t${chalk.red("Warning!")}\n
+Target database ${state.currentTarget()} needs to be initialised for DBCM
+Please either run the shell script in bin/dbcm-init.sh or execute the SQL
+script in sql/dbcm-init.sql in the target database.
+
+Note that if you use the SQL script, you also need to add the dbcm_user role
+to the user you will be applying database changes with
+`);
+}
 
 function setup(state) {
   const logName = `${moduleName}.setup`;
@@ -109,36 +122,21 @@ function selectTarget(state) {
         targetMap.set(answers.targetName, params);
         state.setCurrentRepositoryTargets(targetMap);
         state.setCurrentTarget(answers.targetName);
-        return state.writeConfigFile()
-          .then(() => {
-            let params = state.currentTargetDef();
-            return targets.isInitialised(params.database, params.user, params.password);
-          })
-          .then(initState => {
-            if (!initState) {
-              console.log(`Target database ${state.currentTarget} needs to be initialised for DBCM`);
-              console.log("Please either run the shell script in bin/dbcm-init.sh");
-              console.log("or execute the SQL script in sql/dbcm-init.sql in the target database");
-              console.log("Note that if you use the SQL script, you also need to add the dbcm_user role");
-              console.log("to the user you will be connecting with to apply database changes");
-            }
-            return state;
-          });
+        return state.writeConfigFile();
       } else {
         state.setCurrentTarget(answers.choice);
-        let params = state.currentTargetDef();
-        return targets.isInitialised(params.database, params.user, params.password)
-          .then(initState => {
-            if (!initState) {
-              console.log(`Target database ${state.currentTarget} needs to be initialised for DBCM`);
-              console.log("Please either run the shell script in bin/dbcm-init.sh");
-              console.log("or execute the SQL script in sql/dbcm-init.sql in the target database");
-              console.log("Note that if you use the SQL script, you also need to add the dbcm_user role");
-              console.log("to the user you will be connecting with to apply database changes");
-            }
-            return state;
-          });
+        return state;
       }
+    })
+    .then(() => {
+      let params = state.currentTargetDef();
+      return targets.isInitialised(params);
+    })
+    .then(initState => {
+      if (!initState) {
+        initWarning(state);
+      }
+      return state;
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to select target`);

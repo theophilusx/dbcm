@@ -5,10 +5,10 @@ const moduleName = "targets";
 const VError = require("verror");
 const db = require("./db");
 
-function isInitialised(target) {
+function isInitialised(dbParams) {
   const logName = `${moduleName}.isInitialised`;
   const sql = "SELECT count(*) from dbcm.change_sets";
-  let client = db.getClient(target.database, target.user, target.password);
+  let client = db.getClient(dbParams);
   let isInitialised = false;
   
   return client.connect()
@@ -28,7 +28,8 @@ function isInitialised(target) {
         client.end();
         return false;
       }
-      throw new VError(err, `${logName} Failed to check DB init status`);
+      throw new VError(err, `${logName} Failed to check DB init status `
+                       + `for ${dbParams.database}`);
     });
 }
 
