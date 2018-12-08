@@ -9,6 +9,15 @@ const menu = require("./textMenus");
 const psql = require("./psql");
 const gitui = require("./gitUI");
 const chalk = require("chalk");
+const git = require("./git");
+
+const commitWarning = `
+${chalk.red("Uncommitted changes prevent creation or selection of new plans")}
+
+Cannot create a new plan or switch to a different plan when uncommitted plan data
+exists. Either commit the changes or revert the changes before attempting to create
+a new plan or switch to an alternative plan
+`;
 
 function displayPlanRecord(record) {
   function approvedList(r) {
@@ -18,8 +27,7 @@ function displayPlanRecord(record) {
     }
     return data;
   }
-  
-  console.log(`
+  const msg = `
 Created Date:    ${record.createdDate}
 Author:          ${record.author} <${record.authorEmail}>
 Plan Name:       ${record.name} UUID: ${record.uuid}
@@ -27,7 +35,9 @@ Description:     ${record.description}
 Change File:     ${record.change}
 Verify File:     ${record.verify}
 Rollback File:   ${record.rollback}
-Approval Status: ${record.approved ? "Approved" : "Not Approved"}` + approvedList(record));
+Approval Status: ${record.approved ? "Approved" : "Not Approved"}`; 
+
+  console.log(msg + approvedList(record));
 }
 
 async function createPlan(state) {
@@ -36,7 +46,7 @@ async function createPlan(state) {
     {
       type: "input",
       name: "name",
-      message: "Set name:"
+      message: "Plan name:"
     },
     {
       type: "input",
@@ -63,13 +73,17 @@ async function createPlan(state) {
         state.setDevelopmentPlans(planMap);
         state.setCurrentPlan("developmentPlans", planRecord.name, planRecord.uuid);
         await plans.writePlanFiles(state);
+        let repo = state.get("repoObject");
+        let changedFiles = await repo.getStatus();
+        if (changedFiles.length) {
+          await git.addAndCommit(state, changedFiles, `Initial commit for plan: `
+                                 + `${planRecord.name}`);
+        }
       } else {
         console.log("Cancelled Plan");      
       }
     } else {
-      console.log(chalk.red("Uncommitted changes prevent plan creation"));
-      console.log("Connot create new plan when uncommitted changes exist");
-      console.log("Either commit or revert the changes before attempting to create a new plan");
+      console.log(commitWarning);
     }
     return state;
   } catch (err) {
@@ -81,11 +95,15 @@ function buildPlanListUI(pMap) {
   const logName = `${moduleName}.buildPlanListUI`;
   const choices = [];
 
+  function displayLine(r) {
+    return `${r.name} : ${r.author} : ${r.createdDate} : `
+      + `${r.approved ? "Approved" : "Unapproved"}`;
+  }
   try {
     for (let p of pMap.keys()) {
       let pData = pMap.get(p);
       choices.push([
-        `${pData.name} : ${pData.author} : ${pData.createdDate} : ${pData.approved ? "Approved" : "Unapproved"}`,
+        displayLine(pData),
         p
       ]);
     }
@@ -147,9 +165,7 @@ async function selectPlan(state, planType) {
           await repo.checkoutBranch("master");
         }
       } else {
-        console.log(chalk.red("Uncommitted changes prevent plan creation"));
-        console.log("Connot create new plan when uncommitted changes exist");
-        console.log("Either commit or revert the changes before attempting to create a new plan");
+        console.log(commitWarning);
       }
     }
     state.setMenuChoice("");
