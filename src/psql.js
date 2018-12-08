@@ -5,6 +5,7 @@ const moduleName = "psql";
 const VError = require("verror");
 const { execFile } = require("child_process");
 const path = require("path");
+const chalk = require("chalk");
 
 function psqlExec(state, script) {
   const logName = `${moduleName}.psqlExec`;
@@ -28,8 +29,7 @@ function psqlExec(state, script) {
         if (err) {
           reject(err.message);
         }
-        console.log(`${logName} STDERR: ${stderr}`);
-        resolve(stdout);
+        resolve([stdout, stderr]);
       });
     } catch (err) {
       reject(err.message);
@@ -61,8 +61,15 @@ async function applyCurrentPlan(state) {
     }
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
     console.log(`Applying change ${pName} (${pId})`);
-    let output = await psqlExec(state, changeFile);
-    console.log(`${logName} STDOUT: ${output}`);
+    let [output, errors] = await psqlExec(state, changeFile);
+    if (errors.length) {
+      console.log(chalk.red("Plan failed to apply successfully!"), `\n`);
+      console.log(errors);
+      return false;
+    } 
+    console.log(chalk.green("Plan applied successfully"));
+    console.log(output);
+    return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to apply change`);
   }
