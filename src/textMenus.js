@@ -4,7 +4,7 @@ const moduleName = "textMenus";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const chalk = require("chalk");
+const screen = require("./textScreen");
 
 function buildChoices(choiceData) {
   const logName = `${moduleName}.buildChoices`;
@@ -35,7 +35,7 @@ function buildChoices(choiceData) {
 function displayMenu(title, question, actionFN) {
   const logName = `${moduleName}.displayMenu`;
 
-  console.log(chalk.yellow(`\n\t${title}\n`));
+  screen.menuHeading(title);
   return inquirer.prompt(question)
     .then(actionFN)
     .catch(err => {
@@ -65,9 +65,8 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
     choices: choices,
     message: prompt
   }];
-  let [pType, pName, pId] = state.currentPlan().split(":");
-  console.log(`\nRepository: ${chalk.bold(state.currentRepository())} Target: ${chalk.bold(state.currentTarget())}`
-              + ` Plan: ${chalk.bold(pName)} ${pType} (${pId})`);
+
+  screen.status(state);
   
   return displayMenu(title, question, fn)
     .catch(err => {

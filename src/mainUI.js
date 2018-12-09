@@ -7,6 +7,7 @@ const planui = require("./planUI");
 const path = require("path");
 const edit = require("./edit");
 const targetui = require("./targetUI");
+const screen = require("./textScreen");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -40,7 +41,7 @@ const finalisedPlanChoices = menu.buildChoices([
 ]);
 
 const dbTargetChoices = menu.buildChoices([
-  ["List Applied Change Plans", "listAppliedChanges"],
+  ["List Target State", "listTargetState"],
   ["List Unapplied Change Plans", "listUnappliedChanges"],
   ["Apply Next Unapplied Change", "applyNextChange"],
   ["Apply All Unapplied Changes", "applyAllChanges"],
@@ -60,14 +61,17 @@ function developmentPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "newPlan":
+          screen.heading("Create New Plan");
           state = await planui.createPlan(state);
           break;
         case "selectDevPlan":
+          screen.heading("Select Development Plan");
           state = await planui.selectPlan(state, "developmentPlans");
           break;
         case "editPlan":
+          screen.heading("Edit Plan");
           if (state.currentPlan() === "?:?:?") {
-            console.log("You mus select a plan before it can be editied");
+            console.log("You must select a plan before it can be editied");
           } else {
             let pId = state.currentPlan().split(":")[2];
             let plan = state.developmentPlans().get(pId);
@@ -80,12 +84,14 @@ function developmentPlanActions(state) {
           }
           break;
         case "testDevPlan":
+          screen.heading("Apply Test Plan");
           state = await planui.applyTestPlan(state);
           break;
         case "commitPlan":
-          console.log("commit set for approval");
+          screen.heading("Submit Plan for Approval");
           break;
         case "listDevPlans":
+          screen.heading("Development Plans");
           state = await planui.listPlans(state, "developmentPlans");
           break;
         default:
@@ -169,9 +175,9 @@ function targetAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listAppliedChanges":
-          console.log("Listing applied changes");
-          state = await targetui.listAppliedChanges(state);
+        case "listTargetState":
+          console.log("Listing Current Target State");
+          state = await targetui.listTargetState(state);
           break;
         case "listUnappliedChanges":
           console.log("List unapplied changes");

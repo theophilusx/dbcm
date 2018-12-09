@@ -8,16 +8,18 @@ const plans = require("./plans");
 const menu = require("./textMenus");
 const psql = require("./psql");
 const gitui = require("./gitUI");
-const chalk = require("chalk");
 const git = require("./git");
+const screen = require("./textScreen");
 
-const commitWarning = `
-${chalk.red("Uncommitted changes prevent creation or selection of new plans")}
-
+function commitWarning() {
+  let title = "Uncommitted Changes";
+  let msg = `
 Cannot create a new plan or switch to a different plan when uncommitted plan data
 exists. Either commit the changes or revert the changes before attempting to create
 a new plan or switch to an alternative plan
 `;
+  screen.warningMsg(title, msg);
+}
 
 function displayPlanRecord(record) {
   function approvedList(r) {
@@ -66,7 +68,7 @@ async function createPlan(state) {
         message: "Create this change record:"
       }]);
       if (answers.createPlan) {
-        console.log("Creating new plan");
+        screen.heading("Create New Plan");
         await plans.createChangePlan(state, planRecord);
         let planMap = state.developmentPlans();
         planMap.set(planRecord.uuid, planRecord);
@@ -76,14 +78,14 @@ async function createPlan(state) {
         let repo = state.get("repoObject");
         let changedFiles = await repo.getStatus();
         if (changedFiles.length) {
-          await git.addAndCommit(state, changedFiles, `Initial commit for plan: `
+          await git.addAndCommit(state, changedFiles, "Initial commit for plan: "
                                  + `${planRecord.name}`);
         }
       } else {
         console.log("Cancelled Plan");      
       }
     } else {
-      console.log(commitWarning);
+      commitWarning();
     }
     return state;
   } catch (err) {
@@ -118,16 +120,16 @@ async function listPlans(state, planType) {
 
   try {
     let planMap = state.get(planType);
-    console.dir(planMap);
     let planChoices = buildPlanListUI(planMap);
     do {
       state = await menu.displayListMenu(
         state,
-        `Change Sets - (${planType})`,
-        "Selet Set:",
+        `Change Plans - (${planType})`,
+        "Select Plan:",
         planChoices
       );
       if (!menu.doExit(state.menuChoice())) {
+        screen.heading("Plan Record");
         displayPlanRecord(planMap.get(state.menuChoice()));
       }
     } while (!menu.doExit(state.menuChoice()));
@@ -148,8 +150,8 @@ async function selectPlan(state, planType) {
     let planChoices = buildPlanListUI(planMap);
     state = await menu.displayListMenu(
       state,
-      `Change Set - (${planType})`,
-      "Select Set:",
+      `Change Plan - (${planType})`,
+      "Select Plan:",
       planChoices
     );
     if (!menu.doExit(state.menuChoice())) {
@@ -165,7 +167,7 @@ async function selectPlan(state, planType) {
           await repo.checkoutBranch("master");
         }
       } else {
-        console.log(commitWarning);
+        commitWarning();
       }
     }
     state.setMenuChoice("");
