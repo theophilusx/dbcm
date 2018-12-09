@@ -143,14 +143,14 @@ function selectTarget(state) {
     });
 }
 
-async function listAppliedChanges(state) {
-  const logName = `${moduleName}.listAppliedChanges`;
+async function listTargetState(state) {
+  const logName = `${moduleName}.listTargetState`;
 
   try {
-    let changes = await queries.getAppliedChanges(state);
-    if (changes.length) {
-      for (let c of changes) {
-        console.log(`${c.set_name} ${c.applied_dt} ${c.status}`);
+    let targetState = await queries.getTargetState(state);
+    if (targetState.length) {
+      for (let t of targetState) {
+        console.log(`${t.set_name} ${t.applied_dt} ${t.status}`);
       }
     } else {
       console.log("No applied changes");
@@ -162,6 +162,6 @@ async function listAppliedChanges(state) {
 }
 module.exports = {
   selectTarget,
-  listAppliedChanges
+  listTargetState
 };
 

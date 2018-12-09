@@ -6,9 +6,9 @@ const VError = require("verror");
 const { execFile } = require("child_process");
 const path = require("path");
 const chalk = require("chalk");
+const query = require("./database");
 
 function psqlExec(state, script) {
-  const logName = `${moduleName}.psqlExec`;
 
   return new Promise((resolve, reject) => {
     try {
@@ -25,12 +25,16 @@ function psqlExec(state, script) {
         `-f ${script}`,
         `${target.database}`
       ];
-      let child = execFile(psql, args, {env: env, shell: true}, (err, stdout, stderr) => {
-        if (err) {
-          reject(err.message);
-        }
-        resolve([stdout, stderr]);
-      });
+      let child = execFile(
+        psql,
+        args,
+        {env: env, shell: true},
+        (err, stdout, stderr) => {
+          if (err) {
+            reject(err.message);
+          }
+          resolve([stdout, stderr]);
+        });
     } catch (err) {
       reject(err.message);
     }
@@ -60,15 +64,20 @@ async function applyCurrentPlan(state) {
       throw new Error(`${logName} Unknown plan type: ${pType}`);
     }
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
+    let target = state.currentTargetDef();
     console.log(`Applying change ${pName} (${pId})`);
     let [output, errors] = await psqlExec(state, changeFile);
     if (errors.length) {
       console.log(chalk.red("Plan failed to apply successfully!"), `\n`);
       console.log(errors);
+      await query.updateAppliedPlanStatus(state, plan, "Apply Failure");
+      await query.addLogRecord(target, plan, errors);
       return false;
     } 
     console.log(chalk.green("Plan applied successfully"));
     console.log(output);
+    await query.updateAppliedPlanStatus(state, plan, "Applied");
+    await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to apply change`);
