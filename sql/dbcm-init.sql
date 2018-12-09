@@ -10,12 +10,12 @@ CREATE SCHEMA dbcm AUTHORIZATION dbcm_user;
 CREATE TABLE dbcm.change_plans (
     plan_id VARCHAR(22) PRIMARY KEY 
   , applied_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , applied_by VARCHAR(63) NOT NULL  
+  , applied_by VARCHAR(64) NOT NULL  
   , verified_dt TIMESTAMPTZ
-  , verified_by VARCHAR(63)  
+  , verified_by VARCHAR(64)  
   , rollback_dt TIMESTAMPTZ 
-  , rollback_by VARCHAR(63)
-  , set_name VARCHAR(64) NOT NULL
+  , rollback_by VARCHAR(64)
+  , plan_name VARCHAR(64) NOT NULL
   , description TEXT
   , status VARCHAR(32)
 );
