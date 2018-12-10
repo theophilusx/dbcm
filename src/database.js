@@ -108,6 +108,7 @@ async function updateVerifiedPlanState(state, plan, status) {
       status,
       plan.uuid
     ]);
+    await client.end();
     return rslt.rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed to update verified status`);
@@ -136,6 +137,7 @@ async function updateRollbackPlanStatus(state, plan, status) {
       status,
       plan.uuid
     ]);
+    await client.end();
     return rslt.rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed updating rollback status`);
@@ -157,6 +159,7 @@ async function addLogRecord(target, plan, msg) {
       plan.name,
       msg
     ]);
+    await client.end();
     return rslt.rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed to add log record`);
