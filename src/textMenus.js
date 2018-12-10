@@ -32,7 +32,7 @@ function buildChoices(choiceData) {
   }
 }
 
-function displayMenu(title, question, actionFN) {
+function doMenu(title, question, actionFN) {
   const logName = `${moduleName}.displayMenu`;
 
   screen.menuHeading(title);
@@ -68,10 +68,52 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
 
   screen.status(state);
   
-  return displayMenu(title, question, fn)
+  return doMenu(title, question, fn)
     .catch(err => {
       throw new VError(err, `${logName} Failed to display menu ${title}`);
     });
+}
+
+function displayGenericMenu(state, title, questions, actionFN) {
+  const logName = `${moduleName}.displayGenricMenu`;
+
+  function defaultAction(theState) {
+    return answer => {
+      try {
+        theState.setMenuChoice(answer.choice);
+        return theState;
+      } catch (err) {
+        throw new VError(err, `${logName} Error in default action function`);
+      }
+    };
+  }
+
+  let fn = actionFN || defaultAction;
+  screen.status(state);
+  return doMenu(title, questions, fn(state))
+    .catch(err => {
+      throw new VError(err, `${logName} `);
+    });
+}
+
+async function displayCollectionMenu(title, questions) {
+  try {
+    questions.push({
+      type: "confirm",
+      name: "more",
+      message: "Add another:"
+    });
+    screen.menuHeading(title);
+    let answers = {};
+    let result = [];
+    do {
+      answers = await inquirer.prompt(questions);
+      result.push(answers);
+    } while (answers.more);
+    return result;
+  } catch (err) {
+    throw new Error(err.message);
+  }
 }
 
 function doExit(choice) {
@@ -83,7 +125,9 @@ function doExit(choice) {
 
 module.exports = {
   buildChoices,
-  displayMenu,
+  doMenu,
   displayListMenu,
+  displayGenericMenu,
+  displayCollectionMenu,
   doExit
 };
