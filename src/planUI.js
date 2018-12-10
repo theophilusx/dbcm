@@ -144,9 +144,7 @@ async function selectPlan(state, planType) {
   const logName = `${moduleName}.selectPlan`;
 
   try {
-    console.log(`Selecting ${planType}`);
     let planMap = state.get(planType);
-    console.dir(planMap);
     let planChoices = buildPlanListUI(planMap);
     state = await menu.displayListMenu(
       state,
@@ -192,10 +190,27 @@ async function applyTestPlan(state) {
   }
 }
 
+async function submitPlanForApproval(state) {
+  const logName = `${moduleName}.submitPlanForApproval`;
+
+  try {
+    screen.heading("Submit Plan for Approval");
+    state = await selectPlan(state, "developmentPlans");
+    let [pName, pId] = state.currentPlan().split(":").slice(1);
+    screen.infoMsg("Moving Plan to Pending", `Moving ${pName} (${pId})`
+                   + "to pending group for approval");
+    state = await plans.movePlanToPending(state);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to move plan to pending gorup`);
+  }
+}
+
 module.exports = {
   displayPlanRecord,
   createPlan,
   listPlans,
   selectPlan,
-  applyTestPlan
+  applyTestPlan,
+  submitPlanForApproval  
 };

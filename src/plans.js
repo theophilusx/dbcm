@@ -172,9 +172,40 @@ function createChangePlan(state, plan) {
     });
 }
 
+async function movePlanToPending(state) {
+  const logName = `${moduleName}.movePlanToPending`;
+
+  try {
+    let devPlans = state.developmentPlans();
+    let pendingPlans = state.pendingPlans();
+    let [pType, pName, pId] = state.currentPlan().split(":");
+    let branch = `${pName.replace(/\s+/g, "-")}-${pId}`;
+    if (pType != "developmentPlans") {
+      throw new Error(`Cannot move a plan of type ${pType} to pending`);
+    }
+    let planDef = devPlans.get(pId);
+    pendingPlans.set(pId, planDef);
+    devPlans.delete(pId);
+    state.setDevelopmentPlans(devPlans);
+    state.setPendingPlans(pendingPlans);
+    await writePlanFiles(state);
+    state.setCurrentPlan(`pendingPlans:${pName}:${pId}`);
+    await state.writeConfigFile();
+    let repo = state.get("repoObject");
+    let files = await repo.getStatus();
+    await git.addAndCommit(state, files, `Commit ${pName} for approval`);
+    await git.pullMaster(repo);
+    await git.mergeBranchIntoMaster(state, branch);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to move development plan to pending plan`);
+  }
+}
+
 module.exports = {
   readPlanFiles,
   writePlanFiles,
   makePlanRecord,
-  createChangePlan
+  createChangePlan,
+  movePlanToPending
 };

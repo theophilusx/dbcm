@@ -90,7 +90,7 @@ function developmentPlanActions(state) {
           state = await planui.applyTestPlan(state);
           break;
         case "commitPlan":
-          screen.heading("Submit Plan for Approval");
+          state = await planui.submitPlanForApproval(state);
           break;
         case "listDevPlans":
           screen.heading("Development Plans");

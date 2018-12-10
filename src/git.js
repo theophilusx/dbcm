@@ -6,7 +6,6 @@ const VError = require("verror");
 const path = require("path");
 const Git = require("nodegit");
 const files = require("./files");
-const repoui = require("./repoUI");
 
 const cloneOptions = {
   fetchOpts : {
@@ -230,6 +229,22 @@ async function addAndCommit(state, files, commitMsg) {
   }
 }
 
+async function mergeBranchIntoMaster(state, branch) {
+  const logName = `${moduleName}.mergeBranchIntoMaster`;
+
+  try {
+    let repo = state.get("repoObject");
+    let mergeSig = Git.Signature.now(state.username(), state.email());
+    await repo.mergeBranches("master", branch, mergeSig);
+    let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
+    await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
+    await deleteBranch(repo, branch);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to merge branch into master`);
+  }
+}
+
 /**
  * @async
  *
@@ -253,8 +268,6 @@ async function setupRepository(state) {
       let branchRef = await createBranch(repo, "setup");
       await repo.checkoutBranch(branchRef);
       await files.initialiseRepo(repoDest);
-      // FIXME: move repoui.selectApprovers to better location
-      state = await repoui.selectApprovers(state);
       let fileList = await repo.getStatus();
       await addAndCommit(state, fileList, "DBCM Init");
       let mergeSig = Git.Signature.now(state.username(), state.email());
@@ -265,7 +278,6 @@ async function setupRepository(state) {
     } else {
       await pullMaster(repo);
     }
-
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to setup ${state.currentRepository()}`);
@@ -279,5 +291,6 @@ module.exports = {
   createBranch,
   deleteBranch,
   addAndCommit,
+  mergeBranchIntoMaster,
   setupRepository
 };
