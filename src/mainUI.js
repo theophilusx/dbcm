@@ -13,7 +13,7 @@ const repoui = require("./repoUI");
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
   ["Manage DB Targets", "manageTargets"],
-  ["Manage Repositories", "manageRepositories"]
+  ["Manage Repositories", "manageRepositories"],
 ]);
 
 const planTypeChoices = menu.buildChoices([
@@ -328,9 +328,7 @@ async function mainMenu(appState) {
         mainChoices,
         mainAction(appState)
       );
-      
     } while (!menu.doExit(appState.menuChoice()));
-    appState.setMenuChoice("");
     return appState;
   } catch (err) {
     throw new VError(err, `${logName} Menu process failure`);

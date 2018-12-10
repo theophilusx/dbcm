@@ -9,6 +9,7 @@ const mainui = require("./mainUI");
 const git = require("./git");
 const plans = require("./plans");
 const approvals = require("./approvals");
+const menu = require("./textMenus");
 
 async function main() {
   let appState;
@@ -18,21 +19,21 @@ async function main() {
     if (!appState.username()) {
       appState = await configui.getConfig(appState);
     }
-    do {
+    if (appState.currentRepository() === undefined) {
       appState = await repoui.selectRepository(appState);
-      if (appState.menuChoice() === "exitMenu") {
-        continue;
-      }
-      appState = await git.setupRepository(appState);
-      appState = await plans.readPlanFiles(appState);
-      appState = await approvals.readApprovalsFile(appState);
+    }
+    if (menu.doExit(appState.menuChoice())) {
+      process.exit();
+    }
+    appState = await git.setupRepository(appState);
+    appState = await plans.readPlanFiles(appState);
+    appState = await approvals.readApprovalsFile(appState);
+    if (appState.currentTarget() === undefined) {
       appState = await targetui.selectTarget(appState);
-      if (appState.menuChoice() === "exitMenu") {
-        continue;
-      }
-      appState = await mainui.mainMenu(appState);
-    } while (appState.menuChoice() != "exitMenu");
+    }
+    appState = await mainui.mainMenu(appState);
     console.log("Exiting DBCM");
+    appState.writeConfigFile();
   } catch (err) {
     throw new VError(err, "Main loop error");
   }

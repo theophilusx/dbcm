@@ -112,8 +112,9 @@ async function createApplicationState() {
       }
     }
     state.set("repositories", repoMap);
-    state.set("currentRepository", undefined);
-    state.set("currentTarget", undefined);
+    state.set("currentRepository", config.currentRepository);
+    state.set("currentTarget", config.currentTarget);
+    state.set("currentPlan", config.currentPlan);
     state.set("psqlPath", config.psqlPath);
     state.set("approvalType", "none");
     state.set("approvers", new Map());
@@ -243,12 +244,13 @@ async function createApplicationState() {
         return state.set("menuChoice", choice);
       },
       writeConfigFile: async () => {
-        await writeConfig(state);
-      },
-      saveState: async () => {
-        await writeConfig(state);
-        await plans.writePlanFiles(state);
-        await approvals.writeApprovalsFile(state);
+        const logName = `${moduleName}.writeConfigFile`;
+        
+        try {
+          await writeConfig(state);
+        } catch (err) {
+          throw new VError(err, `${logName}`);
+        }
       },
       dump: () => {
         console.dir(state); 
