@@ -6,11 +6,11 @@ const VError = require("verror");
 const inquirer = require("inquirer");
 const targets = require("./targets");
 const queries = require("./database");
-const chalk = require("chalk");
+const moment = require("moment");
+const screen = require("./textScreen");
 
 function initWarning(state) {
-  console.log(`
-\t${chalk.red("Warning!")}\n
+  screen.warningMsg("Warning!", `
 Target database ${state.currentTarget()} needs to be initialised for DBCM
 Please either run the shell script in bin/dbcm-init.sh or execute the SQL
 script in sql/dbcm-init.sql in the target database.
@@ -146,11 +146,17 @@ function selectTarget(state) {
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
 
+  function formatLine(r) {
+    return `${moment(r.applied_dt).format("YYYY-MM-DD HH:mm")} | ${r.plan_name} (${r.plan_id}) `
+      + `${r.applied_by} ${r.status}`;
+  }
+  
   try {
+    screen.heading("Change State");
     let targetState = await queries.getTargetState(state);
     if (targetState.length) {
       for (let t of targetState) {
-        console.log(`${t.set_name} ${t.applied_dt} ${t.status}`);
+        console.log(formatLine(t));
       }
     } else {
       console.log("No applied changes");
