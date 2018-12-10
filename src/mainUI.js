@@ -178,7 +178,6 @@ function targetAction(state) {
       } else {
         switch (answer.choice) {
         case "listTargetState":
-          console.log("Listing Current Target State");
           state = await targetui.listTargetState(state);
           break;
         case "listUnappliedChanges":

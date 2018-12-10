@@ -182,7 +182,10 @@ async function applyTestPlan(state) {
 
   try {
     state = await selectPlan(state, "developmentPlans");
-    await psql.applyCurrentPlan(state);
+    let applied = await psql.applyCurrentPlan(state);
+    if (applied) {
+      await psql.verifyCurrentPlan(state);
+    }
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to apply test plan`);

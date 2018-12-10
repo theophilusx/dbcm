@@ -85,7 +85,52 @@ async function applyCurrentPlan(state) {
   }
 }
 
+async function verifyCurrentPlan(state) {
+  const logName = `${moduleName}.verifyCurrentPlan`;
+
+  try {
+    if (state.currentPlan === "?:?:?") {
+      throw new Error("No current plan defined");
+    }
+    let [pType, pName, pId] = state.currentPlan().split(":");
+    let plan, status;
+    switch (pType) {
+    case "developmentPlans":
+      plan = state.developmentPlans().get(pId);
+      status = "Verified (Dev Test)";
+      break;
+    case "pendingPlans":
+      plan = state.pendingPlans().get(pId);
+      status = "Verified (Pending)";
+      break;
+    case "approvedPlans":
+      plan = state.approvedPlans().get(pId);
+      status = "Verified";
+      break;
+    default:
+      throw new Error(`${logName} Unknown plan type: ${pType}`);
+    }
+    let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
+    let target = state.currentTargetDef();
+    screen.heading("Verify Change");
+    let [output, errors] = await psqlExec(state, verifyFile);
+    if (errors.length) {
+      screen.errorMsg("Failed to Verify Plan", errors);
+      await query.updateVerifiedPlanState(state, plan, "Verify Failure");
+      await query.addLogRecord(target, plan, errors);
+      return false;
+    }
+    screen.infoMsg("Plan Successfully Verified", output);
+    await query.updateVerifiedPlanState(state, plan, status);
+    await query.addLogRecord(target, plan, output);
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to verify changes`);
+  }
+}
+
 module.exports = {
   psqlExec,
-  applyCurrentPlan
+  applyCurrentPlan,
+  verifyCurrentPlan
 };
