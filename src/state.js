@@ -28,7 +28,10 @@ function readConfig() {
           },
           repositoryHome: undefined,
           repositories: [],
-          psqlPath: undefined
+          psqlPath: undefined,
+          currentRepository: undefined,
+          currentTarget: undefined,
+          currentPlan: undefined
         };
       }
       throw new VError(err, `${logName} Failed to access ${rcPath}`);
@@ -45,6 +48,9 @@ async function writeConfig(appState) {
     newConfig.user = appState.get("user");
     newConfig.repositoryHome = appState.get("home");
     newConfig.psqlPath = appState.get("psqlPath");
+    newConfig.currentRepository = appState.get("currentRepository");
+    newConfig.currentTarget = appState.get("currentTarget");
+    newConfig.currentPlan = appState.get("currentPlan");
     let repoList = [];
     let repoMap = appState.get("repositories");
     for (let repoName of repoMap.keys()) {
