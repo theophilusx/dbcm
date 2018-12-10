@@ -152,7 +152,7 @@ async function addLogRecord(target, plan, msg) {
     let client = db.getClient(target);
     await client.connect();
     let rslt = await db.execSQL(client, sql, [
-      moment().format("YYYY-MM0-DD HH:mm:ss"),
+      moment().format("YYYY-MM-DD HH:mm:ss"),
       plan.uuid,
       plan.name,
       msg
