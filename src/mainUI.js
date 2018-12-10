@@ -8,10 +8,12 @@ const path = require("path");
 const edit = require("./edit");
 const targetui = require("./targetUI");
 const screen = require("./textScreen");
+const repoui = require("./repoUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
-  ["Manage DB Targets", "manageTargets"]
+  ["Manage DB Targets", "manageTargets"],
+  ["Manage Repositories", "manageRepositories"]
 ]);
 
 const planTypeChoices = menu.buildChoices([
@@ -299,6 +301,9 @@ function mainAction(state) {
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");
+          break;
+        case "manageRepositories":
+          state = await repoui.selectRepository(state);
           break;
         default:
           console.log(`${logName} Unrecognised choice: ${answer.choice}`);
