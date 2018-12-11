@@ -229,13 +229,15 @@ async function movePlanToApproved(state) {
     state = approvals.addApproval(state);
     let pendingPlans = state.pendingPlans();
     let approvedPlans = state.approvedPlans();
-    let planDef = pendingPlans.get(pId);    
-    approvedPlans.set(pId, planDef);
-    pendingPlans.delete(pId);
-    state.setPendingPlans(pendingPlans);
-    state.setApprovedPlans(approvedPlans);
+    let planDef = pendingPlans.get(pId);
+    if (planDef.approved) {
+      approvedPlans.set(pId, planDef);
+      pendingPlans.delete(pId);
+      state.setPendingPlans(pendingPlans);
+      state.setApprovedPlans(approvedPlans);
+      state.setCurrentPlan(`approvedPlans:${pName}:${pId}`);      
+    }
     await writePlanFiles(state);
-    state.setCurrentPlan(`approvedPlans:${pName}:${pId}`);
     await state.writeConfigFile();
     return state;
   } catch (err) {
