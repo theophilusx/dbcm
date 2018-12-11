@@ -21,7 +21,8 @@ const mainChoices = menu.buildChoices([
 const planTypeChoices = menu.buildChoices([
   ["Development Change Plans", "developmentPlans"],
   ["Pending Change Plans", "pendingPlans"],
-  ["Approved Change Plans", "approvedPlans"]
+  ["Approved Change Plans", "approvedPlans"],
+  ["Rejected change Plans", "rejectedPlans"]
 ]);
 
 const developmentPlanChoices = menu.buildChoices([
@@ -29,6 +30,7 @@ const developmentPlanChoices = menu.buildChoices([
   ["Select Development Plan", "selectDevPlan"],
   ["Edit Current Plan", "editPlan"],
   ["Test Current Change Plan", "testDevPlan"],
+  ["Rollback Current Change Plan", "rollbackPlan"],
   ["Commit Current Change Plan for Approval", "commitPlan"],
   ["List Development Change Plans", "listDevPlans"]
 ]);
@@ -39,9 +41,15 @@ const pendingPlanChoices = menu.buildChoices([
   ["Review/Approve/Reject Plan", "approveActions"]
 ]);
 
-const finalisedPlanChoices = menu.buildChoices([
-  ["List Approved Change Plans", "listFinaliasedPlans"],
-  ["Rweork Approved Change Plan", "reworkFinalisedPlan"]
+const approvedPlanChoices = menu.buildChoices([
+  ["List Approved Change Plans", "listApprovedPlans"],
+  ["View Change Sources", "viewSource"],
+  ["Rweork Approved Change Plan", "reworkApprovedPlan"]
+]);
+
+const rejectedPlanChoices = menu.buildChoices([
+  ["List Rejected Plans", "listRejectedPlans"],
+  ["Rework Rejected Plan", "reworkRejectedPlan"]
 ]);
 
 const dbTargetChoices = menu.buildChoices([
@@ -91,6 +99,10 @@ function developmentPlanActions(state) {
           screen.heading("Apply Test Plan");
           state = await planui.applyTestPlan(state);
           break;
+        case "rollbackPlan":
+          screen.heading("Rollback Current Plan");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          break;
         case "commitPlan":
           state = await planui.submitPlanForApproval(state);
           break;
@@ -99,8 +111,10 @@ function developmentPlanActions(state) {
           state = await planui.listPlans(state, "developmentPlans");
           break;
         default:
-          console.log(`${logName} Unrecognised choice ${answer.choice}`);
-          break;
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`
+          );
         }
       }
       return state;
@@ -137,8 +151,10 @@ function pendingPlanActions(state) {
           state = await approvalsui.processPlanApproval(state);
           break;
         default:
-          console.log(`${logName} Unrecognised choice ${answer.choice}`);
-          break;
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`
+          );
         }
       }
       return state;
@@ -148,8 +164,8 @@ function pendingPlanActions(state) {
   };
 }
 
-function finalisedPlanActions(state) {
-  const logName = "finalisedPlanActions";
+function approvedPlanActions(state) {
+  const logName = "approvedPlanActions";
 
   return async answer => {
     try {
@@ -158,15 +174,55 @@ function finalisedPlanActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listFinalisedPlans":
-          console.log("list finalised set action");
+        case "listApprovedPlans":
+          screen.heading("Approved Plans");
+          state = await planui.listPlans(state, "approvedPlans");
           break;
-        case "reworkFinalisedPlan":
-          console.log("rework finalised set action");
+        case "viewSource":
+          screen.heading("View Plan Source");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          break;
+        case "reworkApprovedPlan":
+          screen.heading("Rework Approved Plan");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
           break;
         default:
-          console.log(`${logName} Unrecognised choice ${answer.choice}`);
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`
+          );
+        }
+      }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Menu process failure`);
+    }
+  };
+}
+
+function rejectedPlanActions(state) {
+  const logName = "rejectedPlanActions";
+
+  return async answer => {
+    try {
+      state.setMenuChoice(answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      } else {
+        switch (answer.choice) {
+        case "listRejectedPlans":
+          screen.heading("Rejected Plans");
+          state = await planui.listPlans(state, "rejectedPlans");
           break;
+        case "reworkRejectedPlan":
+          screen.heading("Rework Rejected Plan");
+          screen.warningMsg("Not Implemented", "This feature has not yet been implemented");
+          break;
+        default:
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`
+          );
         }
       }
       return state;
@@ -190,26 +246,34 @@ function targetAction(state) {
           state = await targetui.listTargetState(state);
           break;
         case "listUnappliedChanges":
-          console.log("List unapplied changes");
+          screen.heading("List Unapplied Changes");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
           break;
         case "applyNextChange":
-          console.log("apply next change");
+          screen.heading("Apply Next Change");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");          
           break;
         case "applyAllChanges":
-          console.log("apply all outstanding changes");
+          screen.heading("Apply All Unapplied Changes");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
           break;
         case "rollbackChange":
-          console.log("rollback change");
+          screen.heading("Rollback Change");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
           break;
         case "displayChangelog":
-          console.log("display changelog");
+          screen.heading("Display Changelog");
+          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");          
           break;
         case "selectDbTarget":
-          console.log("select DB target");
+          screen.heading("Select DB Target");
+          state = await targetui.selectTarget(state);
           break;
         default:
-          console.log(`${logName} Unrecognised choice ${answer.choice}`);
-          break;
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`
+          );
         }
       }
       return state;
@@ -259,14 +323,29 @@ function planTypeAction(state) {
               state,
               "Approved Plan Menu",
               "Selet Plan Action",
-              finalisedPlanChoices,
-              finalisedPlanActions(state)
+              approvedPlanChoices,
+              approvedPlanActions(state)
+            );
+          } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChoice("");
+          break;
+        case "rejectedPlans":
+          do {
+            state = await menu.displayListMenu(
+              state,
+              "Rejected Plans Menu",
+              "Select Plan Action",
+              rejectedPlanChoices,
+              rejectedPlanActions(state)
             );
           } while (!menu.doExit(state.menuChoice()));
           state.setMenuChoice("");
           break;
         default:
-          console.log(`${logName} Unrecognised set type choice: ${answer.choice}`);
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`
+          );
         }
       }
       return state;
@@ -314,7 +393,9 @@ function mainAction(state) {
           state = await repoui.selectRepository(state);
           break;
         default:
-          console.log(`${logName} Unrecognised choice: ${answer.choice}`);
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName} No associated action for choice ${answer.choice}`);
         }
       }
       return state;
