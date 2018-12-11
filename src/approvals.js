@@ -61,8 +61,33 @@ function isApprover(state) {
     throw new VError(err, `${logName} Failed to determine approver state`);
   }
 }
+
+function addApproval(state) {
+  const logName = `${moduleName}.addApproval`;
+
+  try {
+    let pId = state.currentPlan().split(":")[2];
+    let pendingPlans = state.pendingPlans();
+    let planDef = pendingPlans.get(pId);
+    planDef.approvals.push({
+      name: state.username(),
+      email: state.email()
+    });
+    if (state.approvalType() === "any"
+        || state.approvers().size === planDef.approvals.length) {
+      planDef.approved = true;
+    }
+    pendingPlans.set(pId, planDef);
+    state.setPendingPlans(pendingPlans);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to add approval to plan`);
+  }
+}
+
 module.exports = {
   readApprovalsFile,
   writeApprovalsFile,
-  isApprover
+  isApprover,
+  addApproval
 };

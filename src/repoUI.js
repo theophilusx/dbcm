@@ -57,7 +57,7 @@ function setup(state) {
         }
       },
       {
-        type: "checkbox",
+        type: "list",
         name: "approvalType",
         choices: [
           {
@@ -69,7 +69,7 @@ function setup(state) {
             value: "all"
           }
         ],
-        message: "Single or group approval:",
+        message: "Approval Type:",
         when: answers => {
           return answers.hasApprover;
         }

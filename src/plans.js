@@ -9,6 +9,7 @@ const moment = require("moment");
 const fse = require("fse");
 const git = require("./git");
 const files = require("./files");
+const approvals = require("./approvals");
 
 function planObjectToMap(pobj) {
   const logName = `${moduleName}.planObjectToMap`;
@@ -221,13 +222,14 @@ async function movePlanToApproved(state) {
   const logName = `${moduleName}.movePlanToApproved`;
 
   try {
-    let pendingPlans = state.pendingPlans();
-    let approvedPlans = state.approvedPlans();
     let [pType, pName, pId] = state.currentPlan().split(":");
     if (pType != "pendingPlans") {
       throw new Error(`Cannot move a plan of type ${pType} to approved`);
     }
-    let planDef = pendingPlans.get(pId);
+    state = approvals.addApproval(state);
+    let pendingPlans = state.pendingPlans();
+    let approvedPlans = state.approvedPlans();
+    let planDef = pendingPlans.get(pId);    
     approvedPlans.set(pId, planDef);
     pendingPlans.delete(pId);
     state.setPendingPlans(pendingPlans);
