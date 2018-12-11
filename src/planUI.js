@@ -10,6 +10,7 @@ const psql = require("./psql");
 const gitui = require("./gitUI");
 const git = require("./git");
 const screen = require("./textScreen");
+const approvals = require("./approvals");
 
 function commitWarning() {
   let title = "Uncommitted Changes";

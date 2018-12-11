@@ -202,10 +202,36 @@ async function movePlanToPending(state) {
   }
 }
 
+async function movePlanToApproved(state) {
+  const logName = `${moduleName}.movePlanToApproved`;
+
+  try {
+    let pendingPlans = state.pendingPlans();
+    let approvedPlans = state.approvedPlans();
+    let [pType, pName, pId] = state.currentPlan().split(":");
+    if (pType != "pendingPlans") {
+      throw new Error(`Cannot move a plan of type ${pType} to approved`);
+    }
+    let planDef = pendingPlans.get(pId);
+    approvedPlans.set(pId, planDef);
+    pendingPlans.delete(pId);
+    state.setPendingPlans(pendingPlans);
+    state.setApprovedPlans(approvedPlans);
+    await writePlanFiles(state);
+    state.setCurrentPlan(`approvedPlans:${pName}:${pId}`);
+    await state.writeConfigFile();
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to move development plan to pending plan`);
+  }
+}
+
+
 module.exports = {
   readPlanFiles,
   writePlanFiles,
   makePlanRecord,
   createChangePlan,
-  movePlanToPending
+  movePlanToPending,
+  movePlanToApproved
 };
