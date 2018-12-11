@@ -23,7 +23,13 @@ function createPlanFiles(rootPath) {
     version: "1.0.0",
     plans: []
   };
+  const rejectedPlans = {
+    name: "Rejected Plans",
+    version: "1.0.0",
+    plans: []
+  };
   const approvedFile = path.join(rootPath, "approved-plans.json");
+  const rejectedFile = path.join(rootPath, "rejected-plans.json");
   const pendingFile = path.join(rootPath, "pending-plans.json");
   const developmentFile = path.join(rootPath, "development-plans.json");
 
@@ -38,6 +44,10 @@ function createPlanFiles(rootPath) {
     })
     .then(() => {
       console.log("Created development-plans.json");
+      return fse.writeFile(rejectedFile, JSON.stringify(rejectedPlans, null, " "), "utf-8");;
+    })
+    .then(() => {
+      console.log("Created rejected-plans.json");
       return true;
     })
     .catch(err => {
@@ -159,9 +169,8 @@ function makeChangeFile(rootPath, changeRecord) {
 -- Name:   ${changeRecord.name}
 -- Author: ${changeRecord.author} <${changeRecord.authorEmail}>
 -- Date:   ${changeRecord.createdDate}
+-- Source: ${changeRecord.change}
 -- Type:   Changes
-
-\\echo Executing ${changeRecord.change}
 
 BEGIN;
 
@@ -169,7 +178,6 @@ BEGIN;
 
 COMMIT;
 
-\\echo End ${changeRecord.change}
 `;
 
   return fse.writeFile(changeFile, content, "utf-8")
@@ -185,13 +193,11 @@ function makeVerifyFile(rootPath, changeRecord) {
 -- Name:   ${changeRecord.name}
 -- Author: ${changeRecord.author} <${changeRecord.authorEmail}>
 -- Date:   ${changeRecord.createdDate}
+-- Source: ${changeRecord.verify}
 -- Type:   Verify
-
-\\echo Executing ${changeRecord.verify}
 
 -- verify code go here
 
-\\echo End ${changeRecord.verify}
 `;
 
   return fse.writeFile(verifyFile, content, "utf-8")
@@ -207,9 +213,8 @@ function makeRollbackFile(rootPath, changeRecord) {
 -- Name:   ${changeRecord.name}
 -- Author: ${changeRecord.author} <${changeRecord.authorEmail}>
 -- Date:   ${changeRecord.createdDate}
+-- Source: ${changeRecord.rollback}
 -- Type:   Rollback
-
-\\echo Executing ${changeRecord.rollback}
 
 BEGIN;
 
@@ -217,7 +222,6 @@ BEGIN;
 
 COMMIT;
 
-\\echo End ${changeRecord.rollback}
 `;
 
   return fse.writeFile(rollbackFile, content, "utf-8")
