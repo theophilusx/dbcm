@@ -9,6 +9,8 @@ const edit = require("./edit");
 const targetui = require("./targetUI");
 const screen = require("./textScreen");
 const repoui = require("./repoUI");
+const approvals = require("./approvals");
+const approvalsui = require("./approvalsUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -33,8 +35,8 @@ const developmentPlanChoices = menu.buildChoices([
 
 const pendingPlanChoices = menu.buildChoices([
   ["List Pending Change Plans", "listPendingPlans"],
-  ["Approve Change Plan", "approvePendingPlan"],
-  ["Reject Change Plan", "rejectPendingPlan"]
+  ["List My Approval Requests", "approvalRequests"],
+  ["Review/Approve/Reject Plan", "approveActions"]
 ]);
 
 const finalisedPlanChoices = menu.buildChoices([
@@ -119,13 +121,20 @@ function pendingPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listPendingPlans":
-          console.log("list pending set action");
+          screen.heading("Pending Plans");
+          state = await planui.listPlans(state, "pendingPlans");
           break;
-        case "approvePendingPlan":
-          console.log("approve pending set action");
+        case "approvalRequests":
+          screen.heading("Approval Requests");
+          if (!approvals.isApprover(state)) {
+            screen.warningMsg("You Are Not An Approver", "You are not a "
+                              + "registered approver for this repository");
+          } else {
+            state = await planui.listPlans(state, "peingingPlans");
+          }
           break;
-        case "rejectPendingPlan":
-          console.log("reject pending set action");
+        case "approveActions":
+          state = await approvalsui.processPlanApproval(state);
           break;
         default:
           console.log(`${logName} Unrecognised choice ${answer.choice}`);
