@@ -116,6 +116,44 @@ async function displayCollectionMenu(title, questions) {
   }
 }
 
+async function displaySelectMenu(state, title, selectItems) {
+  const logName = `${moduleName}.displaySelectMenu`;
+
+  try {
+    let choices = buildChoices(selectItems);
+    let question = [
+      {
+        type: "list",
+        name: "choice",
+        choices: choices,
+        message: "Select item:"
+      }
+    ];
+    screen.status(state);
+    screen.menuHeading(title);
+    let answer = await inquirer.prompt(question);
+    return answer.choice;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to execute menu ${title}`);    
+  }
+}
+
+async function displayConfirmMenu(title, msg) {
+  const logName = `${moduleName}.displayConfirmMenu`;
+
+  try {
+    screen.heading(title);
+    let answer = inquirer.prompt([{
+      type: "confirm",
+      name: "choice",
+      message: msg
+    }]);
+    return answer.choice;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to get confirmation choice`);
+  }
+}
+
 function doExit(choice) {
   if (choice === "exitMenu") {
     return true;
@@ -129,5 +167,7 @@ module.exports = {
   displayListMenu,
   displayGenericMenu,
   displayCollectionMenu,
+  displaySelectMenu,
+  displayConfirmMenu,
   doExit
 };
