@@ -74,8 +74,18 @@ function readPendingPlans(state) {
 }
 
 function readDevelopmentPlans(state) {
-  const logName = `${moduleName}.readPendingPlans`;
+  const logName = `${moduleName}.readDevelopmentPlans`;
   const planFile = path.join(state.home(), state.currentRepository(), "development-plans.json");
+  
+  return readPlanFile(planFile)
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to read pending plan file for ${state.currentRepository}`);
+    });
+}
+
+function readRejectedPlans(state) {
+  const logName = `${moduleName}.readRejectedPlans`;
+  const planFile = path.join(state.home(), state.currentRepository(), "rejected-plans.json");
   
   return readPlanFile(planFile)
     .catch(err => {
@@ -100,6 +110,11 @@ function readPlanFiles(state) {
     .then(planData => {
       let plansMap = planObjectToMap(planData);
       state.setDevelopmentPlans(plansMap);
+      return readRejectedPlans(state);
+    })
+    .then(planData => {
+      let plansMap = planObjectToMap(planData);
+      state.setRejectedPlans(plansMap);
       return state;
     })
     .catch(err => {

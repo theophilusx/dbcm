@@ -5,8 +5,6 @@ const moduleName = "state";
 const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
-const plans = require("./plans");
-const approvals = require("./approvals");
 
 const rcPath = path.join(process.env.HOME, ".dbcmrc");
 
@@ -121,6 +119,7 @@ async function createApplicationState() {
     state.set("developmentPlans", new Map());
     state.set("pendingPlans", new Map());
     state.set("approvedPlans", new Map());
+    state.set("rejectedPlans", new Map());
     state.set("menuChoice", "unknown");
     state.set("repoObject", undefined);
     return {
@@ -230,6 +229,12 @@ async function createApplicationState() {
       },
       setApprovedPlans: planMap => {
         return state.set("approvedPlans", planMap);
+      },
+      rejectedPlans: () => {
+        return state.get("rejectedPlans");
+      },
+      setRejectedPlans: planMap => {
+        return state.set("rejectedPlans", planMap);
       },
       currentPlan: () => {
         return state.get("currentPlan") ? state.get("currentPlan") : "?:?:?";
