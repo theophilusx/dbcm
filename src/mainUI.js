@@ -130,7 +130,7 @@ function pendingPlanActions(state) {
             screen.warningMsg("You Are Not An Approver", "You are not a "
                               + "registered approver for this repository");
           } else {
-            state = await planui.listPlans(state, "peingingPlans");
+            state = await planui.listPlans(state, "pendingPlans");
           }
           break;
         case "approveActions":
