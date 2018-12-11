@@ -12,8 +12,9 @@ function editFiles(files) {
     if (err) {
       throw new VError(err, `${logName} Error opening files for editing`);
     }
-    console.log("Editor STDOUT: ", stdout);
-    console.log("Editor STDERR: ", stderr);
+    if (stderr.length) {
+      console.log(`${logName} ${stderr}`);
+    }
   });
 }
 
