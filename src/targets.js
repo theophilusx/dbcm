@@ -7,7 +7,7 @@ const db = require("./db");
 
 function isInitialised(dbParams) {
   const logName = `${moduleName}.isInitialised`;
-  const sql = "SELECT count(*) from dbcm.change_sets";
+  const sql = "SELECT count(*) from dbcm.change_plans";
   let client = db.getClient(dbParams);
   let isInitialised = false;
   
@@ -23,7 +23,6 @@ function isInitialised(dbParams) {
       return isInitialised;
     })
     .catch(err => {
-      console.dir(err);
       if (err.message.match(/relation .* does not exist/)) {
         client.end();
         return false;

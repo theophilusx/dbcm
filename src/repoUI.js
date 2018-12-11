@@ -6,6 +6,7 @@ const VError = require("verror");
 const inquirer = require("inquirer");
 const approvals = require("./approvals");
 const menu = require("./textMenus");
+const git = require("./git");
 
 function setup(state) {
   const logName = `${moduleName}.setup`;
@@ -119,6 +120,7 @@ function repoAction(appState) {
           }
           appState.setApprovalType(approvalType);
           appState.setApprovers(approverMap);
+          appState = await git.setupRepository(appState);
           await approvals.writeApprovalsFile(appState);
         }
       } else {
