@@ -48,7 +48,21 @@ function writeApprovalsFile(state) {
     });
 }
 
+function isApprover(state) {
+  const logName = `${moduleName}.isApprover`;
+
+  try {
+    let approvers = state.approvers();
+    if (approvers.has(state.email())) {
+      return true;
+    }
+    return false;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to determine approver state`);
+  }
+}
 module.exports = {
   readApprovalsFile,
-  writeApprovalsFile 
+  writeApprovalsFile,
+  isApprover
 };
