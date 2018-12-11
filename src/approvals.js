@@ -5,6 +5,7 @@ const moduleName = "approvals";
 const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
+const moment = require("moment");
 
 function readApprovalsFile(state) {
   const logName = `${moduleName}.readApprovalsFile`;
@@ -71,7 +72,8 @@ function addApproval(state) {
     let planDef = pendingPlans.get(pId);
     planDef.approvals.push({
       name: state.username(),
-      email: state.email()
+      email: state.email(),
+      date: moment().format("YYYY-MM-DD HH:mm:ss")
     });
     if (state.approvalType() === "any"
         || state.approvers().size === planDef.approvals.length) {

@@ -24,11 +24,12 @@ a new plan or switch to an alternative plan
 function displayPlanRecord(record) {
   function approvedList(r) {
     let data = "";
-    if (r.approved) {
-      data += `\n\t${r.name} <${r.email}> ${r.date}`;
+    for (let a of r.approvals) {
+      data += `\n\t${a.name} <${a.email}> on ${a.date}`;
     }
     return data;
   }
+  
   const msg = `
 Created Date:    ${record.createdDate}
 Author:          ${record.author} <${record.authorEmail}>
