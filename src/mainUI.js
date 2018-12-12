@@ -30,7 +30,6 @@ const developmentPlanChoices = menu.buildChoices([
   ["Select Development Plan", "selectDevPlan"],
   ["Edit Current Plan", "editPlan"],
   ["Test Current Change Plan", "testDevPlan"],
-  ["Rollback Current Change Plan", "rollbackPlan"],
   ["Commit Current Change Plan for Approval", "commitPlan"],
   ["List Development Change Plans", "listDevPlans"]
 ]);
@@ -97,11 +96,7 @@ function developmentPlanActions(state) {
           break;
         case "testDevPlan":
           screen.heading("Apply Test Plan");
-          state = await planui.applyTestPlan(state);
-          break;
-        case "rollbackPlan":
-          screen.heading("Rollback Current Plan");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          state = await planui.applyChangePlan(state, "developmentPlans");
           break;
         case "commitPlan":
           state = await planui.submitPlanForApproval(state);
