@@ -34,14 +34,14 @@ async function getRollbackCandidates(target) {
         + "ORDER BY applied_dt DESC";
   
   try {
-    let client = db.getclient(target);
+    let client = db.getClient(target);
     await client.connect();
     let rslt = await db.execSQL(client, sql);
     let planList = [];
     let sequence = 0;
     for (let r of rslt.rows) {
       planList.push([
-        `${r.name} (${r.plan_id}) ${r.status}`,
+        `${r.plan_name} (${r.plan_id}) ${r.status}`,
         `${sequence}:${r.plan_id}`
       ]);
       sequence += 1;
