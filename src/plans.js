@@ -245,6 +245,28 @@ async function movePlanToApproved(state) {
   }
 }
 
+function findPlan(state, pId) {
+  const logName = `${moduleName}.findPlan`;
+
+  try {
+    if (state.developmentPlans().has(pId)) {
+      return ["developmentPlans", state.developmentPlans().get(pId)];
+    }
+    if (state.pendingPlans().has(pId)) {
+      return ["pendingPlans", state.pendingPlans().get(pId)];
+    }
+    if (state.approvedPlans().has(pId)) {
+      return ["approvedPlans", state.approvedPlans().get(pId)];
+    }
+    if (state.rejectedPlans().has(pId)) {
+      return ["rejectedPlans", state.rejectedPlans().has(pId)];
+    }
+    console.log(`${logName} Plan ${pId} not found!`);
+    return [];
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to find plan ${pId}`);
+  }
+}
 
 module.exports = {
   readPlanFiles,
@@ -252,5 +274,6 @@ module.exports = {
   makePlanRecord,
   createChangePlan,
   movePlanToPending,
-  movePlanToApproved
+  movePlanToApproved,
+  findPlan
 };
