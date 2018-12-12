@@ -26,6 +26,56 @@ async function getTargetState(state) {
   } 
 }
 
+async function getRollbackCandidates(target) {
+  const logName = `${moduleName}.getRollbackCandidates`;
+  const sql = "SELECT * FROM dbcm.change_plans "
+        + "WHERE status NOT LIKE 'Rolled Back%' "
+        + "AND status NOT LIKE 'Unknown%' "
+        + "ORDER BY applied_dt DESC";
+  
+  try {
+    let client = db.getclient(target);
+    await client.connect();
+    let rslt = await db.execSQL(client, sql);
+    let planList = [];
+    let sequence = 0;
+    for (let r of rslt.rows) {
+      planList.push([
+        `${r.name} (${r.plan_id}) ${r.status}`,
+        `${sequence}:${r.plan_id}`
+      ]);
+      sequence += 1;
+    }
+    await client.end();
+    return planList;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to build up plan candidate list`);
+  }
+}
+
+async function getRollbackSets(target, pId) {
+  const logName = `${moduleName}.getRollbackSets`;
+  const sql = "SELECT plan_id, applied_dt FROM dbcm.change_plans "
+        + "WHERE applied_dt >= (SELECT applied_dt FROM dbcm.change_plans WHERE plan_id = $1) "
+        + "AND status NOT LIKE 'Roll Back%' "
+        + "AND status NOT LIKE `Unknown%` "
+        + "ORDER BY applied_dt DESC";
+  
+  try {
+    let client = db.getClient(target);
+    await client.connect();
+    let rslt = await db.execSQL(client, sql, [pId]);
+    let result = [];
+    for (let r of rslt.rows) {
+      result.push(r.plan_id);
+    }
+    await client.end();
+    return result;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to get rollback sets`);
+  }
+}
+
 async function planExists(state, planId) {
   const logName = `${moduleName}.planExists`;
   const sql = "SELECT * FROM dbcm.change_plans "
@@ -86,7 +136,7 @@ async function updateAppliedPlanStatus(state, plan, status) {
   }
 }
 
-async function updateVerifiedPlanState(state, plan, status) {
+async function updateVerifiedPlanStatus(state, plan, status) {
   const logName = `${moduleName}.updateVerifiedPlanState`;
   const sql = "UPDATE dbcm.change_plans "
         + "SET verified_dt = $1, "
@@ -168,9 +218,11 @@ async function addLogRecord(target, plan, msg) {
 
 module.exports = {
   getTargetState,
+  getRollbackCandidates,
+  getRollbackSets,
   planExists,
   updateAppliedPlanStatus,
-  updateVerifiedPlanState,
+  updateVerifiedPlanStatus,
   updateRollbackPlanStatus,
   addLogRecord
 };
