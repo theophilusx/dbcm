@@ -24,7 +24,69 @@ future.
 
 ## Status
 
-Right now, this is just *vapourware* - an idea waiting to be given form.
+Still very much under active development. However, some significant progress has
+been achieved. The current version provides a basic terminal/text based
+interface which enables 
+
+- Defining of git repository to be used to track database changes. Expects the
+  git server to be configured to support ssh access. To start, create a bare git
+  repository and note the ssh URL to access it. When you first run the program,
+  it will prompt you for the necessary details and then will configure the
+  repository for use as a DB change tracking system.
+- Defining database targets. The DB target is where changes will be
+  applied. Each repository can support multiple targets i.e. dev, uat and prod
+- Defining new change plan. A change plan consists of 3 files, each of which is
+  an SQL script. The application will setup stub scripts for each of the 3
+  scripts. The scripts are changes (e.g. DDL statements), verify (e.g. SQL to
+  verify changes have been applied successfully) and rollback, a script that
+  will undo/remove the changes implemented by the change script
+- The application will open the preferred edito to edit the scripts. This is
+  currently only supported on OSX. Other platforms will be added.
+- The first time you run the application, it will ask a number of configuration
+  questions. This information is stored in either a personal .dbcmrc file in the
+  user's home directory or in configuration files within each repository. 
+- When defining a repository, you are asked about approval process. Changes can
+  either be unapproved, require approval from at least one person on a list of
+  approvers or require approval from all members on the approval list. Youa re
+  prompted for the names of approvers when setting up a new repository.
+- Applying of chabnges and verifying them is support3ed
+- ROllback of changes is partially supported (WIP). 
+- Listing of changes applied to a target is implemented
+
+This application is still not ready for production use, but it is getting
+closer! There should be sufficient functionality to give a taste of what it will
+eventually do. At present, the interface is very basic and text based. Once the
+basic functionality is all working, a GUI will be added (possibly using
+Electron). 
+
+
+## Usage
+
+### Pre-requisites 
+
+1. Nodejs v8.x
+2. Git and libgit installed
+3. A remote git repository server e.g. github, gitlab etc. with SSH access
+4. Postgres database server (local or remote)
+5. Locally installed psql
+
+### Installation
+
+1. Clone this repo somewhere
+2. In the root of the repository, run 
+
+````
+npm install
+````
+
+then, from the root of the repository, run
+
+````
+node src/index.js
+````
+
+and see what doesn't work! There are still lots of bugs and error handling is
+very primitive. 
 
 ## Architecture and Requirements
 
