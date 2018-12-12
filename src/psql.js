@@ -41,43 +41,55 @@ function psqlExec(state, script) {
   });
 }
 
-async function applyCurrentPlan(state) {
-  const logName = `${moduleName}.applyCurrentPlan`;
+function getPlan(state) {
+  const logName = `${moduleName}.getPlan`;
 
   try {
     if (state.currentPlan === "?:?:?") {
       throw new Error("No current plan defined");
     }
     let [pType, pName, pId] = state.currentPlan().split(":");
-    let plan, status;
+    let plan;
     switch (pType) {
     case "developmentPlans":
       plan = state.developmentPlans().get(pId);
-      status = "Applied (Dev Test)";
       break;
     case "pendingPlans":
       plan = state.pendingPlans().get(pId);
-      status = "Applied (Pending)";
       break;
     case "approvedPlans":
       plan = state.approvedPlans().get(pId);
-      status = "Applied";
+      break;
+    case "rejectedPlans":
+      plan = state.rejectedPlans().get(pId);
       break;
     default:
-      throw new Error(`${logName} Unknown plan type: ${pType}`);
+      throw new Error(`Unknown plan type: ${pType}`);
     }
+    return plan;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to get plan definition`);
+  }
+}
+
+async function applyCurrentPlan(state) {
+  const logName = `${moduleName}.applyCurrentPlan`;
+
+  try {
+    let plan = getPlan(state);
+    let pType = state.currentPlan().split(":")[0];
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
     let target = state.currentTargetDef();
     screen.heading("Apply Change");
     let [output, errors] = await psqlExec(state, changeFile);
     if (errors.length) {
-      screen.errorMsg("Plan Failed to Apply Successfully", errors);
-      await query.updateAppliedPlanStatus(state, plan, "Apply Failure");
+      screen.errorMsg("Plan Failed", errors);
+      await query.updateAppliedPlanStatus(state, plan, `Failure (${pType})`);
       await query.addLogRecord(target, plan, errors);
       return false;
     } 
     screen.infoMsg("Plan Applied Successfully", output);
-    await query.updateAppliedPlanStatus(state, plan, status);
+    await query.updateAppliedPlanStatus(state, plan, `Applied (${pType})`);
     await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
@@ -89,39 +101,19 @@ async function verifyCurrentPlan(state) {
   const logName = `${moduleName}.verifyCurrentPlan`;
 
   try {
-    if (state.currentPlan === "?:?:?") {
-      throw new Error("No current plan defined");
-    }
-    let [pType, pName, pId] = state.currentPlan().split(":");
-    let plan, status;
-    switch (pType) {
-    case "developmentPlans":
-      plan = state.developmentPlans().get(pId);
-      status = "Verified (Dev Test)";
-      break;
-    case "pendingPlans":
-      plan = state.pendingPlans().get(pId);
-      status = "Verified (Pending)";
-      break;
-    case "approvedPlans":
-      plan = state.approvedPlans().get(pId);
-      status = "Verified";
-      break;
-    default:
-      throw new Error(`${logName} Unknown plan type: ${pType}`);
-    }
+    let plan = getPlan(state);
+    let pType = state.currentPlan().split(":")[0];
     let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
     let target = state.currentTargetDef();
     screen.heading("Verify Change");
     let [output, errors] = await psqlExec(state, verifyFile);
     if (errors.length) {
-      screen.errorMsg("Failed to Verify Plan", errors);
-      await query.updateVerifiedPlanState(state, plan, "Verify Failure");
+      screen.errorMsg("Verify Failure", errors);
       await query.addLogRecord(target, plan, errors);
       return false;
     }
-    screen.infoMsg("Plan Successfully Verified", output);
-    await query.updateVerifiedPlanState(state, plan, status);
+    screen.infoMsg("Plan Verified", output);
+    await query.updateVerifiedPlanStatus(state, plan, `Verified (${pType})`);
     await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
@@ -129,8 +121,39 @@ async function verifyCurrentPlan(state) {
   }
 }
 
+async function rollbackPlan(state, plan, type) {
+  const logName = `${moduleName}.rollbackCurrentPlan`;
+
+  try {
+    let rollbackFile = path.join(state.home(), state.currentRepository(), plan.rollback);
+    let target = state.currentTargetDef();
+    screen.heading("Rollback Change");
+    let [output, errors] = await psqlExec(state, rollbackFile);
+    if (errors.length) {
+      screen.errorMsg("Rollback Failure", errors);
+      screen.warningMsg(
+        "Unknown DB State",
+        "Because the rollback script had errors, the state of the database is now uncertain\n"
+          + "It is HIGHLY REOMMENDED that a manual inspection is performed and any necessary\n"
+          + "manual actions are taken to ensure the database is in a consistent and known state\n"
+        + "i.e. state is as would be expected prior to application of the current change plan"
+      );
+      await query.updateRollbackPlanStatus(state, plan, `Unknown (${type})`);
+      await query.addLogRecord(target, plan, errors);
+      return false;
+    } 
+    screen.infoMsg("Rollback Successful", "Change successfully rolled back");
+    await query.updateRollbackPlanStatus(state, plan, `Rolled Back (${type})`);
+    await query.addLogRecord(target, plan, errors);
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to execute rollback plan`);
+  }
+}
+
 module.exports = {
   psqlExec,
   applyCurrentPlan,
-  verifyCurrentPlan
+  verifyCurrentPlan,
+  rollbackPlan
 };
