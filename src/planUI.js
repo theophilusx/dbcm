@@ -176,11 +176,11 @@ async function selectPlan(state, planType) {
   }
 }
 
-async function applyTestPlan(state) {
-  const logName = `${moduleName}.applyTestPlan`;
+async function applyChangePlan(state, type) {
+  const logName = `${moduleName}.applyChangePlan`;
 
   try {
-    state = await selectPlan(state, "developmentPlans");
+    state = await selectPlan(state, type);
     let applied = await psql.applyCurrentPlan(state);
     if (applied) {
       await psql.verifyCurrentPlan(state);
@@ -212,6 +212,6 @@ module.exports = {
   createPlan,
   listPlans,
   selectPlan,
-  applyTestPlan,
+  applyChangePlan,
   submitPlanForApproval  
 };
