@@ -254,7 +254,7 @@ function targetAction(state) {
           break;
         case "rollbackChange":
           screen.heading("Rollback Change");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          state = await targetui.performPlanRollback(state);
           break;
         case "displayChangelog":
           screen.heading("Display Changelog");

@@ -8,6 +8,9 @@ const targets = require("./targets");
 const queries = require("./database");
 const moment = require("moment");
 const screen = require("./textScreen");
+const plans = require("./plans");
+const psql = require("./psql");
+const menu = require("./textMenus");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
@@ -166,8 +169,72 @@ async function listTargetState(state) {
     throw new VError(err, `${logName} Failed to get applied changes`);
   }
 }
+
+function rollbackActions(state) {
+  const logName = `${moduleName}.rollbackActions`;
+  
+  return async answer => {
+    try {
+      state.setMenuChoice(answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      }
+      let [sequence, pId] = answer.choice.split(":");
+      if (sequence > 0) {
+        screen.warningMsg(
+          "Multiple Rollbacks",
+          "The plan you ahve selected was not the most recent plan applied to this target\n"
+            + "If you decide to continue, all change plans applied following the plan you selected\n"
+            + "will be rolled back. \n"
+            + `A total of ${sequence + 1} plans will be rolled back`
+        );
+        let doIt = menu.displayConfirmMenu("Apply Multiple Rollbacks", `Rollback ${sequence + 1} plans:`);
+        if (doIt) {
+          let planList = queries.getRollbackSets(state.currentTargetDef(), pId);
+          let planDefs = planList.map(id => plans.findPlan(state, id));
+          console.log("Will rollback these plans");
+          console.dir(planDefs);
+        }
+      } else {
+        console.log(`Roll back plan ${pId}`);
+        let planInfo = plans.findPlan(state, pId);
+        if (planInfo.length) {
+          psql.rollbackPlan(state, planInfo[1], planInfo[0]);
+        } else {
+          screen.errorMsg("No Plan Definition", `Could not find a plan definition for ${pId}`);
+        }
+      }
+      return state;
+    } catch (err) {
+      throw new VError(err, `${logName} Failed to process plan rollback`);
+    }
+  };
+}
+
+async function performPlanRollback(state) {
+  const logName = `${moduleName}.performPlanRollback`;
+  
+  try {
+    let candidateList = await queries.getRollbackCandidates(state.currentTargetDef());
+    if (candidateList.length) {
+      let choices = menu.buildChoices(candidateList);
+      state = await menu.displayListMenu(
+        state,
+        "Rollback Changes",
+        "Select plan for rollback:",
+        choices,
+        rollbackActions(state)
+      );
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Error applying rollback`);
+  }
+}
+
 module.exports = {
   selectTarget,
-  listTargetState
+  listTargetState,
+  performPlanRollback
 };
 
