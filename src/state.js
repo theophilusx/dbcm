@@ -29,7 +29,8 @@ function readConfig() {
           psqlPath: undefined,
           currentRepository: undefined,
           currentTarget: undefined,
-          currentPlan: undefined
+          currentPlan: undefined,
+          currentReleaseTag: "0.0.0"
         };
       }
       throw new VError(err, `${logName} Failed to access ${rcPath}`);
@@ -49,6 +50,7 @@ async function writeConfig(appState) {
     newConfig.currentRepository = appState.get("currentRepository");
     newConfig.currentTarget = appState.get("currentTarget");
     newConfig.currentPlan = appState.get("currentPlan");
+    newConfig.currentReleaseTag = appState.get("currentReleaseTag");
     let repoList = [];
     let repoMap = appState.get("repositories");
     for (let repoName of repoMap.keys()) {
