@@ -29,8 +29,7 @@ async function getTargetState(state) {
 async function getRollbackCandidates(target) {
   const logName = `${moduleName}.getRollbackCandidates`;
   const sql = "SELECT * FROM dbcm.change_plans "
-        + "WHERE status NOT LIKE 'Rolled Back%' "
-        + "AND status NOT LIKE 'Unknown%' "
+        + "WHERE status IN ('Applied', 'Verified') "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -55,10 +54,9 @@ async function getRollbackCandidates(target) {
 
 async function getRollbackSets(target, pId) {
   const logName = `${moduleName}.getRollbackSets`;
-  const sql = "SELECT plan_id, applied_dt FROM dbcm.change_plans "
+  const sql = "SELECT plan_id, change_sha, applied_dt FROM dbcm.change_plans "
         + "WHERE applied_dt >= (SELECT applied_dt FROM dbcm.change_plans WHERE plan_id = $1) "
-        + "AND status NOT LIKE 'Roll Back%' "
-        + "AND status NOT LIKE 'Unknown%' "
+        + "AND status IN ('Applied', 'Verified') "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -67,7 +65,10 @@ async function getRollbackSets(target, pId) {
     let rslt = await db.execSQL(client, sql, [pId]);
     let result = [];
     for (let r of rslt.rows) {
-      result.push(r.plan_id);
+      result.push([
+        r.plan_id,
+        r.change_sha
+      ]);
     }
     await client.end();
     return result;
@@ -79,8 +80,7 @@ async function getRollbackSets(target, pId) {
 async function getAppliedPlans(target) {
   const logName = `${moduleName}.getAppliedPlans`;
   const sql = "SELECT plan_id, applied_dt FROM dbcm.change_plans "
-        + "WHERE status NOT LIKE 'Roll Back%' "
-        + "AND status NOT LIKE 'Unknown%' "
+        + "WHERE status IN ('Applied', 'Verified') "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -119,15 +119,19 @@ async function planExists(state, planId) {
   } 
 }
 
-async function updateAppliedPlanStatus(state, plan, status) {
+async function updateAppliedPlanStatus(state, plan, status, type, sha) {
   const logName = `${moduleName}.updatePlanStatus`;
   const insertSQL = "INSERT INTO dbcm.change_plans "
-        + "(plan_id, applied_by, plan_name, description, status) "
-        + "VALUES ($1, $2, $3, $4, $5)";
+        + "(plan_id, applied_by, plan_name, description, status, "
+        + "plan_type, repository_version, change_sha) "
+        + "VALUES ($1, $2, $3, $4, $5, $6, $7)";
   const updateSQL = "UPDATE dbcm.change_plans "
         + "SET applied_by = $1, "
-        + "status = $2 "
-        + "WHERE plan_id = $3";
+        + "status = $2, "
+        + "plan_type = $3, "
+        + "repository_version = $4, "
+        + "change_sha = $5 "
+        + "WHERE plan_id = $6";
 
   try {
     let target = state.currentTargetDef();
@@ -139,6 +143,9 @@ async function updateAppliedPlanStatus(state, plan, status) {
       let rslt = await db.execSQL(client, updateSQL, [
         state.email(),
         status,
+        type,
+        state.currentReleaseTag(),
+        sha,
         plan.uuid
       ]);
       rowCount = rslt.rowCount;
@@ -148,7 +155,10 @@ async function updateAppliedPlanStatus(state, plan, status) {
         state.email(),
         plan.name,
         plan.description,
-        status
+        status,
+        type,
+        state.currentReleaseTag(),
+        sha
       ]);
       rowCount = rslt.rowCount;
     }

@@ -79,17 +79,18 @@ async function applyCurrentPlan(state) {
     let plan = getPlan(state);
     let pType = state.currentPlan().split(":")[0];
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
+    let sha = await git.getChangeSha(state, plan);
     let target = state.currentTargetDef();
     screen.heading("Apply Change");
     let [output, errors] = await psqlExec(state, changeFile);
     if (errors.length) {
       screen.errorMsg("Plan Failed", errors);
-      await query.updateAppliedPlanStatus(state, plan, `Failure (${pType})`);
+      await query.updateAppliedPlanStatus(state, plan, "Failure", pType, sha);
       await query.addLogRecord(target, plan, errors);
       return false;
     } 
     screen.infoMsg("Plan Applied Successfully", output);
-    await query.updateAppliedPlanStatus(state, plan, `Applied (${pType})`);
+    await query.updateAppliedPlanStatus(state, plan, "Applied", pType, sha);
     await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
@@ -102,7 +103,6 @@ async function verifyCurrentPlan(state) {
 
   try {
     let plan = getPlan(state);
-    let pType = state.currentPlan().split(":")[0];
     let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
     let target = state.currentTargetDef();
     screen.heading("Verify Change");
@@ -113,7 +113,7 @@ async function verifyCurrentPlan(state) {
       return false;
     }
     screen.infoMsg("Plan Verified", output);
-    await query.updateVerifiedPlanStatus(state, plan, `Verified (${pType})`);
+    await query.updateVerifiedPlanStatus(state, plan, "Verified");
     await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
@@ -121,7 +121,7 @@ async function verifyCurrentPlan(state) {
   }
 }
 
-async function rollbackPlan(state, plan, type) {
+async function rollbackPlan(state, plan) {
   const logName = `${moduleName}.rollbackCurrentPlan`;
 
   try {
@@ -138,13 +138,13 @@ async function rollbackPlan(state, plan, type) {
           + "manual actions are taken to ensure the database is in a consistent and known state\n"
         + "i.e. state is as would be expected prior to application of the current change plan"
       );
-      await query.updateRollbackPlanStatus(state, plan, `Unknown (${type})`);
+      await query.updateRollbackPlanStatus(state, plan, "Unknown");
       await query.addLogRecord(target, plan, errors);
       return false;
     } 
     screen.infoMsg("Rollback Successful", "Change successfully rolled back");
-    await query.updateRollbackPlanStatus(state, plan, `Rolled Back (${type})`);
-    await query.addLogRecord(target, plan, errors);
+    await query.updateRollbackPlanStatus(state, plan, "Rolledback");
+    await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to execute rollback plan`);
