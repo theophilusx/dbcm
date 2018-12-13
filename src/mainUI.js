@@ -241,8 +241,7 @@ function targetAction(state) {
           state = await targetui.listTargetState(state);
           break;
         case "listUnappliedChanges":
-          screen.heading("List Unapplied Changes");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          state = await targetui.listUnappliedPlans(state);
           break;
         case "applyNextChange":
           screen.heading("Apply Next Change");

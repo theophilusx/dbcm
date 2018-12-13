@@ -58,7 +58,7 @@ async function getRollbackSets(target, pId) {
   const sql = "SELECT plan_id, applied_dt FROM dbcm.change_plans "
         + "WHERE applied_dt >= (SELECT applied_dt FROM dbcm.change_plans WHERE plan_id = $1) "
         + "AND status NOT LIKE 'Roll Back%' "
-        + "AND status NOT LIKE `Unknown%` "
+        + "AND status NOT LIKE 'Unknown%' "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -73,6 +73,29 @@ async function getRollbackSets(target, pId) {
     return result;
   } catch (err) {
     throw new VError(err, `${logName} Failed to get rollback sets`);
+  }
+}
+
+async function getAppliedPlans(target) {
+  const logName = `${moduleName}.getAppliedPlans`;
+  const sql = "SELECT plan_id, applied_dt FROM dbcm.change_plans "
+        + "WHERE status NOT LIKE 'Roll Back%' "
+        + "AND status NOT LIKE 'Unknown%' "
+        + "ORDER BY applied_dt DESC";
+  
+  try {
+    let client = db.getClient(target);
+    await client.connect();
+    let rslt = await db.execSQL(client, sql);
+    let result = [];
+    for (let r of rslt.rows) {
+      result.push(r.plan_id);
+    }
+    await client.end();
+    return result;
+  } catch (err) {
+    console.log(err.message);
+    throw new VError(err, `${logName} Failed to get applied plans`);
   }
 }
 
@@ -220,6 +243,7 @@ module.exports = {
   getTargetState,
   getRollbackCandidates,
   getRollbackSets,
+  getAppliedPlans,
   planExists,
   updateAppliedPlanStatus,
   updateVerifiedPlanStatus,

@@ -11,6 +11,7 @@ const screen = require("./textScreen");
 const plans = require("./plans");
 const psql = require("./psql");
 const menu = require("./textMenus");
+const vsprintf = require("sprintf-js").vsprintf;
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
@@ -148,15 +149,34 @@ function selectTarget(state) {
 
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
-
+  const lineFmt = "| %17s | %-20s | %10s | %10s | %22s |";
+  const sep = vsprintf("|-%1$'-17s-+-%1$'-20s-+-%1$'-10s-+-%1$'-10s-+-%1$'-22s-|", ["-"]);
+  const heading = vsprintf(lineFmt, [
+    "Applied Date",
+    "Plan Name",
+    "Status",
+    "Applied By",
+    "UUID"
+  ]);
+  
   function formatLine(r) {
-    return `${moment(r.applied_dt).format("YYYY-MM-DD HH:mm")} | ${r.plan_name} (${r.plan_id}) `
-      + `${r.applied_by} ${r.status}`;
+    const fmt = "YYYY-MM-DD HH:mm";
+
+    return vsprintf(lineFmt, [
+      moment(r.applied_dt).format(fmt),
+      r.plan_name.substring(0,20),
+      r.status.substring(0,10),
+      r.applied_by.substring(0,10),
+      r.plan_id
+    ]);
   }
   
   try {
     screen.heading("Change State");
     let targetState = await queries.getTargetState(state);
+    console.log(sep);
+    console.log(heading);
+    console.log(sep);
     if (targetState.length) {
       for (let t of targetState) {
         console.log(formatLine(t));
@@ -167,6 +187,48 @@ async function listTargetState(state) {
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to get applied changes`);
+  }
+}
+
+async function listUnappliedPlans(state) {
+  const logName = `${moduleName}.listUnappliedPlans`;
+  const lineFmt = "| %30s | %50s | %10s |";
+  const sep = vsprintf("|-%1$'-30s-+-%1$'-50s-+-%1$'-10s-|", ["-"]);
+  const header = vsprintf(lineFmt, [
+    "Plan Name",
+    "Descritpion",
+    "Author"
+  ]);
+
+  function formatLine(r) {
+    return vsprintf(lineFmt, [
+      r.name.substring(0,30),
+      r.description.substring(0,50),
+      r.author.substring(0,10)
+    ]);
+  }
+  
+  try {
+    let plans = new Map(state.approvedPlans());
+    let target = state.currentTargetDef();
+    let appliedList = await queries.getAppliedPlans(target);
+    for (let p of appliedList) {
+      plans.delete(p);
+    }
+    screen.heading("Unapplied Change Plans");
+    console.log(sep);
+    console.log(header);
+    console.log(sep);
+    if (plans.size) {
+      for (let p of plans.keys()) {
+        console.log(formatLine(plans.get(p)));
+      }
+    } else {
+      console.log("All approved change plans have bene applied to this target");
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to display unapplied plans`);
   }
 }
 
@@ -235,6 +297,7 @@ async function performPlanRollback(state) {
 module.exports = {
   selectTarget,
   listTargetState,
+  listUnappliedPlans,
   performPlanRollback
 };
 
