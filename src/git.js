@@ -235,7 +235,7 @@ async function mergeBranchIntoMaster(state, branch) {
   try {
     let repo = state.get("repoObject");
     let mergeSig = Git.Signature.now(state.username(), state.email());
-    await repo.mergeBranches("master", branch, mergeSig);
+    let mergeOid = await repo.mergeBranches("master", branch, mergeSig);
     let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
     await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
     await deleteBranch(repo, branch);
@@ -243,6 +243,21 @@ async function mergeBranchIntoMaster(state, branch) {
   } catch (err) {
     throw new VError(err, `${logName} Failed to merge branch into master`);
   }
+}
+
+async function addReleaseTag(state, name, msg) {
+  const logName = `${moduleName}.addReleaseTag`;
+
+  try {
+    let repo = state.get("repoObject");
+    let commit = await repo.getMasterCommit();
+    let tag = await repo.createTag(commit.id(), name, msg);
+    let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
+    await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
+    state.set("currentReleaseTag", name);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to add tag`);
+  } 
 }
 
 /**
@@ -275,6 +290,7 @@ async function setupRepository(state) {
       let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
       await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
       await deleteBranch(repo, "setup");
+      state = await addReleaseTag(state, "0.0.1", "Initial release");
     } else {
       await pullMaster(repo);
     }
@@ -283,6 +299,7 @@ async function setupRepository(state) {
     throw new VError(err, `${logName} Failed to setup ${state.currentRepository()}`);
   }
 }
+
 
 module.exports = {
   pullMaster,
