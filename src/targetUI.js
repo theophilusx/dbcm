@@ -12,6 +12,7 @@ const plans = require("./plans");
 const psql = require("./psql");
 const menu = require("./textMenus");
 const vsprintf = require("sprintf-js").vsprintf;
+const planui = require("./planUI");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
@@ -232,6 +233,37 @@ async function listUnappliedPlans(state) {
   }
 }
 
+async function applyNextChange(state) {
+  const logName = `${moduleName}.applyNextChange`;
+
+  try {
+    let plans = new Map(state.approvedPlans());
+    let target = state.currentTargetDef();
+    let appliedList = await queries.getAppliedPlans(target);
+    for (let p of appliedList) {
+      plans.delete(p);
+    }
+    screen.heading("Apply Next Change Plan");
+    if (plans.size) {
+      let plan = plans.values().next().value;
+      planui.displayPlanRecord(plan);
+      let choice = await menu.displayConfirmMenu("Apply Change Record", "Apply this change record:");
+      if (choice) {
+        state.setCurrentPlan(`approvedPlans:${plan.name}:${plan.uuid}`);
+        let applyStatus = await psql.applyCurrentPlan(state);
+        if (applyStatus) {
+          await psql.verifyCurrentPlan(state);
+        }
+      }
+    } else {
+      screen.infoMsg("No Unapplied Plans", "There are no outstanding plans needing to be applied to this target");
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to apply next change plan`);
+  }
+}
+
 function rollbackActions(state) {
   const logName = `${moduleName}.rollbackActions`;
   
@@ -252,7 +284,7 @@ function rollbackActions(state) {
         );
         let doIt = menu.displayConfirmMenu("Apply Multiple Rollbacks", `Rollback ${sequence + 1} plans:`);
         if (doIt) {
-          let planList = queries.getRollbackSets(state.currentTargetDef(), pId);
+          let planList = await queries.getRollbackSets(state.currentTargetDef(), pId);
           let planDefs = planList.map(id => plans.findPlan(state, id));
           console.log("Will rollback these plans");
           console.dir(planDefs);
@@ -261,7 +293,16 @@ function rollbackActions(state) {
         console.log(`Roll back plan ${pId}`);
         let planInfo = plans.findPlan(state, pId);
         if (planInfo.length) {
-          psql.rollbackPlan(state, planInfo[1], planInfo[0]);
+          let status = await psql.rollbackPlan(state, planInfo[1], planInfo[0]);
+          if (!status) {
+            screen.errorMsg(
+              "Failed Rollback",
+              "The plan roll back encountered errors. You need to manually verify the\n"
+              + "databse state to ensure it is consistent and correct"
+            );
+          } else {
+            screen.infoMsg("Rollback Complete", "The rollback script completed without errors");
+          }
         } else {
           screen.errorMsg("No Plan Definition", `Could not find a plan definition for ${pId}`);
         }
@@ -298,6 +339,7 @@ module.exports = {
   selectTarget,
   listTargetState,
   listUnappliedPlans,
+  applyNextChange,
   performPlanRollback
 };
 
