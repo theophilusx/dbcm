@@ -124,6 +124,7 @@ async function createApplicationState() {
     state.set("rejectedPlans", new Map());
     state.set("menuChoice", "unknown");
     state.set("repoObject", undefined);
+    state.set("currentReleaseTag", config.currentReleaseTag);
     return {
       get: key => {
         return state.get(key);
@@ -249,6 +250,12 @@ async function createApplicationState() {
       },
       setMenuChoice: choice => {
         return state.set("menuChoice", choice);
+      },
+      currentReleaseTag: () => {
+        return state.get("currentReleaseTag");
+      },
+      setCurrentReleaseTag: tag => {
+        return state.set("currentReleaseTag", tag);
       },
       writeConfigFile: async () => {
         const logName = `${moduleName}.writeConfigFile`;

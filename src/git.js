@@ -260,6 +260,19 @@ async function addReleaseTag(state, name, msg) {
   } 
 }
 
+async function getChangesSha(state, plan) {
+  const logName = `${moduleName}.getChangesSha`;
+
+  try {
+    let repo = state.get("repoObject");
+    let commit = await repo.getHeadCommit();
+    let entry = await commit.getEntry(path.join("changes", plan.name));
+    return entry.sha();
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to get SHA for changes file`);
+  }
+}
+
 /**
  * @async
  *
@@ -309,5 +322,7 @@ module.exports = {
   deleteBranch,
   addAndCommit,
   mergeBranchIntoMaster,
+  addReleaseTag,
+  getChangesSha,
   setupRepository
 };
