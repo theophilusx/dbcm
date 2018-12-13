@@ -13,6 +13,7 @@ const psql = require("./psql");
 const menu = require("./textMenus");
 const vsprintf = require("sprintf-js").vsprintf;
 const planui = require("./planUI");
+const git = require("./git");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
@@ -150,11 +151,12 @@ function selectTarget(state) {
 
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
-  const lineFmt = "| %17s | %-20s | %10s | %10s | %22s |";
-  const sep = vsprintf("|-%1$'-17s-+-%1$'-20s-+-%1$'-10s-+-%1$'-10s-+-%1$'-22s-|", ["-"]);
+  const lineFmt = "| %17s | %-20s | %10s | %10s | %10s | %22s |";
+  const sep = vsprintf("|-%1$'-17s-+-%1$'-20s-+-%1$'-10s-+-%1$'-10s-+-%1$'-10s-+-%1$'-22s-|", ["-"]);
   const heading = vsprintf(lineFmt, [
     "Applied Date",
     "Plan Name",
+    "Version",
     "Status",
     "Applied By",
     "UUID"
@@ -166,6 +168,7 @@ async function listTargetState(state) {
     return vsprintf(lineFmt, [
       moment(r.applied_dt).format(fmt),
       r.plan_name.substring(0,20),
+      r.repository_version.substring(0,10),
       r.status.substring(0,10),
       r.applied_by.substring(0,10),
       r.plan_id
@@ -193,10 +196,11 @@ async function listTargetState(state) {
 
 async function listUnappliedPlans(state) {
   const logName = `${moduleName}.listUnappliedPlans`;
-  const lineFmt = "| %30s | %50s | %10s |";
-  const sep = vsprintf("|-%1$'-30s-+-%1$'-50s-+-%1$'-10s-|", ["-"]);
+  const lineFmt = "| %30s | %10s | %50s | %10s |";
+  const sep = vsprintf("|-%1$'-30s-+-%1$'-10s-+-%1$'-50s-+-%1$'-10s-|", ["-"]);
   const header = vsprintf(lineFmt, [
     "Plan Name",
+    "Version",
     "Descritpion",
     "Author"
   ]);
@@ -204,6 +208,7 @@ async function listUnappliedPlans(state) {
   function formatLine(r) {
     return vsprintf(lineFmt, [
       r.name.substring(0,30),
+      state.currentReleaseTag(),
       r.description.substring(0,50),
       r.author.substring(0,10)
     ]);
@@ -213,8 +218,12 @@ async function listUnappliedPlans(state) {
     let plans = new Map(state.approvedPlans());
     let target = state.currentTargetDef();
     let appliedList = await queries.getAppliedPlans(target);
-    for (let p of appliedList) {
-      plans.delete(p);
+    for (let [pId, sha] of appliedList) {
+      let plan = plans.get(pId);
+      let currentSha = await git.getChangeSha(state, plan);
+      if (sha === currentSha) {
+        plans.delete(pId);
+      }
     }
     screen.heading("Unapplied Change Plans");
     console.log(sep);
@@ -240,8 +249,12 @@ async function applyNextChange(state) {
     let plans = new Map(state.approvedPlans());
     let target = state.currentTargetDef();
     let appliedList = await queries.getAppliedPlans(target);
-    for (let p of appliedList) {
-      plans.delete(p);
+    for (let [pId, sha] of appliedList) {
+      let plan = plans.get(pId);
+      let currentSha = await git.getChangeSha(state, plan);
+      if (sha === currentSha) {
+        plans.delete(pId);
+      }
     }
     screen.heading("Apply Next Change Plan");
     if (plans.size) {
@@ -290,10 +303,10 @@ function rollbackActions(state) {
           console.dir(planDefs);
         }
       } else {
-        console.log(`Roll back plan ${pId}`);
+        console.log(`Rollback plan ${pId}`);
         let planInfo = plans.findPlan(state, pId);
         if (planInfo.length) {
-          let status = await psql.rollbackPlan(state, planInfo[1], planInfo[0]);
+          let status = await psql.rollbackPlan(state, planInfo[1]);
           if (!status) {
             screen.errorMsg(
               "Failed Rollback",
