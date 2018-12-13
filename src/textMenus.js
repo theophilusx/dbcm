@@ -143,7 +143,7 @@ async function displayConfirmMenu(title, msg) {
 
   try {
     screen.heading(title);
-    let answer = inquirer.prompt([{
+    let answer = await inquirer.prompt([{
       type: "confirm",
       name: "choice",
       message: msg
