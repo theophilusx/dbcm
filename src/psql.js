@@ -9,6 +9,28 @@ const screen = require("./textScreen");
 const query = require("./database");
 const git = require("./git");
 
+function filterUninterestingContent(str) {
+  const logName = `${moduleName}.filterUninterestingContent`;
+
+  function isInteresting(str) {
+    if (str.match(/NOTICE:.*, skipping$/)) {
+      return false;
+    }
+    return true;
+  }
+  
+  try {
+    let lines = str.split("\n");
+    let filtered = lines.filter(l => isInteresting(l));
+    if (filtered.length) {
+      return filtered.join("\n");
+    }
+    return "";
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to filter string`);
+  }
+}
+
 function psqlExec(state, script) {
 
   return new Promise((resolve, reject) => {
@@ -84,9 +106,9 @@ async function applyCurrentPlan(state) {
     let target = state.currentTargetDef();
     screen.heading("Apply Change");
     let [output, errors] = await psqlExec(state, changeFile);
-    if (errors.length) {
+    if (filterUninterestingContent(errors).length) {
       screen.errorMsg("Plan Failed", errors);
-      await query.updateAppliedPlanStatus(state, plan, "Failure", pType, sha);
+      await query.updateAppliedPlanStatus(state, plan, "Failed", pType, sha);
       await query.addLogRecord(target, plan, errors);
       return false;
     } 
@@ -108,7 +130,7 @@ async function verifyCurrentPlan(state) {
     let target = state.currentTargetDef();
     screen.heading("Verify Change");
     let [output, errors] = await psqlExec(state, verifyFile);
-    if (errors.length) {
+    if (filterUninterestingContent(errors).length) {
       screen.errorMsg("Verify Failure", errors);
       await query.addLogRecord(target, plan, errors);
       return false;
@@ -130,7 +152,7 @@ async function rollbackPlan(state, plan) {
     let target = state.currentTargetDef();
     screen.heading("Rollback Change");
     let [output, errors] = await psqlExec(state, rollbackFile);
-    if (errors.length) {
+    if (filterUninterestingContent(errors).length) {
       screen.errorMsg("Rollback Failure", errors);
       screen.warningMsg(
         "Unknown DB State",
