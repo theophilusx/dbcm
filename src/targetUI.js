@@ -215,23 +215,25 @@ async function listUnappliedPlans(state) {
   }
   
   try {
-    let plans = new Map(state.approvedPlans());
+    let approvedPlans = new Map(state.approvedPlans());
     let target = state.currentTargetDef();
     let appliedList = await queries.getAppliedPlans(target);
     for (let [pId, sha] of appliedList) {
-      let plan = plans.get(pId);
-      let currentSha = await git.getChangeSha(state, plan);
+      let plan = plans.findPlan(state, pId)[1];
+      let currentSha = await git.getChangesSha(state, plan);
       if (sha === currentSha) {
-        plans.delete(pId);
+        approvedPlans.delete(pId);
+      } else {
+        console.log(`${plan.name} has changed and needs to be re-applied`);
       }
     }
     screen.heading("Unapplied Change Plans");
     console.log(sep);
     console.log(header);
     console.log(sep);
-    if (plans.size) {
-      for (let p of plans.keys()) {
-        console.log(formatLine(plans.get(p)));
+    if (approvedPlans.size) {
+      for (let p of approvedPlans.keys()) {
+        console.log(formatLine(approvedPlans.get(p)));
       }
     } else {
       console.log("All approved change plans have bene applied to this target");
@@ -246,19 +248,19 @@ async function applyNextChange(state) {
   const logName = `${moduleName}.applyNextChange`;
 
   try {
-    let plans = new Map(state.approvedPlans());
+    let approvedPlans = new Map(state.approvedPlans());
     let target = state.currentTargetDef();
     let appliedList = await queries.getAppliedPlans(target);
     for (let [pId, sha] of appliedList) {
-      let plan = plans.get(pId);
-      let currentSha = await git.getChangeSha(state, plan);
+      let plan = plans.findPlan(state, pId)[1];
+      let currentSha = await git.getChangesSha(state, plan);
       if (sha === currentSha) {
-        plans.delete(pId);
+        approvedPlans.delete(pId);
       }
     }
     screen.heading("Apply Next Change Plan");
-    if (plans.size) {
-      let plan = plans.values().next().value;
+    if (approvedPlans.size) {
+      let plan = approvedPlans.values().next().value;
       planui.displayPlanRecord(plan);
       let choice = await menu.displayConfirmMenu("Apply Change Record", "Apply this change record:");
       if (choice) {
@@ -266,6 +268,8 @@ async function applyNextChange(state) {
         let applyStatus = await psql.applyCurrentPlan(state);
         if (applyStatus) {
           await psql.verifyCurrentPlan(state);
+        } else {
+          await psql.rollbackPlan(state, plan);
         }
       }
     } else {
