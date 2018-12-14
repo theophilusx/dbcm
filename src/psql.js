@@ -7,6 +7,7 @@ const { execFile } = require("child_process");
 const path = require("path");
 const screen = require("./textScreen");
 const query = require("./database");
+const git = require("./git");
 
 function psqlExec(state, script) {
 
@@ -79,7 +80,7 @@ async function applyCurrentPlan(state) {
     let plan = getPlan(state);
     let pType = state.currentPlan().split(":")[0];
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
-    let sha = await git.getChangeSha(state, plan);
+    let sha = await git.getChangesSha(state, plan);
     let target = state.currentTargetDef();
     screen.heading("Apply Change");
     let [output, errors] = await psqlExec(state, changeFile);
