@@ -29,6 +29,7 @@ const developmentPlanChoices = menu.buildChoices([
   ["Create New Change Plan", "newPlan"],
   ["Edit Change Plan", "editPlan"],
   ["Test Change Plan", "testDevPlan"],
+  ["Rollback Change Plan", "rollbackDevPlan"],
   ["Submit Change Plan for Approval", "commitPlan"],
   ["List Development Change Plans", "listDevPlans"]
 ]);
