@@ -27,10 +27,9 @@ const planTypeChoices = menu.buildChoices([
 
 const developmentPlanChoices = menu.buildChoices([
   ["Create New Change Plan", "newPlan"],
-  ["Select Development Plan", "selectDevPlan"],
-  ["Edit Current Plan", "editPlan"],
-  ["Test Current Change Plan", "testDevPlan"],
-  ["Commit Current Change Plan for Approval", "commitPlan"],
+  ["Edit Change Plan", "editPlan"],
+  ["Test Change Plan", "testDevPlan"],
+  ["Submit Change Plan for Approval", "commitPlan"],
   ["List Development Change Plans", "listDevPlans"]
 ]);
 
@@ -74,10 +73,6 @@ function developmentPlanActions(state) {
         case "newPlan":
           screen.heading("Create New Plan");
           state = await planui.createPlan(state);
-          break;
-        case "selectDevPlan":
-          screen.heading("Select Development Plan");
-          state = await planui.selectPlan(state, "developmentPlans");
           break;
         case "editPlan":
           screen.heading("Edit Plan");
