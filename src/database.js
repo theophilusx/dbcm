@@ -124,7 +124,7 @@ async function updateAppliedPlanStatus(state, plan, status, type, sha) {
   const insertSQL = "INSERT INTO dbcm.change_plans "
         + "(plan_id, applied_by, plan_name, description, status, "
         + "plan_type, repository_version, change_sha) "
-        + "VALUES ($1, $2, $3, $4, $5, $6, $7)";
+        + "VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
   const updateSQL = "UPDATE dbcm.change_plans "
         + "SET applied_by = $1, "
         + "status = $2, "
