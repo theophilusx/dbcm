@@ -1,6 +1,7 @@
 "use strict";
 
 const chalk = require("chalk");
+const sprintf = require("sprintf-js").sprintf;
 
 function menuHeading(txt) {
   console.log(`\n\t${chalk.underline.yellow(txt)}\n`);
@@ -13,10 +14,8 @@ function heading(txt) {
 function status(state) {
   let repo = chalk`{bold ${state.currentRepository()}}`;
   let target = chalk`{bold ${state.currentTarget()}}`;
-  let [type, name, id] = state.currentPlan() === "?:?:?" ?
-    ["", "Undefined", ""] : state.currentPlan().split(":");
-  let planStr = chalk`{bold ${name}} ${type} (${id})`;
-  console.log(chalk`\n{inverse == Repository: ${repo} Target: ${target} Plan: ${planStr} ==}`);
+  let line = sprintf("== %10s %-30s    %10s %-30s ==", "Repository", repo, "Target", target);
+  console.log(chalk`\n{inverse ${line}}`);
 }
 
 function errorMsg(title, msg) {
