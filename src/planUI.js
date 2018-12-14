@@ -184,6 +184,10 @@ async function applyChangePlan(state, type) {
     let applied = await psql.applyCurrentPlan(state);
     if (applied) {
       await psql.verifyCurrentPlan(state);
+    } else {
+      let pId = state.currentPlan().split(":")[2];
+      let changePlan = plans.findPlan(state, pId)[1];
+      await psql.rollbackPlan(state, changePlan);
     }
     return state;
   } catch (err) {
