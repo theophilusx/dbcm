@@ -29,7 +29,7 @@ async function getTargetState(state) {
 async function getRollbackCandidates(target) {
   const logName = `${moduleName}.getRollbackCandidates`;
   const sql = "SELECT * FROM dbcm.change_plans "
-        + "WHERE status IN ('Applied', 'Verified') "
+        + "WHERE status IN ('Applied', 'Verified', 'Failed') "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -56,7 +56,7 @@ async function getRollbackSets(target, pId) {
   const logName = `${moduleName}.getRollbackSets`;
   const sql = "SELECT plan_id, change_sha, applied_dt FROM dbcm.change_plans "
         + "WHERE applied_dt >= (SELECT applied_dt FROM dbcm.change_plans WHERE plan_id = $1) "
-        + "AND status IN ('Applied', 'Verified') "
+        + "AND status IN ('Applied', 'Verified', 'Failed') "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -79,8 +79,8 @@ async function getRollbackSets(target, pId) {
 
 async function getAppliedPlans(target) {
   const logName = `${moduleName}.getAppliedPlans`;
-  const sql = "SELECT plan_id, applied_dt FROM dbcm.change_plans "
-        + "WHERE status IN ('Applied', 'Verified') "
+  const sql = "SELECT plan_id, change_sha, applied_dt FROM dbcm.change_plans "
+        + "WHERE status IN ('Applied', 'Verified', 'Failed') "
         + "ORDER BY applied_dt DESC";
   
   try {
@@ -89,7 +89,10 @@ async function getAppliedPlans(target) {
     let rslt = await db.execSQL(client, sql);
     let result = [];
     for (let r of rslt.rows) {
-      result.push(r.plan_id);
+      result.push([
+        r.plan_id,
+        r.change_sha
+      ]);
     }
     await client.end();
     return result;
