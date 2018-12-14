@@ -235,7 +235,7 @@ async function mergeBranchIntoMaster(state, branch) {
   try {
     let repo = state.get("repoObject");
     let mergeSig = Git.Signature.now(state.username(), state.email());
-    let mergeOid = await repo.mergeBranches("master", branch, mergeSig);
+    await repo.mergeBranches("master", branch, mergeSig);
     let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
     await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
     await deleteBranch(repo, branch);
@@ -251,10 +251,11 @@ async function addReleaseTag(state, name, msg) {
   try {
     let repo = state.get("repoObject");
     let commit = await repo.getMasterCommit();
-    let tag = await repo.createTag(commit.id(), name, msg);
+    await repo.createTag(commit.id(), name, msg);
     let remote = await repo.getRemote("origin", cloneOptions.fetchOpts);
     await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
     state.set("currentReleaseTag", name);
+    return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to add tag`);
   } 
@@ -266,7 +267,7 @@ async function getChangesSha(state, plan) {
   try {
     let repo = state.get("repoObject");
     let commit = await repo.getHeadCommit();
-    let entry = await commit.getEntry(path.join("changes", plan.name));
+    let entry = await commit.getEntry(plan.change);
     return entry.sha();
   } catch (err) {
     throw new VError(err, `${logName} Failed to get SHA for changes file`);
