@@ -197,8 +197,8 @@ async function submitPlanForApproval(state) {
   try {
     screen.heading("Submit Plan for Approval");
     state = await selectPlan(state, "developmentPlans");
-    let [pName, pId] = state.currentPlan().split(":").slice(1);
-    screen.infoMsg("Moving Plan to Pending", `Moving ${pName} (${pId})`
+    let pName = state.currentPlan().split(":")[1];
+    screen.infoMsg("Moving Plan to Pending", `Moving ${pName} plan `
                    + "to pending group for approval");
     state = await plans.movePlanToPending(state);
     return state;
