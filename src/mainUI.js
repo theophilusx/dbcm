@@ -114,7 +114,8 @@ function developmentPlanActions(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
@@ -154,7 +155,8 @@ function pendingPlanActions(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
@@ -190,7 +192,8 @@ function approvedPlanActions(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
@@ -222,7 +225,8 @@ function rejectedPlanActions(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
@@ -271,7 +275,8 @@ function targetAction(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
@@ -343,7 +348,8 @@ function planTypeAction(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
@@ -393,7 +399,8 @@ function mainAction(state) {
       }
       return state;
     } catch (err) {
-      throw new VError(err, `${logName} Menu process failure`);
+      screen.errorMsg(logName, err.message);
+      return state;
     }
   };
 }
