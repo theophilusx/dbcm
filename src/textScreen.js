@@ -21,17 +21,17 @@ function status(state) {
 
 function errorMsg(title, msg) {
   console.log(chalk`\n\t{bgRed {yellowBright ${title}}}`);
-  console.log(`\n${msg}`);
+  console.log(`\n${msg}\n`);
 }
 
 function warningMsg(title, msg) {
   console.log(chalk`\n\t{yellowBright ${title}}`);
-  console.log(`\n${msg}`);
+  console.log(`\n${msg}\n`);
 }
 
 function infoMsg(title, msg) {
   console.log(chalk`\n\t{cyan ${title}}`);
-  console.log(`\n${msg}`);
+  console.log(`\n${msg}\n`);
 }
 
 module.exports = {
