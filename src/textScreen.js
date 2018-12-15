@@ -33,7 +33,7 @@ function status(state) {
 }
 
 function errorMsg(title, msg) {
-  console.log(boxen(chalk`\n\t{bgRed {yellowBright ${title}}}\n${msg}\n`, boxOptions));
+  console.log(boxen(chalk`{bgRed {yellowBright ${title}}}\n\n${msg}`, boxOptions));
 }
 
 function warningMsg(title, msg) {
@@ -41,7 +41,7 @@ function warningMsg(title, msg) {
 }
 
 function infoMsg(title, msg) {
-  console.log(boxen(chalk`\n\t{cyan ${title}}\n${msg}\n`, boxOptions));
+  console.log(boxen(chalk`{cyan ${title}}\n\n${msg}`, boxOptions));
 }
 
 module.exports = {
