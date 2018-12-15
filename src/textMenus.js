@@ -35,7 +35,6 @@ function buildChoices(choiceData) {
 function doMenu(title, question, actionFN) {
   const logName = `${moduleName}.displayMenu`;
 
-  screen.menuHeading(title);
   return inquirer.prompt(question)
     .then(actionFN)
     .catch(err => {
@@ -105,7 +104,6 @@ async function displayCollectionMenu(title, questions) {
       name: "more",
       message: "Add another:"
     });
-    screen.menuHeading(title);
     let answers = {};
     let result = [];
     do {
@@ -144,7 +142,6 @@ async function displayConfirmMenu(title, msg) {
   const logName = `${moduleName}.displayConfirmMenu`;
 
   try {
-    screen.heading(title);
     let answer = await inquirer.prompt([{
       type: "confirm",
       name: "choice",

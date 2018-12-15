@@ -2,6 +2,14 @@
 
 const chalk = require("chalk");
 const sprintf = require("sprintf-js").sprintf;
+const boxen = require("boxen");
+const cliWidth = require("cli-width");
+
+const boxOptions = {
+  padding: 1,
+  float: "center",
+  align: "center"
+};
 
 function menuHeading(txt) {
   console.log(`\n\t${chalk.underline.yellow(txt)}\n`);
@@ -12,25 +20,28 @@ function heading(txt) {
 }
 
 function status(state) {
+  let width = cliWidth({defaultWidth: 80});
+  let strLength = "Repository: ".length
+      + state.currentRepository().length
+      + "Target: ".length
+      + state.currentTarget().length;
+  let padding = " ".repeat(width - strLength - 6);
+  
   let repo = chalk`{bold ${state.currentRepository()}}`;
   let target = chalk`{bold ${state.currentTarget()}}`;
-  let line = sprintf("== %10s %-30s    %10s %-30s ==", "Repository", repo, "Target", target);
-  console.log(chalk`\n{inverse ${line}}`);
+  console.log(boxen(`  Repository: ${repo}${padding}Target: ${target}  `));
 }
 
 function errorMsg(title, msg) {
-  console.log(chalk`\n\t{bgRed {yellowBright ${title}}}`);
-  console.log(`\n${msg}\n`);
+  console.log(boxen(chalk`\n\t{bgRed {yellowBright ${title}}}\n${msg}\n`, boxOptions));
 }
 
 function warningMsg(title, msg) {
-  console.log(chalk`\n\t{yellowBright ${title}}`);
-  console.log(`\n${msg}\n`);
+  console.log(boxen(chalk`{yellowBright ${title}}\n\n${msg}`, boxOptions));
 }
 
 function infoMsg(title, msg) {
-  console.log(chalk`\n\t{cyan ${title}}`);
-  console.log(`\n${msg}\n`);
+  console.log(boxen(chalk`\n\t{cyan ${title}}\n${msg}\n`, boxOptions));
 }
 
 module.exports = {

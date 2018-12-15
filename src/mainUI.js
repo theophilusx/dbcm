@@ -72,13 +72,14 @@ function developmentPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "newPlan":
-          screen.heading("Create New Plan");
           state = await planui.createPlan(state);
           break;
         case "editPlan":
-          screen.heading("Edit Plan");
           if (state.currentPlan() === "?:?:?") {
-            console.log("You must select a plan before it can be editied");
+            screen.infoMsg(
+              "No Plan Selected",
+              "You must select a plan before it can be edited"
+            );
           } else {
             let pId = state.currentPlan().split(":")[2];
             let plan = state.developmentPlans().get(pId);
@@ -91,14 +92,12 @@ function developmentPlanActions(state) {
           }
           break;
         case "testDevPlan":
-          screen.heading("Apply Test Plan");
           state = await planui.applyChangePlan(state, "developmentPlans");
           break;
         case "commitPlan":
           state = await planui.submitPlanForApproval(state);
           break;
         case "listDevPlans":
-          screen.heading("Development Plans");
           state = await planui.listPlans(state, "developmentPlans");
           break;
         default:
@@ -127,14 +126,14 @@ function pendingPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listPendingPlans":
-          screen.heading("Pending Plans");
           state = await planui.listPlans(state, "pendingPlans");
           break;
         case "approvalRequests":
-          screen.heading("Approval Requests");
           if (!approvals.isApprover(state)) {
-            screen.warningMsg("You Are Not An Approver", "You are not a "
-                              + "registered approver for this repository");
+            screen.warningMsg(
+              "You Are Not An Approver",
+              "You are not a registered approver for this repository"
+            );
           } else {
             state = await planui.listPlans(state, "pendingPlans");
           }
@@ -168,16 +167,19 @@ function approvedPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listApprovedPlans":
-          screen.heading("Approved Plans");
           state = await planui.listPlans(state, "approvedPlans");
           break;
         case "viewSource":
-          screen.heading("View Plan Source");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          screen.warningMsg(
+            "Not Yet Implemented",
+            "This feature has not yet been implemented"
+          );
           break;
         case "reworkApprovedPlan":
-          screen.heading("Rework Approved Plan");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          screen.warningMsg(
+            "Not Yet Implemented",
+            "This feature has not yet been implemented"
+          );
           break;
         default:
           screen.errorMsg(
@@ -205,12 +207,13 @@ function rejectedPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listRejectedPlans":
-          screen.heading("Rejected Plans");
           state = await planui.listPlans(state, "rejectedPlans");
           break;
         case "reworkRejectedPlan":
-          screen.heading("Rework Rejected Plan");
-          screen.warningMsg("Not Implemented", "This feature has not yet been implemented");
+          screen.warningMsg(
+            "Not Implemented",
+            "This feature has not yet been implemented"
+          );
           break;
         default:
           screen.errorMsg(
@@ -247,19 +250,21 @@ function targetAction(state) {
           state = await targetui.applyNextChange(state);
           break;
         case "applyAllChanges":
-          screen.heading("Apply All Unapplied Changes");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");
+          screen.warningMsg(
+            "Not Yet Implemented",
+            "This feature has not yet been implemented"
+          );
           break;
         case "rollbackChange":
-          screen.heading("Rollback Change");
           state = await targetui.performPlanRollback(state);
           break;
         case "displayChangelog":
-          screen.heading("Display Changelog");
-          screen.warningMsg("Not Yet Implemented", "This feature has not yet been implemented");          
+          screen.warningMsg(
+            "Not Yet Implemented",
+            "This feature has not yet been implemented"
+          );          
           break;
         case "selectDbTarget":
-          screen.heading("Select DB Target");
           state = await targetui.selectTarget(state);
           break;
         default:
