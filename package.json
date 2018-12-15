@@ -31,6 +31,7 @@
   "dependencies": {
     "boxen": "^2.0.0",
     "chalk": "^2.4.1",
+    "cli-width": "^2.2.0",
     "fse": "^4.0.1",
     "inquirer": "^6.2.0",
     "minimist": "^1.2.0",
