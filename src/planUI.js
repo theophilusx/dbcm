@@ -10,6 +10,8 @@ const psql = require("./psql");
 const gitui = require("./gitUI");
 const git = require("./git");
 const screen = require("./textScreen");
+const Table = require("cli-table3");
+const chalk = require("chalk");
 
 function commitWarning() {
   let title = "Uncommitted Changes";
@@ -29,18 +31,24 @@ function displayPlanRecord(record) {
     }
     return data;
   }
-  
-  const msg = `
-Created Date:    ${record.createdDate}
-Author:          ${record.author} <${record.authorEmail}>
-Plan Name:       ${record.name} UUID: ${record.uuid}
-Description:     ${record.description}
-Change File:     ${record.change}
-Verify File:     ${record.verify}
-Rollback File:   ${record.rollback}
-Approval Status: ${record.approved ? "Approved" : "Not Approved"}`; 
-
-  console.log(msg + approvedList(record));
+  const table = new Table();
+  table.push(
+    {"Created Date": chalk.green(record.createdDate)},
+    {"Author": chalk.green(record.author)},
+    {"Plan Name": chalk.green(record.name)},
+    {"UUID": chalk.green(record.uuid)},
+    {"Description": chalk.green(record.description)},
+    {"Change File": chalk.green(record.change)},
+    {"Verify File": chalk.green(record.verify)},
+    {"Rollback File": chalk.green(record.rollback)},
+    {"Approval Status": record.approved ? chalk.green("Approved") : chalk.red("Not Approved")},
+  );
+  if (record.approved) {
+    table.push({
+      "Approvals": approvedList(record)
+    });
+  }
+  console.log(table.toString());
 }
 
 async function createPlan(state) {
@@ -69,7 +77,6 @@ async function createPlan(state) {
         message: "Create this change record:"
       }]);
       if (answers.createPlan) {
-        screen.heading("Create New Plan");
         await plans.createChangePlan(state, planRecord);
         let planMap = state.developmentPlans();
         planMap.set(planRecord.uuid, planRecord);
@@ -83,7 +90,7 @@ async function createPlan(state) {
                                  + `${planRecord.name}`);
         }
       } else {
-        console.log("Cancelled Plan");      
+        screen.infoMsg("Cancelled", "Plan creation cancelled");
       }
     } else {
       commitWarning();
@@ -130,7 +137,6 @@ async function listPlans(state, planType) {
         planChoices
       );
       if (!menu.doExit(state.menuChoice())) {
-        screen.heading("Plan Record");
         displayPlanRecord(planMap.get(state.menuChoice()));
       }
     } while (!menu.doExit(state.menuChoice()));
@@ -199,11 +205,12 @@ async function submitPlanForApproval(state) {
   const logName = `${moduleName}.submitPlanForApproval`;
 
   try {
-    screen.heading("Submit Plan for Approval");
     state = await selectPlan(state, "developmentPlans");
     let pName = state.currentPlan().split(":")[1];
-    screen.infoMsg("Moving Plan to Pending", `Moving ${pName} plan `
-                   + "to pending group for approval");
+    screen.infoMsg(
+      "Moving Plan to Pending",
+      `Moving ${pName} plan to pending group for approval`
+    );
     state = await plans.movePlanToPending(state);
     return state;
   } catch (err) {
