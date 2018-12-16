@@ -161,9 +161,9 @@ function makePlanRecord(state, name, desc) {
       name: name,
       description: desc,
       uuid: newUUID,
-      change: path.join("changes", `${name.replace(/\s+/g, "-")}-${newUUID}.sql`),
-      verify: path.join("verify", `${name.replace(/\s+/g, "-")}-${newUUID}.sql`),
-      rollback: path.join("rollback", `${name.replace(/\s+/g, "-")}-${newUUID}.sql`)
+      change: path.join("changes", `${name.replace(/\s+/g, "-")}.sql`),
+      verify: path.join("verify", `${name.replace(/\s+/g, "-")}.sql`),
+      rollback: path.join("rollback", `${name.replace(/\s+/g, "-")}.sql`)
     };
     return plan;
   } catch (err) {
@@ -174,7 +174,7 @@ function makePlanRecord(state, name, desc) {
 function createChangePlan(state, plan) {
   const logName = `${moduleName}.createChangePlan`;
   const repo = state.get("repoObject");
-  const newBranch = `${plan.name.replace(/\s+/g, "-")}-${plan.uuid}`;
+  const newBranch = `${plan.name.replace(/\s+/g, "-")}`;
 
   return git.createBranch(repo, newBranch)
     .then(branchRef => {
@@ -195,7 +195,7 @@ async function movePlanToPending(state) {
     let devPlans = state.developmentPlans();
     let pendingPlans = state.pendingPlans();
     let [pType, pName, pId] = state.currentPlan().split(":");
-    let branch = `${pName.replace(/\s+/g, "-")}-${pId}`;
+    let branch = `${pName.replace(/\s+/g, "-")}`;
     if (pType != "developmentPlans") {
       throw new Error(`Cannot move a plan of type ${pType} to pending`);
     }
@@ -209,7 +209,7 @@ async function movePlanToPending(state) {
     await state.writeConfigFile();
     let repo = state.get("repoObject");
     let files = await repo.getStatus();
-    await git.addAndCommit(state, files, `Commit ${pName} for approval`);
+    await git.addAndCommit(state, files, `Commit plan '${pName}' for approval`);
     await git.pullMaster(repo);
     await git.mergeBranchIntoMaster(state, branch);
     return state;

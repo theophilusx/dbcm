@@ -109,6 +109,7 @@ function buildPlanListUI(pMap) {
     return `${r.name} : ${r.author} : ${r.createdDate} : `
       + `${r.approved ? "Approved" : "Unapproved"}`;
   }
+
   try {
     for (let p of pMap.keys()) {
       let pData = pMap.get(p);
