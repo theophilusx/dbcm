@@ -104,15 +104,17 @@ async function applyCurrentPlan(state) {
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
     let sha = await git.getChangesSha(state, plan);
     let target = state.currentTargetDef();
-    screen.heading("Apply Change");
     let [output, errors] = await psqlExec(state, changeFile);
     if (filterUninterestingContent(errors).length) {
       screen.errorMsg("Plan Failed", errors);
       await query.updateAppliedPlanStatus(state, plan, "Failed", pType, sha);
       await query.addLogRecord(target, plan, errors);
       return false;
-    } 
-    screen.infoMsg("Plan Applied Successfully", output);
+    }
+    console.log(output);
+    screen.infoMsg(
+      "Plan Applied Successfully",
+      `Plan ${plan.name} applied without error`);
     await query.updateAppliedPlanStatus(state, plan, "Applied", pType, sha);
     await query.addLogRecord(target, plan, output);
     return true;
@@ -128,14 +130,17 @@ async function verifyCurrentPlan(state) {
     let plan = getPlan(state);
     let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
     let target = state.currentTargetDef();
-    screen.heading("Verify Change");
     let [output, errors] = await psqlExec(state, verifyFile);
     if (filterUninterestingContent(errors).length) {
       screen.errorMsg("Verify Failure", errors);
       await query.addLogRecord(target, plan, errors);
       return false;
     }
-    screen.infoMsg("Plan Verified", output);
+    console.log(output);
+    screen.infoMsg(
+      "Plan Verified",
+      `Plan ${plan.name} verification script ran without errors`
+    );
     await query.updateVerifiedPlanStatus(state, plan, "Verified");
     await query.addLogRecord(target, plan, output);
     return true;
@@ -150,7 +155,6 @@ async function rollbackPlan(state, plan) {
   try {
     let rollbackFile = path.join(state.home(), state.currentRepository(), plan.rollback);
     let target = state.currentTargetDef();
-    screen.heading("Rollback Change");
     let [output, errors] = await psqlExec(state, rollbackFile);
     if (filterUninterestingContent(errors).length) {
       screen.errorMsg("Rollback Failure", errors);
@@ -164,8 +168,12 @@ async function rollbackPlan(state, plan) {
       await query.updateRollbackPlanStatus(state, plan, "Unknown");
       await query.addLogRecord(target, plan, errors);
       return false;
-    } 
-    screen.infoMsg("Rollback Successful", "Change successfully rolled back");
+    }
+    console.log(output);
+    screen.infoMsg(
+      "Rollback Successful",
+      `Plan ${plan.name} has been successfully rolled back`
+    );
     await query.updateRollbackPlanStatus(state, plan, "Rolledback");
     await query.addLogRecord(target, plan, output);
     return true;

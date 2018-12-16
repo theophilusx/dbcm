@@ -296,19 +296,7 @@ function rollbackActions(state) {
       } else {
         let planInfo = plans.findPlan(state, pId);
         if (planInfo.length) {
-          let status = await psql.rollbackPlan(state, planInfo[1]);
-          if (!status) {
-            screen.errorMsg(
-              "Failed Rollback",
-              "The plan roll back encountered errors. You need to manually verify the\n"
-              + "databse state to ensure it is consistent and correct"
-            );
-          } else {
-            screen.infoMsg(
-              "Rollback Complete",
-              "The rollback script completed without errors"
-            );
-          }
+          await psql.rollbackPlan(state, planInfo[1]);
         } else {
           screen.errorMsg(
             "No Plan Definition",
