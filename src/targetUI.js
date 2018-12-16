@@ -14,6 +14,7 @@ const menu = require("./textMenus");
 const vsprintf = require("sprintf-js").vsprintf;
 const planui = require("./planUI");
 const git = require("./git");
+const Table = require("cli-table3");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
@@ -151,42 +152,31 @@ function selectTarget(state) {
 
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
-  const lineFmt = "| %17s | %-20s | %10s | %10s | %10s | %22s |";
-  const sep = vsprintf("|-%1$'-17s-+-%1$'-20s-+-%1$'-10s-+-%1$'-10s-+-%1$'-10s-+-%1$'-22s-|", ["-"]);
-  const heading = vsprintf(lineFmt, [
-    "Applied Date",
-    "Plan Name",
-    "Version",
-    "Status",
-    "Applied By",
-    "UUID"
-  ]);
-  
-  function formatLine(r) {
-    const fmt = "YYYY-MM-DD HH:mm";
-
-    return vsprintf(lineFmt, [
-      moment(r.applied_dt).format(fmt),
-      r.plan_name.substring(0,20),
-      r.repository_version.substring(0,10),
-      r.status.substring(0,10),
-      r.applied_by.substring(0,10),
-      r.plan_id
-    ]);
-  }
+  const fmt = "YYYY-MM-DD HH:mm";
+  const table = new Table({
+    head: ["Applied Date", "Plan Name", "Version", "Status", "Applied By", "UUID"],
+    colWidth: [17, 20, 10, 10, 10, 22]
+  });
   
   try {
-    screen.heading("Change State");
     let targetState = await queries.getTargetState(state);
-    console.log(sep);
-    console.log(heading);
-    console.log(sep);
     if (targetState.length) {
       for (let t of targetState) {
-        console.log(formatLine(t));
+        table.push([
+          moment(t.applied_dt).format(fmt),
+          t.plan_name,
+          t.repository_version,
+          t.status,
+          t.applied_by,
+          t.plan_id
+        ]);
       }
+      console.log(table.toString());
     } else {
-      console.log("No applied changes");
+      screen.infoMsg(
+        "No Applied Changes",
+        "There has been no changes applied to this target"
+      );
     }
     return state;
   } catch (err) {
@@ -196,24 +186,11 @@ async function listTargetState(state) {
 
 async function listUnappliedPlans(state) {
   const logName = `${moduleName}.listUnappliedPlans`;
-  const lineFmt = "| %30s | %10s | %50s | %10s |";
-  const sep = vsprintf("|-%1$'-30s-+-%1$'-10s-+-%1$'-50s-+-%1$'-10s-|", ["-"]);
-  const header = vsprintf(lineFmt, [
-    "Plan Name",
-    "Version",
-    "Descritpion",
-    "Author"
-  ]);
+  const table = new Table({
+    head: ["Plan Name", "Version", "Description", "Author"],
+    wordWrap: true
+  });
 
-  function formatLine(r) {
-    return vsprintf(lineFmt, [
-      r.name.substring(0,30),
-      state.currentReleaseTag(),
-      r.description.substring(0,50),
-      r.author.substring(0,10)
-    ]);
-  }
-  
   try {
     let approvedPlans = new Map(state.approvedPlans());
     let target = state.currentTargetDef();
@@ -227,16 +204,22 @@ async function listUnappliedPlans(state) {
         console.log(`${plan.name} has changed and needs to be re-applied`);
       }
     }
-    screen.heading("Unapplied Change Plans");
-    console.log(sep);
-    console.log(header);
-    console.log(sep);
     if (approvedPlans.size) {
       for (let p of approvedPlans.keys()) {
-        console.log(formatLine(approvedPlans.get(p)));
+        let plan = approvedPlans.get(p);
+        table.push([
+          plan.name,
+          state.currentReleaseTag(),
+          plan.description,
+          plan.author
+        ]);
       }
+      console.log(table.toString());
     } else {
-      console.log("All approved change plans have bene applied to this target");
+      screen.infoMsg(
+        "No Outstanding Changes",
+        "There are no approved change plans needing to be applied to this target"
+      );
     }
     return state;
   } catch (err) {
@@ -258,11 +241,12 @@ async function applyNextChange(state) {
         approvedPlans.delete(pId);
       }
     }
-    screen.heading("Apply Next Change Plan");
     if (approvedPlans.size) {
       let plan = approvedPlans.values().next().value;
       planui.displayPlanRecord(plan);
-      let choice = await menu.displayConfirmMenu("Apply Change Record", "Apply this change record:");
+      let choice = await menu.displayConfirmMenu(
+        "Apply Change Record",
+        "Apply this change record:");
       if (choice) {
         state.setCurrentPlan(`approvedPlans:${plan.name}:${plan.uuid}`);
         let applyStatus = await psql.applyCurrentPlan(state);
@@ -273,7 +257,10 @@ async function applyNextChange(state) {
         }
       }
     } else {
-      screen.infoMsg("No Unapplied Plans", "There are no outstanding plans needing to be applied to this target");
+      screen.infoMsg(
+        "No Unapplied Plans",
+        "There are no outstanding plans needing to be applied to this target"
+      );
     }
     return state;
   } catch (err) {
@@ -294,7 +281,7 @@ function rollbackActions(state) {
       if (sequence > 0) {
         screen.warningMsg(
           "Multiple Rollbacks",
-          "The plan you ahve selected was not the most recent plan applied to this target\n"
+          "The plan you have selected was not the most recent plan applied to this target\n"
             + "If you decide to continue, all change plans applied following the plan you selected\n"
             + "will be rolled back. \n"
             + `A total of ${sequence + 1} plans will be rolled back`
@@ -307,7 +294,6 @@ function rollbackActions(state) {
           console.dir(planDefs);
         }
       } else {
-        console.log(`Rollback plan ${pId}`);
         let planInfo = plans.findPlan(state, pId);
         if (planInfo.length) {
           let status = await psql.rollbackPlan(state, planInfo[1]);
@@ -318,10 +304,16 @@ function rollbackActions(state) {
               + "databse state to ensure it is consistent and correct"
             );
           } else {
-            screen.infoMsg("Rollback Complete", "The rollback script completed without errors");
+            screen.infoMsg(
+              "Rollback Complete",
+              "The rollback script completed without errors"
+            );
           }
         } else {
-          screen.errorMsg("No Plan Definition", `Could not find a plan definition for ${pId}`);
+          screen.errorMsg(
+            "No Plan Definition",
+            `Could not find a plan definition for ${pId}`
+          );
         }
       }
       return state;
