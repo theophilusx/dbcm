@@ -157,6 +157,7 @@ function makePlanRecord(state, name, desc) {
       author: state.username(),
       authorEmail: state.email(),
       approved: false,
+      approvalSha: "",
       approvals: [],
       name: name,
       description: desc,
@@ -226,7 +227,7 @@ async function movePlanToApproved(state) {
     if (pType != "pendingPlans") {
       throw new Error(`Cannot move a plan of type ${pType} to approved`);
     }
-    state = approvals.addApproval(state);
+    state = await approvals.addApproval(state);
     let pendingPlans = state.pendingPlans();
     let approvedPlans = state.approvedPlans();
     let planDef = pendingPlans.get(pId);

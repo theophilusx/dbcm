@@ -30,13 +30,17 @@ function approvalActions(state) {
       }
       switch (answer.choice) {
       case "viewPlan":
-        screen.heading("Review Plan");
         if (state.currentPlan() === "?:?:?") {
-          screen.errorMsg("No Current Plan", "You must select a plan for approval before it can be reviewed");
+          screen.errorMsg(
+            "No Current Plan",
+            "You must select a plan for approval before it can be reviewed"
+          );
         } else {
           let [pType, pName, pId] = state.currentPlan().split(":");
           if (pType != "pendingPlans") {
-            screen.errorMsg("Wrong Plan Type", "Current plan must be a pending plan");
+            screen.errorMsg(
+              "Wrong Plan Type",
+              "The currently selected plan is not a plan pending approval");
           } else {
             let plan = state.pendingPlans().get(pId);
             let files = [
@@ -49,27 +53,34 @@ function approvalActions(state) {
         }
         break;
       case "comparePlan":
-        screen.heading("Compare Plans");
         screen.infoMsg("Function Not Implemented", "This function has not yet been implemented");
         break;
       case "approvePlan":
-        screen.heading("Approve Plan");
         if (state.currentPlan === "?:?:?") {
-          screen.errorMsg("No Current Plan", "You must select a pending plan for approval");
+          screen.errorMsg(
+            "No Current Plan",
+            "You must select a pending plan for approval"
+          );
         } else {
           let [pType, pName, pId] = state.currentPlan().split(":");
           if (pType != "pendingPlans") {
-            screen.errorMsg("Wrong Plan Type", "Current plan must be a pending plan to be approved");
+            screen.errorMsg(
+              "Wrong Plan Type",
+              "Current plan must be a pending plan to be approved"
+            );
           } else {
             state = await plans.movePlanToApproved(state);
           }
         }
         break;
       case "rejectPlan":
-        screen.heading("Reject Plan");
+        screen.infoMsg("Function Not Implemented", "This function has not yet been implemented");
         break;
       default:
-        console.log(`Unrecognised action choice: ${answer.choice}`);
+        screen.errorMsg(
+          "Unrecognised Action",
+          `${logName}: No associated action for choice ${answer.choice}`
+        );
       }
       return state;
     } catch (err) {

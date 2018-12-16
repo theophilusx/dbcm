@@ -6,6 +6,7 @@ const VError = require("verror");
 const path = require("path");
 const fse = require("fse");
 const moment = require("moment");
+const git = require("./git");
 
 function readApprovalsFile(state) {
   const logName = `${moduleName}.readApprovalsFile`;
@@ -63,17 +64,22 @@ function isApprover(state) {
   }
 }
 
-function addApproval(state) {
+async function addApproval(state) {
   const logName = `${moduleName}.addApproval`;
 
   try {
     let pId = state.currentPlan().split(":")[2];
     let pendingPlans = state.pendingPlans();
     let planDef = pendingPlans.get(pId);
+    if (planDef.approvals.length === 0) {
+      // First approval, so set approval version sha
+      let changesSha = await git.getChangesSha(state, planDef);
+      planDef.approvalSha = changesSha;
+    }
     planDef.approvals.push({
       name: state.username(),
       email: state.email(),
-      date: moment().format("YYYY-MM-DD HH:mm:ss")
+      date: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
     if (state.approvalType() === "any"
         || state.approvers().size === planDef.approvals.length) {
