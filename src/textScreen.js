@@ -12,11 +12,17 @@ const boxOptions = {
 };
 
 function menuHeading(txt) {
-  console.log(`\n\t${chalk.underline.yellow(txt)}\n`);
+  let width = cliWidth({defaultWidth: 80});
+  let paddingSize = (width - txt.length) / 2;
+  let padding = " ".repeat(paddingSize);
+  console.log(`${padding}${chalk.underline.yellow(txt)}\n`);
 }
 
 function heading(txt) {
-  console.log(`\n\t${chalk.underline.cyan(txt)}\n`);
+  let width = cliWidth({defaultWidth: 80});
+  let paddingSize = (width - txt.length) / 2;
+  let padding = " ".repeat(paddingSize);
+  console.log(`${padding}${chalk.underline.cyan(txt)}\n`);
 }
 
 function status(state) {
