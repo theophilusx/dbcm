@@ -19,7 +19,7 @@ async function main() {
     if (!appState.username()) {
       appState = await configui.getConfig(appState);
     }
-    if (appState.currentRepository() === undefined) {
+    if (!appState.currentRepository()) {
       appState = await repoui.selectRepository(appState);
     }
     if (menu.doExit(appState.menuChoice())) {
@@ -28,12 +28,13 @@ async function main() {
     appState = await git.setupRepository(appState);
     appState = await plans.readPlanFiles(appState);
     appState = await approvals.readApprovalsFile(appState);
-    if (appState.currentTarget() === undefined) {
+    if (!appState.currentTarget()) {
       appState = await targetui.selectTarget(appState);
     }
+    await appState.writeConfigFile();
     appState = await mainui.mainMenu(appState);
     console.log("Exiting DBCM");
-    appState.writeConfigFile();
+    await appState.writeConfigFile();
   } catch (err) {
     throw new VError(err, "Main loop error");
   }

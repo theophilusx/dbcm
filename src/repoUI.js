@@ -4,9 +4,9 @@ const moduleName = "repoUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const approvals = require("./approvals");
 const menu = require("./textMenus");
 const git = require("./git");
+const screen = require("./textScreen");
 
 function setup(state) {
   const logName = `${moduleName}.setup`;
@@ -90,7 +90,6 @@ function repoAction(appState) {
       if (answers.choice === "exitMenu") {
         return appState;
       } else if (answers.choice === "newRepository") {
-        console.log("Adding new repository...");
         let repoMap = appState.repositories();
         repoMap.set(answers.newName, {
           url: answers.newURL,
@@ -121,16 +120,14 @@ function repoAction(appState) {
           appState.setApprovalType(approvalType);
           appState.setApprovers(approverMap);
           appState = await git.setupRepository(appState);
-          await approvals.writeApprovalsFile(appState);
         }
       } else {
         appState.setCurrentRepository(answers.choice);
       }
-      await appState.writeConfigFile();
       return appState;
     } catch (err) {
-      throw new VError(err, `${logName} Failed processing menu actions`);
-
+      screen.errorMsg(logName, err.message);
+      return appState;
     }
   };
 }
