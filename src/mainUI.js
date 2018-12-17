@@ -94,6 +94,9 @@ function developmentPlanActions(state) {
         case "testDevPlan":
           state = await planui.applyChangePlan(state, "developmentPlans");
           break;
+        case "rollbackDevPlan":
+          state = await planui.rollbackChangePlan(state, "developmentPlans");
+          break;
         case "commitPlan":
           state = await planui.submitPlanForApproval(state);
           break;

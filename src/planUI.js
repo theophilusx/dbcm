@@ -202,6 +202,19 @@ async function applyChangePlan(state, type) {
   }
 }
 
+async function rollbackChangePlan(state, type) {
+  const logName = `${moduleName}.rollbackChangePlan`;
+
+  try {
+    state = await selectPlan(state, type);
+    let plan = state.currentPlanDef();
+    await psql.rollbackPlan(state, plan);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
 async function submitPlanForApproval(state) {
   const logName = `${moduleName}.submitPlanForApproval`;
 
@@ -225,5 +238,6 @@ module.exports = {
   listPlans,
   selectPlan,
   applyChangePlan,
+  rollbackChangePlan,
   submitPlanForApproval  
 };

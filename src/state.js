@@ -272,6 +272,27 @@ async function createApplicationState() {
       setCurrentPlan: (type, name, id) => {
         return set("currentPlan", `${type}:${name}:${id}`);
       },
+      currentPlanDef: () => {
+        const logName = `${moduleName}.currentPlanDef`;
+
+        try {
+          let [pType, pName, pId] = get("currentPlan").split(":");
+          switch (pType) {
+          case "developmentPlans":
+            return get("developmentPlans").get(pId);
+          case "pendingPlans":
+            return get("pendingPlans").get(pId);
+          case "approvedPlans":
+            return get("approvedPlans").get(pId);
+          case "rejectedPlans":
+            return get("rejectedPlans").get(pId);
+          default:
+            throw new Error(`Unknown plan type: ${pType}`);
+          }
+        } catch (err) {
+          throw new VError(err, `${logName}`);
+        }
+      },
       menuChoice: () => {
         return get("menuChoice");
       },
