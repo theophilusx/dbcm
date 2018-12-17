@@ -31,6 +31,25 @@ function filterUninterestingContent(str) {
   }
 }
 
+function extractErrors(data) {
+  const logName = `${moduleName}.extractErrors`;
+
+  try {
+    let lines = filterUninterestingContent(data).split("\n");
+    let output = [];
+    let matches;
+    for (let l of lines) {
+      if ((matches = l.match(/\/([^/]+.sql):(\d+):.*ERROR:(.*)$/))) {
+        output.push(`${matches[1]} Line ${matches[2]} ${matches[3]}`);
+      } else {
+        output.push(l);
+      }
+    }
+    return output.join("\n");
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
 function psqlExec(state, script) {
 
   return new Promise((resolve, reject) => {
@@ -105,8 +124,9 @@ async function applyCurrentPlan(state) {
     let sha = await git.getChangesSha(state, plan);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, changeFile);
-    if (filterUninterestingContent(errors).length) {
-      screen.errorMsg("Plan Failed", errors);
+    let filteredErrors = extractErrors(errors);
+    if (filteredErrors.length) {
+      screen.errorMsg("Plan Failed", filteredErrors);
       await query.updateAppliedPlanStatus(state, plan, "Failed", pType, sha);
       await query.addLogRecord(target, plan, errors);
       return false;
@@ -131,8 +151,9 @@ async function verifyCurrentPlan(state) {
     let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, verifyFile);
-    if (filterUninterestingContent(errors).length) {
-      screen.errorMsg("Verify Failure", errors);
+    let filteredErrors = extractErrors(errors);
+    if (filteredErrors.length) {
+      screen.errorMsg("Verify Failure", filteredErrors);
       await query.addLogRecord(target, plan, errors);
       return false;
     }
@@ -156,8 +177,9 @@ async function rollbackPlan(state, plan) {
     let rollbackFile = path.join(state.home(), state.currentRepository(), plan.rollback);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, rollbackFile);
-    if (filterUninterestingContent(errors).length) {
-      screen.errorMsg("Rollback Failure", errors);
+    let filteredErrors = extractErrors(errors);
+    if (filteredErrors.length) {
+      screen.errorMsg("Rollback Failure", filteredErrors);
       screen.warningMsg(
         "Unknown DB State",
         "Because the rollback script had errors, the state of the database is now uncertain\n"
