@@ -112,7 +112,7 @@ function statusString(s) {
   if (s.isTypechange()) {
     words.push("TYPECHANGE");
   }
-  return `${words.join(" ")} ${s.path()} ${s.status()}`; 
+  return `${words.join(" ")} ${s.path()}`; 
 }
 
 /**

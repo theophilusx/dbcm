@@ -5,13 +5,20 @@ const moduleName = "gitUI";
 const VError = require("verror");
 const inquirer = require("inquirer");
 const git = require("./git");
+const screen = require("./textScreen");
 
 function getConflictedChange(fileList) {
-  let conflictFiles = fileList.map(f => f.isConflicted());
-  if (conflictFiles.length) {
-    return conflictFiles.map(f => f.path());
+  const logName = `${moduleName}.getConflicedChange`;
+
+  try {
+    let conflictFiles = fileList.filter(f => f.isConflicted());
+    if (conflictFiles.length) {
+      return conflictFiles.map(f => f.path());
+    }
+    return [];
+  } catch (err) {
+    throw new VError(err, `${logName} `);
   }
-  return [];
 }
 
 async function commitChanges(state) {
@@ -31,11 +38,10 @@ async function commitChanges(state) {
         return false;
       }
       let changeStrings = files.map(f => git.statusString(f));
-      console.log(`Changed File Status - ${files.length} file(s)\n`);
-      for (let c of changeStrings) {
-        console.log(c);
-      }
-      console.log("");
+      screen.infoMsg(
+        `Changed File Status - ${files.length} file(s)`,
+        changeStrings.join("\n")
+      );
       let answer = await inquirer.prompt([
         {
           type: "confirm",
