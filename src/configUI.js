@@ -50,22 +50,20 @@ function setup(state) {
   }
 }
 
-function getConfig(state) {
+async function getConfig(state) {
   const logName = `${moduleName}.getConfig`;
   const questions = setup(state);
-  return inquirer.prompt(questions)
-    .then(answers => {
-      state.set("user", answers.user);
-      state.set("home", answers.repositoryHome);
-      state.set("psqlPath", answers.psqlPath);
-      return state.writeConfigFile();
-    })
-    .then(() => {
-      return state;
-    })
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to get config settings`);
-    });
+
+  try {
+    let answers = await inquirer.prompt(questions);
+    state.set("user", answers.user);
+    state.set("home", answers.repositoryHome);
+    state.set("psqlPath", answers.psqlPath);
+    await state.writeConfigFile();
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to get config settings`);
+  }
 }
 
 module.exports = {
