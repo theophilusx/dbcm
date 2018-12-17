@@ -15,6 +15,7 @@ const vsprintf = require("sprintf-js").vsprintf;
 const planui = require("./planUI");
 const git = require("./git");
 const Table = require("cli-table3");
+const cliWidth = require("cli-width");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
@@ -152,13 +153,21 @@ function selectTarget(state) {
 
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
+  const width = cliWidth({defaultWidth: 80}) - 6;
   const fmt = "YYYY-MM-DD HH:mm";
-  const table = new Table({
-    head: ["Applied Date", "Plan Name", "Version", "Status", "Applied By", "UUID"],
-    colWidth: [17, 20, 10, 10, 10, 22]
-  });
+  
+  
   
   try {
+    let fixedWidth = 18 + 10 + 12 + 30 + 10;
+    let extraSpace = Math.floor((width - fixedWidth) / 2);
+    let nameSize = parseInt(30 + extraSpace);
+    let bySize = parseInt(10 + extraSpace);
+    console.log(`width: ${width} Fixed: ${fixedWidth} extra: ${extraSpace} Name: ${nameSize} By: ${bySize}`);
+    const table = new Table({
+      head: ["Applied Date", "Plan Name", "Version", "Status", "Applied By"],
+      colWidths: [18, nameSize, 10, 12, bySize]
+    });
     let targetState = await queries.getTargetState(state);
     if (targetState.length) {
       for (let t of targetState) {
@@ -167,8 +176,7 @@ async function listTargetState(state) {
           t.plan_name,
           t.repository_version,
           t.status,
-          t.applied_by,
-          t.plan_id
+          t.applied_by
         ]);
       }
       console.log(table.toString());

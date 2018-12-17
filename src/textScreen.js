@@ -1,7 +1,6 @@
 "use strict";
 
 const chalk = require("chalk");
-const sprintf = require("sprintf-js").sprintf;
 const boxen = require("boxen");
 const cliWidth = require("cli-width");
 const wrapAnsi = require("wrap-ansi");
