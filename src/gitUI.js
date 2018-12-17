@@ -23,7 +23,20 @@ function getConflictedChange(fileList) {
 
 async function commitChanges(state) {
   const logName = `${moduleName}.commitChanges`;
-
+  const questions = [{
+    type: "confirm",
+    name: "choice",
+    message: "Commit these changes:"
+  },
+  {
+    type: "input",
+    name: "msg",
+    message: "Commit message:",
+    when: answer => {
+      return answer.choice;
+    }
+  }];
+  
   try {
     let repo = state.get("repoObject");
     let files = await repo.getStatus();
@@ -42,21 +55,8 @@ async function commitChanges(state) {
         `Changed File Status - ${files.length} file(s)`,
         changeStrings.join("\n")
       );
-      let answer = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "choice",
-          message: "Commit these changes:"
-        },
-        {
-          type: "input",
-          name: "msg",
-          message: "Commit message:",
-          when: answer => {
-            return answer.choice;
-          }
-        }
-      ]);
+      let answer = await inquirer.prompt(questions);
+      console.dir(answer);
       if (answer.choice) {
         await git.addAndCommit(state, files, answer.msg);
         return true;

@@ -67,6 +67,7 @@ async function createPlan(state) {
 
   try {
     let committedChanges = await gitui.commitChanges(state);
+    console.log(`${logName}: committedChanges = ${committedChanges}`);
     if (committedChanges) {
       let answers = await inquirer.prompt(questions);
       let planRecord = plans.makePlanRecord(state, answers.name, answers.description);
@@ -77,18 +78,7 @@ async function createPlan(state) {
         message: "Create this change record:"
       }]);
       if (answers.createPlan) {
-        await plans.createChangePlan(state, planRecord);
-        let planMap = state.developmentPlans();
-        planMap.set(planRecord.uuid, planRecord);
-        state.setDevelopmentPlans(planMap);
-        state.setCurrentPlan("developmentPlans", planRecord.name, planRecord.uuid);
-        await plans.writePlanFiles(state);
-        let repo = state.get("repoObject");
-        let changedFiles = await repo.getStatus();
-        if (changedFiles.length) {
-          await git.addAndCommit(state, changedFiles, "Initial commit for plan: "
-                                 + `${planRecord.name}`);
-        }
+        state = await plans.createChangePlan(state, planRecord);
       } else {
         screen.infoMsg("Cancelled", "Plan creation cancelled");
       }
@@ -130,17 +120,18 @@ async function listPlans(state, planType) {
   try {
     let planMap = state.get(planType);
     let planChoices = buildPlanListUI(planMap);
+    let choice;
     do {
-      state = await menu.displayListMenu(
+      choice = await menu.displayListMenu(
         state,
         `Change Plans - (${planType})`,
         "Select Plan:",
         planChoices
       );
-      if (!menu.doExit(state.menuChoice())) {
-        displayPlanRecord(planMap.get(state.menuChoice()));
+      if (!menu.doExit(choice)) {
+        displayPlanRecord(planMap.get(choice));
       }
-    } while (!menu.doExit(state.menuChoice()));
+    } while (!menu.doExit(choice));
     state.setMenuChoice("");
     return state;
   } catch (err) {
@@ -154,20 +145,21 @@ async function selectPlan(state, planType) {
   try {
     let planMap = state.get(planType);
     let planChoices = buildPlanListUI(planMap);
-    state = await menu.displayListMenu(
+    let choice = await menu.displayListMenu(
       state,
       `Change Plan - (${planType})`,
       "Select Plan:",
       planChoices
     );
-    if (!menu.doExit(state.menuChoice())) {
-      let plan = planMap.get(state.menuChoice());
+    if (!menu.doExit(choice)) {
+      let plan = planMap.get(choice);
       let repo = state.get("repoObject");
       let allCommitted = await gitui.commitChanges(state);
+      console.log(`${logName}: allCommitted?: ${allCommitted}`);
       if (allCommitted) {
         state.setCurrentPlan(planType, plan.name, plan.uuid);
         if (planType === "developmentPlans") {
-          let branchName = `${plan.name.replace(/\s+/g, "-")}-${plan.uuid}`;
+          let branchName = `${plan.name.replace(/\s+/g, "-")}`;
           await repo.checkoutBranch(branchName);
         } else {
           await repo.checkoutBranch("master");

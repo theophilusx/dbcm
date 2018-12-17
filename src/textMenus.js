@@ -50,11 +50,10 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
     const logName = `${moduleName}.defaultAction`;
 
     try {
-      state.setMenuChoice(answer.choice);
-      return state;
+      return answer.choice;
     } catch (err) {
       screen.errorMsg(logName, err.message);
-      return state;
+      return "";
     }
   }
 

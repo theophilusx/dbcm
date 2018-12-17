@@ -172,21 +172,29 @@ function makePlanRecord(state, name, desc) {
   }
 }
 
-function createChangePlan(state, plan) {
+async function createChangePlan(state, plan) {
   const logName = `${moduleName}.createChangePlan`;
   const repo = state.get("repoObject");
   const newBranch = `${plan.name.replace(/\s+/g, "-")}`;
 
-  return git.createBranch(repo, newBranch)
-    .then(branchRef => {
-      return repo.checkoutBranch(branchRef);
-    })
-    .then(() => {
-      return files.createChangeFiles(state, plan);
-    })
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to create new plan`);
-    });
+  try {
+    let ref = await git.createBranch(repo, newBranch);
+    await repo.checkoutBranch(ref);
+    await files.createChangeFiles(state, plan);
+    let planMap = state.developmentPlans();
+    planMap.set(plan.uuid, plan);
+    state.setDevelopmentPlans(planMap);
+    state.setCurrentPlan("developmentPlans", plan.name, plan.uuid);
+    await writePlanFiles(state);
+    let changedFiles = await repo.getStatus();
+    if (changedFiles.length) {
+      await git.addAndCommit(state, changedFiles, "Initial commit for plan: "
+                             + `'${plan.name}'`);
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to create change plan`);
+  }
 }
 
 async function movePlanToPending(state) {
