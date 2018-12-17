@@ -4,11 +4,12 @@ const chalk = require("chalk");
 const sprintf = require("sprintf-js").sprintf;
 const boxen = require("boxen");
 const cliWidth = require("cli-width");
+const wrapAnsi = require("wrap-ansi");
 
 const boxOptions = {
   padding: 1,
   float: "center",
-  align: "center"
+  align: "left"
 };
 
 function menuHeading(txt) {
@@ -39,7 +40,10 @@ function status(state) {
 }
 
 function errorMsg(title, msg) {
-  console.log(boxen(chalk`{bgRed {yellowBright ${title}}}\n\n${msg}`, boxOptions));
+  let width = cliWidth({defaultWidth: 80});
+  let txt = wrapAnsi(msg, width - 4, {hard: true});
+  
+  console.log(boxen(chalk`{red ${title}}\n\n${txt}`, boxOptions));
 }
 
 function warningMsg(title, msg) {
