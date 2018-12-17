@@ -155,7 +155,6 @@ async function selectPlan(state, planType) {
       let plan = planMap.get(choice);
       let repo = state.get("repoObject");
       let allCommitted = await gitui.commitChanges(state);
-      console.log(`${logName}: allCommitted?: ${allCommitted}`);
       if (allCommitted) {
         state.setCurrentPlan(planType, plan.name, plan.uuid);
         if (planType === "developmentPlans") {
@@ -169,7 +168,7 @@ async function selectPlan(state, planType) {
       }
     }
     state.setMenuChoice("");
-    return state;
+    return [state, choice];
   } catch (err) {
     throw new VError(err, `${logName} Error selecting change set`);
   }
@@ -177,9 +176,13 @@ async function selectPlan(state, planType) {
 
 async function applyChangePlan(state, type) {
   const logName = `${moduleName}.applyChangePlan`;
-
+  const choice;
   try {
-    state = await selectPlan(state, type);
+    [state, choice] = await selectPlan(state, type);
+    if (menu.doExit(choice)) {
+      // no plan selected to act on
+      return state;
+    }
     let applied = await psql.applyCurrentPlan(state);
     if (applied) {
       await psql.verifyCurrentPlan(state);
@@ -196,9 +199,14 @@ async function applyChangePlan(state, type) {
 
 async function rollbackChangePlan(state, type) {
   const logName = `${moduleName}.rollbackChangePlan`;
-
+  const choice;
+  
   try {
-    state = await selectPlan(state, type);
+    [state, choice] = await selectPlan(state, type);
+    if (menu.doExit(choice)) {
+      // no plan selected to act on
+      return state;
+    }
     let plan = state.currentPlanDef();
     await psql.rollbackPlan(state, plan);
     return state;
@@ -209,9 +217,14 @@ async function rollbackChangePlan(state, type) {
 
 async function submitPlanForApproval(state) {
   const logName = `${moduleName}.submitPlanForApproval`;
-
+  const choice;
+  
   try {
-    state = await selectPlan(state, "developmentPlans");
+    [state, choice] = await selectPlan(state, "developmentPlans");
+    if (menu.doExit(choice)) {
+      // no plan selected to act on
+      return state;
+    }
     let pName = state.currentPlan().split(":")[1];
     screen.infoMsg(
       "Moving Plan to Pending",

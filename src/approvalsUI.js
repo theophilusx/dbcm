@@ -91,46 +91,56 @@ function approvalActions(state) {
 
 async function processPlanApproval(state) {
   const logName = `${moduleName}.processPlanApproval`;
-
+  let choice;
+  
   try {
-    if (state.approvalType === "none") {
-      screen.warningMsg("Approval Not Required", "This repository does not require that "
-                        + "new change plans are approved");
+    [state, choice] = await planui.selectPlan(state, "pendingPlans");
+    if (menu.doExit(choice)) {
       return state;
     }
-    if (!approvals.isApprover(state)) {
-      screen.errorMsg("Not Approved", "You are not one of the registered approvers "
-                      + "for this repository");
+
+    if (state.approvalType === "none") {
+      screen.warningMsg(
+        "Approval Not Required",
+        "This repository does not require that "
+          + "new change plans are approved"
+      );
+    } else if (!approvals.isApprover(state)) {
+      screen.errorMsg(
+        "Not Approved",
+        "You are not one of the registered approvers "
+          + "for this repository"
+      );
       let approvers = state.approvers();
       let approverNames = [];
       for (let a of approvers.keys()) {
         approverNames.push(approvers.get(a));
       }
-      screen.infoMsg("Approvers List", "The following are nominaed approvers for this repository "
-                    + `\n${approverNames.join("\n")}`);
+      screen.infoMsg(
+        "Approvers List",
+        "The following are nominaed approvers for this repository "
+          + `\n${approverNames.join("\n")}`
+      );
       return state;
     }
-    state = await planui.selectPlan(state, "pendingPlans");
-    if (!menu.doExit(state.menuChoice())) {
-      let repo = state.get("repoObject");
-      await git.createBranch(repo, "approvals");
-      state = await menu.displayListMenu(
-        state,
-        "Plan Approval Menu",
-        "Select approval action:",
-        actionChoices,
-        approvalActions(state)
-      );
-      let changeFiles = await repo.getStatus();
-      if (changeFiles.length) {
-        let [pName, pId] = state.currentPlan().split(":").slice(1);
-        let commitMsg = `Committing approval for change plan ${pName} (${pId})`;
-        await git.addAndCommit(state, changeFiles, commitMsg);
-        await git.pullMaster(repo);
-        await git.mergeBranchIntoMaster(state, "approvals");
-      } else {
-        await git.deleteBranch(repo, "approvals");        
-      }
+    let repo = state.get("repoObject");
+    await git.createBranch(repo, "approvals");
+    state = await menu.displayListMenu(
+      state,
+      "Plan Approval Menu",
+      "Select approval action:",
+      actionChoices,
+      approvalActions(state)
+    );
+    let changeFiles = await repo.getStatus();
+    if (changeFiles.length) {
+      let [pName, pId] = state.currentPlan().split(":").slice(1);
+      let commitMsg = `Committing approval for change plan ${pName} (${pId})`;
+      await git.addAndCommit(state, changeFiles, commitMsg);
+      await git.pullMaster(repo);
+      await git.mergeBranchIntoMaster(state, "approvals");
+    } else {
+      await git.deleteBranch(repo, "approvals");        
     }
     return state;
   } catch (err) {
