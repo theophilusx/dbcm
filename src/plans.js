@@ -203,7 +203,7 @@ async function movePlanToPending(state) {
   const logName = `${moduleName}.movePlanToPending`;
 
   try {
-    if (state.currentPlanType() != "devleopmentPlans") {
+    if (state.currentPlanType() != "developmentPlans") {
       screen.errorMsg(
         "Wrong Plan Type",
         "Only development plans can be moved to the pending plan group\n"

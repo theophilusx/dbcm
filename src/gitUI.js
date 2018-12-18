@@ -56,7 +56,6 @@ async function commitChanges(state) {
         changeStrings.join("\n")
       );
       let answer = await inquirer.prompt(questions);
-      console.dir(answer);
       if (answer.choice) {
         await git.addAndCommit(state, files, answer.msg);
         return true;
