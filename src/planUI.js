@@ -11,6 +11,8 @@ const gitui = require("./gitUI");
 const screen = require("./textScreen");
 const Table = require("cli-table3");
 const chalk = require("chalk");
+const path = require("path");
+const edit = require("./edit");
 
 function commitWarning() {
   let title = "Uncommitted Changes";
@@ -194,6 +196,27 @@ async function selectPlan(state, planType) {
   }
 }
 
+async function editPlan(state) {
+  const logName = `${moduleName}.editPlan`;
+  let choice;
+  
+  try {
+    [state, choice] = await selectPlan(state, "developmentPlans");
+    if (!menu.doExit(choice)) {
+      let plan = state.currentPlanDef();
+      let files = [
+        path.join(state.home(), state.currentRepository(), plan.change),
+        path.join(state.home(), state.currentRepository(), plan.verify),
+        path.join(state.home(), state.currentRepository(), plan.rollback)
+      ];
+      edit.editFiles(files);
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
 async function applyChangePlan(state, type) {
   const logName = `${moduleName}.applyChangePlan`;
   let choice;
@@ -262,6 +285,7 @@ module.exports = {
   createPlan,
   listPlans,
   selectPlan,
+  editPlan,
   applyChangePlan,
   rollbackChangePlan,
   submitPlanForApproval  

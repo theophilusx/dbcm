@@ -4,8 +4,6 @@ const VError = require("verror");
 const moduleName = "mainUI";
 const menu = require("./textMenus");
 const planui = require("./planUI");
-const path = require("path");
-const edit = require("./edit");
 const targetui = require("./targetUI");
 const screen = require("./textScreen");
 const repoui = require("./repoUI");
@@ -70,22 +68,12 @@ function developmentPlanActions(state) {
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
-        let choice;
         switch (answer.choice) {
         case "newPlan":
           state = await planui.createPlan(state);
           break;
         case "editPlan":
-          [state, choice] = planui.selectPlan(state);
-          if (!menu.doExit(choice)) {
-            let plan = state.currentPlanDef();
-            let files = [
-              path.join(state.home(), state.currentRepository(), plan.change),
-              path.join(state.home(), state.currentRepository(), plan.verify),
-              path.join(state.home(), state.currentRepository(), plan.rollback)
-            ];
-            edit.editFiles(files);
-          }
+          state = await planui.editPlan(state);
           break;
         case "testDevPlan":
           state = await planui.applyChangePlan(state, "developmentPlans");
