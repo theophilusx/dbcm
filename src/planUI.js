@@ -22,6 +22,13 @@ a new plan or switch to an alternative plan
   screen.warningMsg(title, msg);
 }
 
+function emptyGroupWarning(type) {
+  screen.infoMsg(
+    "Empty Plan Group",
+    `There are currently no plans defined in the ${type} group`
+  );
+}
+
 function displayPlanRecord(record) {
   function approvedList(r) {
     let data = "";
@@ -66,7 +73,6 @@ async function createPlan(state) {
 
   try {
     let committedChanges = await gitui.commitChanges(state);
-    console.log(`${logName}: committedChanges = ${committedChanges}`);
     if (committedChanges) {
       let answers = await inquirer.prompt(questions);
       let planRecord = plans.makePlanRecord(state, answers.name, answers.description);
@@ -118,6 +124,10 @@ async function listPlans(state, planType) {
 
   try {
     let planMap = state.get(planType);
+    if (planMap.size === 0) {
+      emptyGroupWarning(planType);
+      return state;
+    }
     let planChoices = buildPlanListUI(planMap);
     let choice;
     do {
@@ -143,6 +153,10 @@ async function selectPlan(state, planType) {
 
   try {
     let planMap = state.get(planType);
+    if (planMap.size === 0) {
+      emptyGroupWarning(planType);
+      return [state, undefined];
+    }
     let planChoices = buildPlanListUI(planMap);
     let choice = await menu.displayListMenu(
       state,
