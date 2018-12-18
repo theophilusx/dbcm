@@ -153,7 +153,7 @@ async function displayConfirmMenu(title, msg) {
 }
 
 function doExit(choice) {
-  if (choice === "exitMenu") {
+  if (choice === undefined || choice === "exitMenu") {
     return true;
   }
   return false;

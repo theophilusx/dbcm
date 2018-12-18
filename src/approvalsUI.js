@@ -91,7 +91,6 @@ async function processPlanApproval(state) {
     if (menu.doExit(choice)) {
       return state;
     }
-
     if (state.approvalType === "none") {
       screen.warningMsg(
         "Approval Not Required",

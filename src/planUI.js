@@ -151,10 +151,16 @@ async function selectPlan(state, planType) {
       planChoices
     );
     if (!menu.doExit(choice)) {
-      let plan = planMap.get(choice);
-      let repo = state.get("repoObject");
+      if (choice === state.currentPlan()) {
+        // same plan - no change
+        return [state, choice];
+      }
+      // different plan - need to commit changes and set branch
       let allCommitted = await gitui.commitChanges(state);
       if (allCommitted) {
+        // we have committed changes and can now switch to new plan
+        let plan = planMap.get(choice);
+        let repo = state.get("repoObject");
         state.setCurrentPlanType(planType);
         state.setCurrentPlan(plan.uuid);
         if (planType === "developmentPlans") {
@@ -163,12 +169,12 @@ async function selectPlan(state, planType) {
         } else {
           await repo.checkoutBranch("master");
         }
-      } else {
-        commitWarning();
+        return [state, choice];
       }
+      commitWarning();
+      return [state, undefined];
     }
-    state.setMenuChoice("");
-    return [state, choice];
+    return [state, undefined];
   } catch (err) {
     throw new VError(err, `${logName} Error selecting change set`);
   }
