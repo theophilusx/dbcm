@@ -8,7 +8,6 @@ const plans = require("./plans");
 const menu = require("./textMenus");
 const psql = require("./psql");
 const gitui = require("./gitUI");
-const git = require("./git");
 const screen = require("./textScreen");
 const Table = require("cli-table3");
 const chalk = require("chalk");
@@ -200,7 +199,7 @@ async function applyChangePlan(state, type) {
 
 async function rollbackChangePlan(state, type) {
   const logName = `${moduleName}.rollbackChangePlan`;
-  const choice;
+  let choice;
   
   try {
     [state, choice] = await selectPlan(state, type);
@@ -218,7 +217,7 @@ async function rollbackChangePlan(state, type) {
 
 async function submitPlanForApproval(state) {
   const logName = `${moduleName}.submitPlanForApproval`;
-  const choice;
+  let choice;
   
   try {
     [state, choice] = await selectPlan(state, "developmentPlans");
