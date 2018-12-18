@@ -78,8 +78,7 @@ function developmentPlanActions(state) {
         case "editPlan":
           [state, choice] = planui.selectPlan(state);
           if (!menu.doExit(choice)) {
-            let pId = state.currentPlan().split(":")[2];
-            let plan = state.developmentPlans().get(pId);
+            let plan = state.currentPlanDef();
             let files = [
               path.join(state.home(), state.currentRepository(), plan.change),
               path.join(state.home(), state.currentRepository(), plan.verify),
