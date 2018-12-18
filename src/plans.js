@@ -10,6 +10,7 @@ const fse = require("fse");
 const git = require("./git");
 const files = require("./files");
 const approvals = require("./approvals");
+const screen = require("./textScreen");
 
 function planObjectToMap(pobj) {
   const logName = `${moduleName}.planObjectToMap`;
