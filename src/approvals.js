@@ -68,7 +68,7 @@ async function addApproval(state) {
   const logName = `${moduleName}.addApproval`;
 
   try {
-    let pId = state.currentPlan().split(":")[2];
+    let pId = state.currentPlan();
     let pendingPlans = state.pendingPlans();
     let planDef = pendingPlans.get(pId);
     if (planDef.approvals.length === 0) {

@@ -256,7 +256,8 @@ async function applyNextChange(state) {
         "Apply Change Record",
         "Apply this change record:");
       if (choice) {
-        state.setCurrentPlan(`approvedPlans:${plan.name}:${plan.uuid}`);
+        state.setCurrentPlanType("approvedPlans");
+        state.setCurrentPlan(plan.uuid);
         let applyStatus = await psql.applyCurrentPlan(state);
         if (applyStatus) {
           await psql.verifyCurrentPlan(state);

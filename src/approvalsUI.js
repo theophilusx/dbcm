@@ -30,13 +30,14 @@ function approvalActions(state) {
       }
       switch (answer.choice) {
       case "viewPlan":
-        if (state.currentPlan() === "?:?:?") {
+        if (!state.currentPlan()) {
           screen.errorMsg(
             "No Current Plan",
             "You must select a plan for approval before it can be reviewed"
           );
         } else {
-          let [pType, pName, pId] = state.currentPlan().split(":");
+          let pType = state.currentPlanType();
+          let pId = state.currentPlan();
           if (pType != "pendingPlans") {
             screen.errorMsg(
               "Wrong Plan Type",
@@ -56,21 +57,13 @@ function approvalActions(state) {
         screen.infoMsg("Function Not Implemented", "This function has not yet been implemented");
         break;
       case "approvePlan":
-        if (state.currentPlan === "?:?:?") {
+        if (state.currentPlanType() != "pendingPlans") {
           screen.errorMsg(
-            "No Current Plan",
-            "You must select a pending plan for approval"
+            "Wrong Plan Type",
+            "Current plan must be a pending plan to be approved"
           );
         } else {
-          let [pType, pName, pId] = state.currentPlan().split(":");
-          if (pType != "pendingPlans") {
-            screen.errorMsg(
-              "Wrong Plan Type",
-              "Current plan must be a pending plan to be approved"
-            );
-          } else {
-            state = await plans.movePlanToApproved(state);
-          }
+          state = await plans.movePlanToApproved(state);
         }
         break;
       case "rejectPlan":
@@ -134,8 +127,8 @@ async function processPlanApproval(state) {
     );
     let changeFiles = await repo.getStatus();
     if (changeFiles.length) {
-      let [pName, pId] = state.currentPlan().split(":").slice(1);
-      let commitMsg = `Committing approval for change plan ${pName} (${pId})`;
+      let planDef = state.currentPlanDef();
+      let commitMsg = `Committing approval for change plan '${planDef.name}'`;
       await git.addAndCommit(state, changeFiles, commitMsg);
       await git.pullMaster(repo);
       await git.mergeBranchIntoMaster(state, "approvals");

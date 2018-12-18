@@ -70,17 +70,14 @@ function developmentPlanActions(state) {
       if (menu.doExit(answer.choice)) {
         return state;
       } else {
+        let choice;
         switch (answer.choice) {
         case "newPlan":
           state = await planui.createPlan(state);
           break;
         case "editPlan":
-          if (state.currentPlan() === "?:?:?") {
-            screen.infoMsg(
-              "No Plan Selected",
-              "You must select a plan before it can be edited"
-            );
-          } else {
+          [state, choice] = planui.selectPlan(state);
+          if (!menu.doExit(choice)) {
             let pId = state.currentPlan().split(":")[2];
             let plan = state.developmentPlans().get(pId);
             let files = [

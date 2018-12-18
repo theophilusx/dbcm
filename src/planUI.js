@@ -156,7 +156,8 @@ async function selectPlan(state, planType) {
       let repo = state.get("repoObject");
       let allCommitted = await gitui.commitChanges(state);
       if (allCommitted) {
-        state.setCurrentPlan(planType, plan.name, plan.uuid);
+        state.setCurrentPlanType(planType);
+        state.setCurrentPlan(plan.uuid);
         if (planType === "developmentPlans") {
           let branchName = `${plan.name.replace(/\s+/g, "-")}`;
           await repo.checkoutBranch(branchName);
@@ -176,7 +177,8 @@ async function selectPlan(state, planType) {
 
 async function applyChangePlan(state, type) {
   const logName = `${moduleName}.applyChangePlan`;
-  const choice;
+  let choice;
+  
   try {
     [state, choice] = await selectPlan(state, type);
     if (menu.doExit(choice)) {
@@ -186,9 +188,8 @@ async function applyChangePlan(state, type) {
     let applied = await psql.applyCurrentPlan(state);
     if (applied) {
       await psql.verifyCurrentPlan(state);
-    } else {
-      let pId = state.currentPlan().split(":")[2];
-      let changePlan = plans.findPlan(state, pId)[1];
+    } else {                    // change plan applied with errors
+      let changePlan = state.currentPlanDef();
       await psql.rollbackPlan(state, changePlan);
     }
     return state;
@@ -225,7 +226,7 @@ async function submitPlanForApproval(state) {
       // no plan selected to act on
       return state;
     }
-    let pName = state.currentPlan().split(":")[1];
+    let pName = state.currentPlanDef().name;
     screen.infoMsg(
       "Moving Plan to Pending",
       `Moving ${pName} plan to pending group for approval`

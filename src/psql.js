@@ -83,53 +83,24 @@ function psqlExec(state, script) {
   });
 }
 
-function getPlan(state) {
-  const logName = `${moduleName}.getPlan`;
-
-  try {
-    if (state.currentPlan === "?:?:?") {
-      throw new Error("No current plan defined");
-    }
-    let [pType, pName, pId] = state.currentPlan().split(":");
-    let plan;
-    switch (pType) {
-    case "developmentPlans":
-      plan = state.developmentPlans().get(pId);
-      break;
-    case "pendingPlans":
-      plan = state.pendingPlans().get(pId);
-      break;
-    case "approvedPlans":
-      plan = state.approvedPlans().get(pId);
-      break;
-    case "rejectedPlans":
-      plan = state.rejectedPlans().get(pId);
-      break;
-    default:
-      throw new Error(`Unknown plan type: ${pType}`);
-    }
-    return plan;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to get plan definition`);
-  }
-}
-
 async function applyCurrentPlan(state) {
   const logName = `${moduleName}.applyCurrentPlan`;
 
   try {
-    let plan = getPlan(state);
-    let pType = state.currentPlan().split(":")[0];
+    let plan = state.currentPlanDef();
+    let pType = state.currentPlanType();
     let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
     let sha = await git.getChangesSha(state, plan);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, changeFile);
-    let filteredErrors = extractErrors(errors);
-    if (filteredErrors.length) {
-      screen.errorMsg("Plan Failed", filteredErrors);
-      await query.updateAppliedPlanStatus(state, plan, "Failed", pType, sha);
-      await query.addLogRecord(target, plan, errors);
-      return false;
+    if (errors) {
+      let filteredErrors = extractErrors(errors);
+      if (filteredErrors.length) {
+        screen.errorMsg("Plan Failed", filteredErrors);
+        await query.updateAppliedPlanStatus(state, plan, "Failed", pType, sha);
+        await query.addLogRecord(target, plan, errors);
+        return false;
+      }
     }
     console.log(output);
     screen.infoMsg(
@@ -147,15 +118,17 @@ async function verifyCurrentPlan(state) {
   const logName = `${moduleName}.verifyCurrentPlan`;
 
   try {
-    let plan = getPlan(state);
+    let plan = state.currentPlanDef();
     let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, verifyFile);
-    let filteredErrors = extractErrors(errors);
-    if (filteredErrors.length) {
-      screen.errorMsg("Verify Failure", filteredErrors);
-      await query.addLogRecord(target, plan, errors);
-      return false;
+    if (errors) {
+      let filteredErrors = extractErrors(errors);
+      if (filteredErrors.length) {
+        screen.errorMsg("Verify Failure", filteredErrors);
+        await query.addLogRecord(target, plan, errors);
+        return false;
+      }
     }
     console.log(output);
     screen.infoMsg(
@@ -177,19 +150,21 @@ async function rollbackPlan(state, plan) {
     let rollbackFile = path.join(state.home(), state.currentRepository(), plan.rollback);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, rollbackFile);
-    let filteredErrors = extractErrors(errors);
-    if (filteredErrors.length) {
-      screen.errorMsg("Rollback Failure", filteredErrors);
-      screen.warningMsg(
-        "Unknown DB State",
-        "Because the rollback script had errors, the state of the database is now uncertain\n"
-          + "It is HIGHLY REOMMENDED that a manual inspection is performed and any necessary\n"
-          + "manual actions are taken to ensure the database is in a consistent and known state\n"
-        + "i.e. state is as would be expected prior to application of the current change plan"
-      );
-      await query.updateRollbackPlanStatus(state, plan, "Unknown");
-      await query.addLogRecord(target, plan, errors);
-      return false;
+    if (errors) {
+      let filteredErrors = extractErrors(errors);
+      if (filteredErrors.length) {
+        screen.errorMsg("Rollback Failure", filteredErrors);
+        screen.warningMsg(
+          "Unknown DB State",
+          "Because the rollback script had errors, the state of the database is now uncertain\n"
+            + "It is HIGHLY REOMMENDED that a manual inspection is performed and any necessary\n"
+            + "manual actions are taken to ensure the database is in a consistent and known state\n"
+            + "i.e. state is as would be expected prior to application of the current change plan"
+        );
+        await query.updateRollbackPlanStatus(state, plan, "Unknown");
+        await query.addLogRecord(target, plan, errors);
+        return false;
+      }
     }
     console.log(output);
     screen.infoMsg(

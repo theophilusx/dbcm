@@ -184,7 +184,8 @@ async function createChangePlan(state, plan) {
     let planMap = state.developmentPlans();
     planMap.set(plan.uuid, plan);
     state.setDevelopmentPlans(planMap);
-    state.setCurrentPlan("developmentPlans", plan.name, plan.uuid);
+    state.setCurrentPlanType("developmentPlans");
+    state.setCurrentPlan(plan.uuid);
     await writePlanFiles(state);
     let changedFiles = await repo.getStatus();
     if (changedFiles.length) {
@@ -201,24 +202,28 @@ async function movePlanToPending(state) {
   const logName = `${moduleName}.movePlanToPending`;
 
   try {
+    if (state.currentPlanType() != "devleopmentPlans") {
+      screen.errorMsg(
+        "Wrong Plan Type",
+        "Only development plans can be moved to the pending plan group\n"
+        + `Current plan is in the ${state.currentPlanType()} group`
+      );
+      return state;
+    }
+    let planDef = state.currentPlanDef();
     let devPlans = state.developmentPlans();
     let pendingPlans = state.pendingPlans();
-    let [pType, pName, pId] = state.currentPlan().split(":");
-    let branch = `${pName.replace(/\s+/g, "-")}`;
-    if (pType != "developmentPlans") {
-      throw new Error(`Cannot move a plan of type ${pType} to pending`);
-    }
-    let planDef = devPlans.get(pId);
-    pendingPlans.set(pId, planDef);
-    devPlans.delete(pId);
+    let branch = `${planDef.name.replace(/\s+/g, "-")}`;
+    pendingPlans.set(planDef.uuid, planDef);
+    devPlans.delete(planDef.uuid);
     state.setDevelopmentPlans(devPlans);
     state.setPendingPlans(pendingPlans);
     await writePlanFiles(state);
-    state.setCurrentPlan(`pendingPlans:${pName}:${pId}`);
+    state.setCurrentPlanType("pendingPlans");
     await state.writeConfigFile();
     let repo = state.get("repoObject");
     let files = await repo.getStatus();
-    await git.addAndCommit(state, files, `Commit plan '${pName}' for approval`);
+    await git.addAndCommit(state, files, `Commit plan '${planDef.name}' for approval`);
     await git.pullMaster(repo);
     await git.mergeBranchIntoMaster(state, branch);
     return state;
@@ -231,20 +236,24 @@ async function movePlanToApproved(state) {
   const logName = `${moduleName}.movePlanToApproved`;
 
   try {
-    let [pType, pName, pId] = state.currentPlan().split(":");
-    if (pType != "pendingPlans") {
-      throw new Error(`Cannot move a plan of type ${pType} to approved`);
+    if (state.currentPlanType() != "pendingPlans") {
+      screen.errorMsg(
+        "Wrong Plan Type",
+        "Only plans in the pending group can be moved to the approved group\n"
+        + `The current plan is in the ${state.currentPlanType()} group`
+      );
+      return state;
     }
     state = await approvals.addApproval(state);
     let pendingPlans = state.pendingPlans();
     let approvedPlans = state.approvedPlans();
-    let planDef = pendingPlans.get(pId);
+    let planDef = state.currentPlanDef();
     if (planDef.approved) {
-      approvedPlans.set(pId, planDef);
-      pendingPlans.delete(pId);
+      approvedPlans.set(planDef.uuid, planDef);
+      pendingPlans.delete(planDef.uuid);
       state.setPendingPlans(pendingPlans);
       state.setApprovedPlans(approvedPlans);
-      state.setCurrentPlan(`approvedPlans:${pName}:${pId}`);      
+      state.setCurrentPlanType("approvedPlans");
     }
     await writePlanFiles(state);
     await state.writeConfigFile();

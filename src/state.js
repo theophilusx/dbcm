@@ -21,15 +21,16 @@ function readConfig() {
         return {
           version: "1.0.0",
           user: {
-            name: "",
-            email: ""
+            name: undefined,
+            email: undefined
           },
-          repositoryHome: "",
+          repositoryHome: undefined,
           repositories: [],
-          psqlPath: "",
-          currentRepository: "",
-          currentTarget: "",
-          currentPlan: "",
+          psqlPath: undefined,
+          currentRepository: undefined,
+          currentTarget: undefined,
+          currentPlan: undefined,
+          currentPlanType: undefined,
           currentReleaseTag: "0.0.0"
         };
       }
@@ -50,6 +51,7 @@ async function writeConfig(appState) {
     newConfig.currentRepository = appState.get("currentRepository");
     newConfig.currentTarget = appState.get("currentTarget");
     newConfig.currentPlan = appState.get("currentPlan");
+    newConfig.currentPlanType = appState.get("currentPlanType");
     newConfig.currentReleaseTag = appState.get("currentReleaseTag");
     let repoList = [];
     let repoMap = appState.get("repositories");
@@ -145,6 +147,7 @@ async function createApplicationState() {
     state.set("currentRepository", config.currentRepository);
     state.set("currentTarget", config.currentTarget);
     state.set("currentPlan", config.currentPlan);
+    state.set("currentPlanType", config.currentPlanType);
     state.set("psqlPath", config.psqlPath);
     state.set("approvalType", "none");
     state.set("approvers", new Map());
@@ -267,16 +270,23 @@ async function createApplicationState() {
         return set("rejectedPlans", planMap);
       },
       currentPlan: () => {
-        return get("currentPlan") ? state.get("currentPlan") : "?:?:?";
+        return get("currentPlan");
       },
-      setCurrentPlan: (type, name, id) => {
-        return set("currentPlan", `${type}:${name}:${id}`);
+      setCurrentPlan: id => {
+        return set("currentPlan", id);
+      },
+      currentPlanType: () => {
+        return get("currentPlanType");
+      },
+      setCurrentPlanType: type => {
+        return set("currentPlanType", type);
       },
       currentPlanDef: () => {
         const logName = `${moduleName}.currentPlanDef`;
 
         try {
-          let [pType, pName, pId] = get("currentPlan").split(":");
+          let pType = get("currentPlanType");
+          let pId = get("currentPlan");
           switch (pType) {
           case "developmentPlans":
             return get("developmentPlans").get(pId);
