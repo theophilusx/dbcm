@@ -11,6 +11,8 @@ const git = require("./git");
 const path = require("path");
 const edit = require("./edit");
 const plans = require("./plans");
+const inquirer = require("inquirer");
+const gitui = require("./gitUI");
 
 const actionChoices = menu.buildChoices([
   ["Review/Edit Plan", "viewPlan"],
@@ -117,6 +119,7 @@ async function processPlanApproval(state) {
     }
     let repo = state.get("repoObject");
     await git.createBranch(repo, "approvals");
+    await repo.checkoutBranch("approvals");
     state = await menu.displayListMenu(
       state,
       "Plan Approval Menu",
@@ -140,7 +143,126 @@ async function processPlanApproval(state) {
   }
 }
 
+async function selectApprovalType(state) {
+  const logName = `${moduleName}.selectApprovalType`;
+  const choices = [{
+    name: "No approvals required",
+    value: "none"
+  },
+  {
+    name: "Any single registered approver can approve a change",
+    value: "any"
+  },
+  {
+    name: "All registered approvers must approve the change",
+    value: "all"
+  }];
+  
+  try {
+    console.log(`Current Approval Type: ${state.approvalType()}`);
+    let choice = await menu.displayListMenu(
+      state,
+      "Approval Type",
+      "Select approval type:",
+      choices
+    );
+    state.setApprovalType(choice);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
+async function selectApprovers(state) {
+  const logName = `${moduleName}.selectApprovers`;
+
+  try {
+    let choices = [];
+    let approvers = state.approvers();
+    for (let a of approvers.keys()) {
+      choices.push({
+        name: `${approvers.get(a)} <${a}>`,
+        value: a
+      });
+    }
+    let question1 = [{
+      type: "checkbox",
+      name: "toKeep",
+      choices: choices,
+      message: "Select approvers to keep:"
+    }];
+    let question2 = [{
+      type: "confirm",
+      name: "addMore",
+      message: "Do you want to add another approver:"
+    },
+    {
+      type: "input",
+      name: "name",
+      message: "Approver's name:",
+      when: answer => {
+        return answer.addMore;
+      }
+    },
+    {
+      type: "input",
+      name: "email",
+      message: "Approver's email address:",
+      when: answer => {
+        return answer.addMore;
+      }
+    }];
+    let newApprovers = new Map();
+    if (approvers.size > 0) {
+      let answer = await inquirer.prompt(question1);
+      for (let a of answer.toKeep) {
+        newApprovers.set(a, approvers.get(a));
+      }
+    }
+    let answer;
+    do {
+      answer = await inquirer.prompt(question2);
+      if (answer.addMore) {
+        newApprovers.set(answer.email, answer.name);
+      }
+    } while (answer.addMore);
+    state.setApprovers(newApprovers);
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
+async function editApprovalSettings(state) {
+  const logName = `${moduleName}.editApprovals`;
+
+  try {
+    let committed = await gitui.commitChanges(state);
+    if (committed) {
+      let repo = state.get("repoObject");
+      await git.createBranch(repo, "approvals");
+      await repo.checkoutBranch("approvals");
+      state = await selectApprovalType(state);
+      state = await selectApprovers(state);
+      await approvals.writeApprovalsFile(state);
+      let changeFiles = await repo.getStatus();
+      if (changeFiles.length) {
+        let commitMsg = "Updating repository approval settings";
+        await git.addAndCommit(state, changeFiles, commitMsg);
+        await git.pullMaster(repo);
+        await git.mergeBranchIntoMaster(state, "approvals");
+      } else {
+        await git.deleteBranch(repo, "approvals");
+      }
+      return state;
+    }
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
 module.exports = {
-  processPlanApproval  
+  processPlanApproval,
+  editApprovalSettings
 };
 

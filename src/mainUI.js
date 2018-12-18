@@ -293,10 +293,7 @@ function repositoryActions(state) {
         );
         break;
       case "editApprovals":
-        screen.infoMsg(
-          "Not Implemented",
-          "This function has not yet been implemented"
-        );
+        state = await approvalsui.editApprovalSettings(state);
         break;
       case "listRepos":
         screen.infoMsg(
