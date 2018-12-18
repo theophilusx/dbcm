@@ -59,6 +59,13 @@ const dbTargetChoices = menu.buildChoices([
   ["Select New Database Target", "selectDbTarget"] 
 ]);
 
+const repositoryChoices = menu.buildChoices([
+  ["Show Repository Details", "showRepo"],
+  ["Edit Approvals Setting", "editApprovals"],
+  ["List Known Repositories", "listRepos"],
+  ["Select Repository", "selectRepo"]
+]);
+
 function developmentPlanActions(state) {
   const logName = "developmentPlanActions";
 
@@ -269,6 +276,51 @@ function targetAction(state) {
   };
 }
 
+function repositoryActions(state) {
+  const logName = "repositoryActions";
+
+  return async answer => {
+    try {
+      state.setMenuChoice(answer.choice);
+      if (menu.doExit(answer.choice)) {
+        return state;
+      }
+      switch (answer.choice) {
+      case "showRepo":
+        screen.infoMsg(
+          "Not Implemented",
+          "This function has not yet been implemented"
+        );
+        break;
+      case "editApprovals":
+        screen.infoMsg(
+          "Not Implemented",
+          "This function has not yet been implemented"
+        );
+        break;
+      case "listRepos":
+        screen.infoMsg(
+          "Not Implemented",
+          "This function has not yet been implemented"
+        );
+        break;
+      case "selectRepo":
+        state = await repoui.selectRepository(state);
+        break;
+      default:
+        screen.errorMsg(
+          "Unrecognised Action",
+          `${logName}: No associated action for choice ${answer.choice}`
+        );
+      }
+      return state;
+    } catch (err) {
+      screen.errorMsg(logName, err.message);
+      return state;
+    }
+  };
+}
+
 function planTypeAction(state) {
   const logName = "setTypeAction";
 
@@ -377,7 +429,16 @@ function mainAction(state) {
           state.setMenuChoice("");
           break;
         case "manageRepositories":
-          state = await repoui.selectRepository(state);
+          do {
+            state = await menu.displayListMenu(
+              state,
+              "Repository Management Menu",
+              "Select Repository Action",
+              repositoryChoices,
+              repositoryActions(state)
+            );
+          } while (!menu.doExit(state.menuChoice()));
+          state.setMenuChoice("");
           break;
         default:
           screen.errorMsg(
