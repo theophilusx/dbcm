@@ -13,6 +13,7 @@ const edit = require("./edit");
 const plans = require("./plans");
 const inquirer = require("inquirer");
 const gitui = require("./gitUI");
+const rejectui = require("./rejectUI");
 
 const actionChoices = menu.buildChoices([
   ["Review/Edit Plan", "viewPlan"],
@@ -86,7 +87,7 @@ function approvalActions(state) {
         break;
       }
       case "rejectPlan":
-        screen.infoMsg("Function Not Implemented", "This function has not yet been implemented");
+        state = rejectui.rejectPlan(state);
         break;
       default:
         screen.errorMsg(
