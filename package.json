@@ -33,6 +33,7 @@
     "chalk": "^2.4.1",
     "cli-table3": "^0.5.1",
     "cli-width": "^2.2.0",
+    "external-editor": "^3.0.3",
     "fse": "^4.0.1",
     "inquirer": "^6.2.0",
     "minimist": "^1.2.0",
