@@ -30,44 +30,61 @@ function approvalActions(state) {
       if (menu.doExit(answer.choice)) {
         return state;
       }
+      let choice = "";
       switch (answer.choice) {
-      case "viewPlan":
-        if (!state.currentPlan()) {
-          screen.errorMsg(
-            "No Current Plan",
-            "You must select a plan for approval before it can be reviewed"
-          );
-        } else {
-          let pType = state.currentPlanType();
-          let pId = state.currentPlan();
-          if (pType != "pendingPlans") {
-            screen.errorMsg(
-              "Wrong Plan Type",
-              "The currently selected plan is not a plan pending approval");
-          } else {
-            let plan = state.pendingPlans().get(pId);
-            let files = [
-              path.join(state.home(), state.currentRepository(), plan.change),
-              path.join(state.home(), state.currentRepository(), plan.verify),
-              path.join(state.home(), state.currentRepository(), plan.rollback)
-            ];
-            edit.editFiles(files);
-          }
+      case "viewPlan": {
+        [state, choice] = planui.selectPlan(state, "pendingPlans");
+        if (menu.doExit(choice)) {
+          return state;
         }
+        let planDef = state.currentPladDef();
+        let fileList = [
+          path.join(state.home(), state.currentRepository(), planDef.change),
+          path.join(state.home(), state.currentRepository(), planDef.verify),
+          path.join(state.home(), state.currentRepository(), planDef.rollback)
+        ];
+        edit.viewFiles(fileList);
         break;
+      }
       case "comparePlan":
-        screen.infoMsg("Function Not Implemented", "This function has not yet been implemented");
+        screen.infoMsg(
+          "Function Not Implemented",
+          "This function has not yet been implemented"
+        );
         break;
-      case "approvePlan":
-        if (state.currentPlanType() != "pendingPlans") {
+      case "approvePlan": {
+        [state, choice] = await planui.selectPlan(state, "pendingPlans");
+        if (menu.doExit(choice)) {
+          return state;
+        }
+        if (state.approvalType !== "none"
+            && !approvals.isApprover(state)) {
           screen.errorMsg(
-            "Wrong Plan Type",
-            "Current plan must be a pending plan to be approved"
+            "Not Approved",
+            "You are not one of the registered approvers "
+              + "for this repository"
           );
+          return state;
+        }
+        state = await approvals.addApproval(state);
+        state = plans.movePlanToApproved(state);
+        let repo = state.get("repoObject");
+        await git.createBranch(repo, "approvals");
+        await repo.checkoutBranch("approvals");
+        await plans.writePlanFiles(state);
+        await state.writeConfigFile();
+        let changeFiles = await repo.getStatus();
+        if (changeFiles.length) {
+          let planDef = state.currentPlanDef();
+          let commitMsg = `Committing approval for change plan '${planDef.name}'`;
+          await git.addAndCommit(state, changeFiles, commitMsg);
+          await git.pullMaster(repo);
+          await git.mergeBranchIntoMaster(state, "approvals");
         } else {
-          state = await plans.movePlanToApproved(state);
+          await git.deleteBranch(repo, "approvals");        
         }
         break;
+      }
       case "rejectPlan":
         screen.infoMsg("Function Not Implemented", "This function has not yet been implemented");
         break;
@@ -86,40 +103,8 @@ function approvalActions(state) {
 
 async function processPlanApproval(state) {
   const logName = `${moduleName}.processPlanApproval`;
-  let choice;
   
   try {
-    [state, choice] = await planui.selectPlan(state, "pendingPlans");
-    if (menu.doExit(choice)) {
-      return state;
-    }
-    if (state.approvalType === "none") {
-      screen.warningMsg(
-        "Approval Not Required",
-        "This repository does not require that "
-          + "new change plans are approved"
-      );
-    } else if (!approvals.isApprover(state)) {
-      screen.errorMsg(
-        "Not Approved",
-        "You are not one of the registered approvers "
-          + "for this repository"
-      );
-      let approvers = state.approvers();
-      let approverNames = [];
-      for (let a of approvers.keys()) {
-        approverNames.push(approvers.get(a));
-      }
-      screen.infoMsg(
-        "Approvers List",
-        "The following are nominaed approvers for this repository "
-          + `\n${approverNames.join("\n")}`
-      );
-      return state;
-    }
-    let repo = state.get("repoObject");
-    await git.createBranch(repo, "approvals");
-    await repo.checkoutBranch("approvals");
     state = await menu.displayListMenu(
       state,
       "Plan Approval Menu",
@@ -127,16 +112,7 @@ async function processPlanApproval(state) {
       actionChoices,
       approvalActions(state)
     );
-    let changeFiles = await repo.getStatus();
-    if (changeFiles.length) {
-      let planDef = state.currentPlanDef();
-      let commitMsg = `Committing approval for change plan '${planDef.name}'`;
-      await git.addAndCommit(state, changeFiles, commitMsg);
-      await git.pullMaster(repo);
-      await git.mergeBranchIntoMaster(state, "approvals");
-    } else {
-      await git.deleteBranch(repo, "approvals");        
-    }
+    state.menuChoice("");
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to process plan approval`);

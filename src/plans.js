@@ -9,7 +9,6 @@ const moment = require("moment");
 const fse = require("fse");
 const git = require("./git");
 const files = require("./files");
-const approvals = require("./approvals");
 const screen = require("./textScreen");
 
 function planObjectToMap(pobj) {
@@ -203,14 +202,6 @@ async function movePlanToPending(state) {
   const logName = `${moduleName}.movePlanToPending`;
 
   try {
-    if (state.currentPlanType() != "developmentPlans") {
-      screen.errorMsg(
-        "Wrong Plan Type",
-        "Only development plans can be moved to the pending plan group\n"
-        + `Current plan is in the ${state.currentPlanType()} group`
-      );
-      return state;
-    }
     let planDef = state.currentPlanDef();
     let devPlans = state.developmentPlans();
     let pendingPlans = state.pendingPlans();
@@ -233,19 +224,10 @@ async function movePlanToPending(state) {
   }
 }
 
-async function movePlanToApproved(state) {
+function movePlanToApproved(state) {
   const logName = `${moduleName}.movePlanToApproved`;
 
   try {
-    if (state.currentPlanType() != "pendingPlans") {
-      screen.errorMsg(
-        "Wrong Plan Type",
-        "Only plans in the pending group can be moved to the approved group\n"
-        + `The current plan is in the ${state.currentPlanType()} group`
-      );
-      return state;
-    }
-    state = await approvals.addApproval(state);
     let pendingPlans = state.pendingPlans();
     let approvedPlans = state.approvedPlans();
     let planDef = state.currentPlanDef();
@@ -256,11 +238,9 @@ async function movePlanToApproved(state) {
       state.setApprovedPlans(approvedPlans);
       state.setCurrentPlanType("approvedPlans");
     }
-    await writePlanFiles(state);
-    await state.writeConfigFile();
     return state;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to move development plan to pending plan`);
+    throw new VError(err, `${logName} Failed to move pendingplan to approved plan`);
   }
 }
 

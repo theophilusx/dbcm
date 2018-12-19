@@ -68,9 +68,7 @@ async function addApproval(state) {
   const logName = `${moduleName}.addApproval`;
 
   try {
-    let pId = state.currentPlan();
-    let pendingPlans = state.pendingPlans();
-    let planDef = pendingPlans.get(pId);
+    let planDef = state.currentPlanDef();
     if (planDef.approvals.length === 0) {
       // First approval, so set approval version sha
       let changesSha = await git.getChangesSha(state, planDef);
@@ -81,11 +79,13 @@ async function addApproval(state) {
       email: state.email(),
       date: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    if (state.approvalType() === "any"
+    if (state.approvalType() === "none"
+        || state.approvalType() === "any"
         || state.approvers().size === planDef.approvals.length) {
       planDef.approved = true;
     }
-    pendingPlans.set(pId, planDef);
+    let pendingPlans = state.pendingPlans();
+    pendingPlans.set(planDef.uuid, planDef);
     state.setPendingPlans(pendingPlans);
     return state;
   } catch (err) {
