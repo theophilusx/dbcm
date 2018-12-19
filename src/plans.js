@@ -244,6 +244,25 @@ function movePlanToApproved(state) {
   }
 }
 
+function movePlanToRejected(state) {
+  const logName = `${moduleName}.movePlanToRejected`;
+
+  try {
+    let pendingPlans = state.pendingPlans();
+    let rejectedPlans = state.rejectedPlans();
+    let planDef = state.currentPlanDef();
+    rejectedPlans.set(planDef.uuid, planDef);
+    pendingPlans.delete(planDef.uuid);
+    state.setRejectedPlans(rejectedPlans);
+    state.setPendingPlans(pendingPlans);
+    state.setCurrentPlanType("rejectedPlans");
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to move pendingplan to approved plan`);
+  }
+}
+
+
 function findPlan(state, pId) {
   const logName = `${moduleName}.findPlan`;
 
@@ -274,5 +293,6 @@ module.exports = {
   createChangePlan,
   movePlanToPending,
   movePlanToApproved,
+  movePlanToRejected,
   findPlan
 };
