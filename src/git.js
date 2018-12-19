@@ -6,7 +6,7 @@ const VError = require("verror");
 const path = require("path");
 const Git = require("nodegit");
 const files = require("./files");
-const approvals = require("./approvals");
+//const approvals = require("./approvals");
 
 const cloneOptions = {
   fetchOpts : {
@@ -298,7 +298,6 @@ async function setupRepository(state) {
       let branchRef = await createBranch(repo, "setup");
       await repo.checkoutBranch(branchRef);
       await files.initialiseRepo(repoDest);
-      await approvals.writeApprovalsFile(state);
       let fileList = await repo.getStatus();
       await addAndCommit(state, fileList, "DBCM Init");
       let mergeSig = Git.Signature.now(state.username(), state.email());
