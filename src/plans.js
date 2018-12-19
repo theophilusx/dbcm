@@ -240,7 +240,7 @@ function movePlanToApproved(state) {
     }
     return state;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to move pendingplan to approved plan`);
+    throw new VError(err, `${logName} Failed to move pending plan to approved group`);
   }
 }
 
@@ -258,10 +258,9 @@ function movePlanToRejected(state) {
     state.setCurrentPlanType("rejectedPlans");
     return state;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to move pendingplan to approved plan`);
+    throw new VError(err, `${logName} Failed to move pending plan to rejected group`);
   }
 }
-
 
 function findPlan(state, pId) {
   const logName = `${moduleName}.findPlan`;
