@@ -40,17 +40,23 @@ function status(state) {
 
 function errorMsg(title, msg) {
   let width = cliWidth({defaultWidth: 80});
-  let txt = wrapAnsi(msg, width - 4, {hard: true});
+  let txt = wrapAnsi(msg.replace(/\t/g, ""), width - 4, {hard: true});
   
   console.log(boxen(chalk`{red ${title}}\n\n${txt}`, boxOptions));
 }
 
 function warningMsg(title, msg) {
-  console.log(boxen(chalk`{yellowBright ${title}}\n\n${msg}`, boxOptions));
+  let width = cliWidth({defaultWidth: 80});
+  let txt = wrapAnsi(msg.replace(/\t/g, ""), width - 4, {hard: true});
+  
+  console.log(boxen(chalk`{yellowBright ${title}}\n\n${txt}`, boxOptions));
 }
 
 function infoMsg(title, msg) {
-  console.log(boxen(chalk`{cyan ${title}}\n\n${msg}`, boxOptions));
+  let width = cliWidth({defaultWidth: 80});
+  let txt = wrapAnsi(msg.replace(/\t/g, ""), width - 4, {hard: true});
+
+  console.log(boxen(chalk`{cyan ${title}}\n\n${txt}`, boxOptions));
 }
 
 module.exports = {
