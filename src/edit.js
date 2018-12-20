@@ -4,7 +4,8 @@ const moduleName = "edit";
 
 const VError = require("verror");
 const { execFile } = require("child_process");
-const screen = require("./textScreen");
+const {ExternalEditor} = require("external-editor");
+const fse = require("fse");
 
 function editFiles(files) {
   const logName = `${moduleName}.editFiles`;
@@ -19,22 +20,22 @@ function editFiles(files) {
   });
 }
 
-function viewFiles(files) {
+async function viewFiles(files) {
   const logName = `${moduleName}.viewFiles`;
 
-  screen.infoMsg("File Navigation", "Use :n and :p to move to next and previous file");
-  let args = [
-    "-a TextEdit",
-    ...files
-  ];
-  const child = execFile("open", args, (err, stdout, stderr) => {
-    if (err) {
-      throw new VError(err, `${logName} `);
+  try {
+    let data = "";
+    for (let f of files) {
+      data += `\n-- ${f}\n`;
+      data += await fse.readFile(f, "utf-8");
+      data += `\n-- end of file ${f}`;
     }
-    if (stderr.length) {
-      console.log(`${logName}: ${stderr}`);
-    }
-  });
+    let editor = new ExternalEditor(data);
+    editor.run();
+    editor.cleanup();
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
 }
 
 module.exports = {

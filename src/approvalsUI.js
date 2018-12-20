@@ -38,7 +38,7 @@ function approvalActions(state) {
         if (menu.doExit(choice)) {
           return state;
         }
-        let planDef = state.currentPladDef();
+        let planDef = state.currentPlanDef();
         let fileList = [
           path.join(state.home(), state.currentRepository(), planDef.change),
           path.join(state.home(), state.currentRepository(), planDef.verify),
