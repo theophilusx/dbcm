@@ -16,8 +16,8 @@ const gitui = require("./gitUI");
 const rejectui = require("./rejectUI");
 
 const actionChoices = menu.buildChoices([
-  ["Review/Edit Plan", "viewPlan"],
-  ["Compare to Previous Plan", "comparePlan"],
+  ["Review Plan Source", "viewPlan"],
+  ["View Plan Diff", "comparePlan"],
   ["Approve Plan", "approvePlan"],
   ["Reject Plan", "rejectPlan"]
 ]);
@@ -34,7 +34,7 @@ function approvalActions(state) {
       let choice = "";
       switch (answer.choice) {
       case "viewPlan": {
-        [state, choice] = planui.selectPlan(state, "pendingPlans");
+        [state, choice] = await planui.selectPlan(state, "pendingPlans");
         if (menu.doExit(choice)) {
           return state;
         }
@@ -106,13 +106,15 @@ async function processPlanApproval(state) {
   const logName = `${moduleName}.processPlanApproval`;
   
   try {
-    state = await menu.displayListMenu(
-      state,
-      "Plan Approval Menu",
-      "Select approval action:",
-      actionChoices,
-      approvalActions(state)
-    );
+    do {
+      state = await menu.displayListMenu(
+        state,
+        "Plan Approval Menu",
+        "Select approval action:",
+        actionChoices,
+        approvalActions(state)
+      );
+    } while (!menu.doExit(state.menuChoice()));
     state.menuChoice("");
     return state;
   } catch (err) {

@@ -41,11 +41,13 @@ const pendingPlanChoices = menu.buildChoices([
 const approvedPlanChoices = menu.buildChoices([
   ["List Approved Change Plans", "listApprovedPlans"],
   ["View Change Sources", "viewSource"],
+  ["View Change History", "viewHistory"],
   ["Rweork Approved Change Plan", "reworkApprovedPlan"]
 ]);
 
 const rejectedPlanChoices = menu.buildChoices([
   ["List Rejected Plans", "listRejectedPlans"],
+  ["View Rejection Notice", "viewRejectNotice"],
   ["Rework Rejected Plan", "reworkRejectedPlan"]
 ]);
 
