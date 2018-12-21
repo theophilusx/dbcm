@@ -33,11 +33,11 @@ function emptyGroupWarning(type) {
 
 function displayPlanRecord(record) {
   function approvedList(r) {
-    let data = "";
+    let data = [];
     for (let a of r.approvals) {
-      data += `\n\t${a.name} <${a.email}> on ${a.date}`;
+      data.push(`${a.name} <${a.email}> on ${a.date}`);
     }
-    return data;
+    return data.join("\n");
   }
   const table = new Table();
   table.push(
@@ -53,7 +53,7 @@ function displayPlanRecord(record) {
   );
   if (record.approved) {
     table.push({
-      "Approvals": approvedList(record)
+      "Approvals": chalk.green(approvedList(record))
     });
   }
   console.log(table.toString());
