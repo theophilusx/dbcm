@@ -7,6 +7,7 @@ const inquirer = require("inquirer");
 const git = require("./git");
 const screen = require("./textScreen");
 const Table = require("cli-table3");
+const chalk = require("chalk");
 
 function getConflictedChange(fileList) {
   const logName = `${moduleName}.getConflicedChange`;
@@ -80,7 +81,7 @@ function displayCommitHistory(history) {
       table.push(
         {"Commit": commit.sha()},
         {"Author": `${commit.author().name()} <${commit.author().email()}}>`},
-        {"Date": commit.date()},
+        {"Date": `${commit.date()}`},
         {"Message": commit.message()}
       );
       console.log(table.toString());
@@ -90,7 +91,39 @@ function displayCommitHistory(history) {
   }
 }
 
+async function displayDiff(diffList) {
+  const logName = `${moduleName}.displayDiff`;
+
+  try {
+    for (let diff of diffList) {
+      let patches = await diff.patches();
+      for (let patch of patches) {
+        let hunks = await patch.hunks();
+        for (let hunk of hunks) {
+          let title = `DIFF: ${patch.oldFile().path()} ${patch.newFile().path()}`;
+          let data = `${hunk.header().trim()}\n`;
+          let lines = await hunk.lines();
+          for (let line of lines) {
+            if (String.fromCharCode(line.origin()) === "-") {
+              data += chalk.red(`- ${line.content().trim()}\n`);
+            } else if (String.fromCharCode(line.origin()) === "+") {
+              data += chalk.green(`+ ${line.content().trim()}\n`);
+            } else {
+              data += chalk.white(`= ${line.content().trim()}\n`);
+            }
+          }
+          screen.infoMsg(title, data);
+        }
+      }
+    }
+    return diffList;
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
 module.exports = {
   commitChanges,
-  displayCommitHistory
+  displayCommitHistory,
+  displayDiff
 };

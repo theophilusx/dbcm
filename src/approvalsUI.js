@@ -31,9 +31,9 @@ function approvalActions(state) {
       if (menu.doExit(answer.choice)) {
         return state;
       }
-      let choice = "";
       switch (answer.choice) {
       case "viewPlan": {
+        let choice = "";
         [state, choice] = await planui.selectPlan(state, "pendingPlans");
         if (menu.doExit(choice)) {
           return state;
@@ -47,13 +47,21 @@ function approvalActions(state) {
         edit.viewFiles(fileList);
         break;
       }
-      case "comparePlan":
-        screen.infoMsg(
-          "Function Not Implemented",
-          "This function has not yet been implemented"
-        );
+      case "comparePlan": {
+        let planId;
+        [state, planId] = await planui.selectPlan(state, "pendingPlans");
+        if (menu.doExit(planId)) {
+          return state;
+        }
+        let planDef = state.currentPlanDef();
+        let commitHistory = await git.fileHistory(state, planDef.change);
+        gitui.displayCommitHistory(commitHistory);
+        let diffList = await git.fileDiff(state, commitHistory[0].commit.sha());
+        await gitui.displayDiff(diffList);
         break;
+      }
       case "approvePlan": {
+        let choice;
         [state, choice] = await planui.selectPlan(state, "pendingPlans");
         if (menu.doExit(choice)) {
           return state;

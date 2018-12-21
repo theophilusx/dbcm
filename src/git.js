@@ -328,21 +328,7 @@ async function fileDiff(state, commitSha) {
     let repo = state.get("repoObject");
     let commit = await repo.getCommit(commitSha);
     let diffList = await commit.getDiff();
-    diffList.forEach(async diff => {
-      let patches = await diff.patches();
-      patches.forEach(async patch => {
-        let hunks = await patches.hunks();
-        hunks.forEach(async hunk => {
-          let lines = await hunk.lines();
-          console.log("diff", patch.oldFile().path(), patch.newFile().path());
-          console.log(hunk.header().trim());
-          lines.forEach(line => {
-            console.log(String.fromCharCode(line.origin())
-                        + line.content().trim());
-          });
-        });
-      });
-    });
+    return diffList;
   } catch (err) {
     throw new VError(err, `${logName} `);
   }
