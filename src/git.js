@@ -275,6 +275,79 @@ async function getChangesSha(state, plan) {
   }
 }
 
+async function fileHistory(state, fileName) {
+  const logName = `${moduleName}.fileHistory`;
+  const repo = state.get("repoObject");
+  
+  async function compileHistory(newCommits, commitHistory, file, depth) {
+    const logName = `${moduleName}.fileHistory.compileHistory`;
+    
+
+    try {
+      let lastSha;
+      if (commitHistory.length > 0) {
+        lastSha = commitHistory[commitHistory.length - 1].commit.sha();
+        if (newCommits.length === 1 && newCommits[0].commit.sha() === lastSha) {
+          return commitHistory;
+        }
+      }
+      if (newCommits.length === 0) {
+        return commitHistory;
+      }
+      newCommits.forEach(entry => {
+        commitHistory.push(entry);
+      });
+      lastSha = commitHistory[commitHistory.length - 1].commit.sha();
+      let walker = repo.createRevWalk();
+      walker.push(lastSha);
+      walker.sorting(Git.Revwalk.SORT.TIME);
+      newCommits = await walker.fileHistoryWalk(file, depth);
+      return await compileHistory(newCommits, commitHistory, file, depth);
+    } catch (err) {
+      throw new VError(err, `${logName} `);
+    }
+  }
+  
+  try {
+    let masterCommit = await repo.getMasterCommit();
+    let walker = repo.createRevWalk();
+    walker.push(masterCommit.sha());
+    walker.sorting(Git.Revwalk.SORT.TIME);
+    let newCommits = await walker.fileHistoryWalk(fileName, 500);
+    let commitHistory = await compileHistory(newCommits, [], fileName, 500);
+    return commitHistory;
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
+async function fileDiff(state, commitSha) {
+  const logName = `${moduleName}.fileDiff`;
+
+  try {
+    let repo = state.get("repoObject");
+    let commit = await repo.getCommit(commitSha);
+    let diffList = await commit.getDiff();
+    diffList.forEach(async diff => {
+      let patches = await diff.patches();
+      patches.forEach(async patch => {
+        let hunks = await patches.hunks();
+        hunks.forEach(async hunk => {
+          let lines = await hunk.lines();
+          console.log("diff", patch.oldFile().path(), patch.newFile().path());
+          console.log(hunk.header().trim());
+          lines.forEach(line => {
+            console.log(String.fromCharCode(line.origin())
+                        + line.content().trim());
+          });
+        });
+      });
+    });
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
 /**
  * @async
  *
@@ -326,5 +399,7 @@ module.exports = {
   mergeBranchIntoMaster,
   addReleaseTag,
   getChangesSha,
+  fileHistory,
+  fileDiff,
   setupRepository
 };

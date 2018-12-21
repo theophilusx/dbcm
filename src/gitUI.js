@@ -6,6 +6,7 @@ const VError = require("verror");
 const inquirer = require("inquirer");
 const git = require("./git");
 const screen = require("./textScreen");
+const Table = require("cli-table3");
 
 function getConflictedChange(fileList) {
   const logName = `${moduleName}.getConflicedChange`;
@@ -68,6 +69,28 @@ async function commitChanges(state) {
   }
 }
 
+function displayCommitHistory(history) {
+  const logName = `${moduleName}.displayCommitHistory`;
+
+  try {
+    
+    history.forEach(entry => {
+      let table = new Table();
+      let commit = entry.commit;
+      table.push(
+        {"Commit": commit.sha()},
+        {"Author": `${commit.author().name()} <${commit.author().email()}}>`},
+        {"Date": commit.date()},
+        {"Message": commit.message()}
+      );
+      console.log(table.toString());
+    });
+  } catch (err) {
+    throw new VError(err, `${logName} `);
+  }
+}
+
 module.exports = {
-  commitChanges
+  commitChanges,
+  displayCommitHistory
 };
