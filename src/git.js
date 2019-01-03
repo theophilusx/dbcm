@@ -423,7 +423,6 @@ async function setupRepository(state, repoName, repoUrl, repoHome) {
 }
 
 module.exports = {
-  statusString,
   DbRepository,
   setupRepository
 };
