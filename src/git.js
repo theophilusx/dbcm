@@ -26,41 +26,6 @@ const cloneOptions = {
 };
 
 /**
- * Generates a status string for objects which are new, modified etc
- * Similar to the git status command
- *
- * @param {Object} s - a file status object as returned from getStatus()
- *
- * @return {string} a status string with status and file path
- * 
- */
-function statusString(s) {
-  let words = [];
-  if (s.isConflicted()) {
-    words.push("CONFLICT");
-  }
-  if (s.isDeleted()) {
-    words.push("DELETED");
-  }
-  if (s.isIgnored()) {
-    words.push("IGNORED");
-  }
-  if (s.isModified()) {
-    words.push("MODIFIED");
-  }
-  if (s.isNew()) {
-    words.push("NEW");
-  }
-  if (s.isRenamed()) {
-    words.push("MOVED");
-  }
-  if (s.isTypechange()) {
-    words.push("TYPECHANGE");
-  }
-  return `${words.join(" ")} ${s.path()}`; 
-}
-
-/**
  * @async
  *
  * Returns an open Repository object. If repository does not exit
@@ -99,7 +64,6 @@ function DbRepository() {
   this.path = undefined;
   this.repo = undefined;
 }
-
 
 DbRepository.prototype.name = function() {
   if (this.name) {
@@ -363,6 +327,53 @@ DbRepository.prototype.fileDiff = async function(commitSha) {
     return diffList;
   } catch (err) {
     throw new VError(err, `${logName} Failed to get file diff`);
+  }
+};
+
+/**
+ * Generates a status string for objects which are new, modified etc
+ * Similar to the git status command
+ *
+ * @param {Object} s - a file status object as returned from getStatus()
+ *
+ * @return {string} a status string with status and file path
+ * 
+ */
+DbRepository.prototype.statusString = function() {
+  const logName = `${moduleName}.statusString`;
+  
+  function statusItem(s) {
+    let words = [];
+    if (s.isConflicted()) {
+      words.push("CONFLICT");
+    }
+    if (s.isDeleted()) {
+      words.push("DELETED");
+    }
+    if (s.isIgnored()) {
+      words.push("IGNORED");
+    }
+    if (s.isModified()) {
+      words.push("MODIFIED");
+    }
+    if (s.isNew()) {
+      words.push("NEW");
+    }
+    if (s.isRenamed()) {
+      words.push("MOVED");
+    }
+    if (s.isTypechange()) {
+      words.push("TYPECHANGE");
+    }
+    return `${words.join(" ")} ${s.path()}`; 
+  }
+
+  try {
+    let fileList = this.getStatus();
+    let statusItems = fileList.map(f => statusItem(f));
+    return statusItems.join("\n");
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to generate status string`);
   }
 };
 
