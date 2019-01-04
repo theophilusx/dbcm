@@ -3,19 +3,22 @@
 const moduleName = "state";
 
 const VError = require("verror");
-const path = require("path");
 const fse = require("fse");
 
-const rcPath = path.join(process.env.HOME, ".dbcmrc");
+function AppState() {
+  this.logName = `${moduleName}.AppState`;
+  this.state = new Map();
+}
 
-function readConfig() {
-  const logName = `${moduleName}.readConfig`;
+AppState.prototype.init = async function(rc) {
+  const logName = `${moduleName}.init`;
 
-  return fse.access(path.join(rcPath), fse.constants.R_OK | fse.constants.W_OK)
-    .then(() => {
-      return fse.readJson(rcPath);
-    })
-    .catch(err => {
+  async function readConfig(fileName) {
+    try {
+      await fse.access(fileName, fse.constants.R_OK | fse.constants.W_OK);
+      let config = fse.readJson(fileName);
+      return config;
+    } catch (err) {
       if (err.code === "ENOENT") {
         // no rc file - return default 
         return {
@@ -34,92 +37,14 @@ function readConfig() {
           currentReleaseTag: "0.0.0"
         };
       }
-      throw new VError(err, `${logName} Failed to access ${rcPath}`);
-    });
-}
-
-
-async function writeConfig(appState) {
-  const logName = `${moduleName}.writeState`;
-  let newConfig = {};
-
-  try {
-    newConfig.version = "1.0.0";
-    newConfig.user = appState.get("user");
-    newConfig.repositoryHome = appState.get("home");
-    newConfig.psqlPath = appState.get("psqlPath");
-    newConfig.currentRepository = appState.get("currentRepository");
-    newConfig.currentTarget = appState.get("currentTarget");
-    newConfig.currentPlan = appState.get("currentPlan");
-    newConfig.currentPlanType = appState.get("currentPlanType");
-    newConfig.currentReleaseTag = appState.get("currentReleaseTag");
-    let repoList = [];
-    let repoMap = appState.get("repositories");
-    for (let repoName of repoMap.keys()) {
-      let repo = repoMap.get(repoName);
-      let url = repo.url;
-      let targets = [];
-      let targetMap = repo.targets;
-      for (let targetName of targetMap.keys()) {
-        let params = targetMap.get(targetName);
-        targets.push({
-          targetName: targetName,
-          database: params.database,
-          host: params.host,
-          port: params.port,
-          user: params.user,
-          password: params.password
-        });
-      }
-      repoList.push({
-        name: repoName,
-        url: url,
-        targets: targets
-      });
-    }
-    newConfig.repositories = repoList;
-    await fse.writeFile(rcPath, JSON.stringify(newConfig, null, " "));
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to write ${rcPath}`);
-  }
-}
-
-
-async function createApplicationState() {
-  const logName = `${moduleName}.createApplicationState`;
-  const state = new Map();
-
-  function get(key) {
-    const logName = `${moduleName}.get`;
-
-    try {
-      if (state.has(key)) {
-        return state.get(key);
-      }
-      console.log(`${logName}: Unknown key ${key}`);
-      return undefined;
-    } catch (err) {
-      throw new VError(err, `${logName} Error retrieving state value for ${key}`);
-    }
-  }
-
-  function set(key, value) {
-    const logName = `${moduleName}.set`;
-
-    try {
-      if (!state.has(key)) {
-        console.log(`${logName}. New unknown key set: ${key}`);
-      }
-      state.set(key, value);
-    } catch (err) {
-      throw new VError(err, `${logName} Failed to set state value for key ${key}`);
+      throw new VError(err, `${logName} Failed to access ${fileName}`);
     }
   }
   
   try {
-    let config = await readConfig();
-    state.set("user", config.user);
-    state.set("home", config.repositoryHome);
+    let config = await readConfig(rc);
+    this.state.set("user", config.user);
+    this.state.set("home", config.repositoryHome);
     let repoMap = new Map();
     if (Array.isArray(config.repositories) && config.repositories.length) {
       for (let repo of config.repositories) {
@@ -143,195 +68,255 @@ async function createApplicationState() {
         });
       }
     }
-    state.set("repositories", repoMap);
-    state.set("currentRepository", config.currentRepository);
-    state.set("currentTarget", config.currentTarget);
-    state.set("currentPlan", config.currentPlan);
-    state.set("currentPlanType", config.currentPlanType);
-    state.set("psqlPath", config.psqlPath);
-    state.set("approvalType", "none");
-    state.set("approvers", new Map());
-    state.set("developmentPlans", new Map());
-    state.set("pendingPlans", new Map());
-    state.set("approvedPlans", new Map());
-    state.set("rejectedPlans", new Map());
-    state.set("menuChoice", "unknown");
-    state.set("repoObject", undefined);
-    state.set("currentReleaseTag", config.currentReleaseTag);
-
-    return {
-      get: get,
-      set: set,
-      username: () => {
-        return get("user").name;
-      },
-      email: () => {
-        return get("user").email;
-      },
-      home: () => {
-        return get("home");
-      },
-      repositories: () => {
-        return get("repositories");
-      },
-      setRepositories: repoMap => {
-        return set("repositories", repoMap);
-      },
-      repositoryDef: repoName => {
-        return get("repositories").get(repoName);
-      },
-      setRepositoryDef: (repoName, defObject) => {
-        return get("repositories").set(repoName, defObject);
-      },
-      currentRepository: () => {
-        return get("currentRepository");
-      },
-      setCurrentRepository: repoName => {
-        return set("currentRepository", repoName);
-      },
-      currentRepositoryDef: () => {
-        return get("repositories").get(get("currentRepository"));
-      },
-      currentRepositoryUrl: () => {
-        if (get("currentRepository")) {
-          return get("repositories").get(get("currentRepository")).url;
-        } else {
-          throw new VError(`${logName} current repository not defined`);
-        }
-      },        
-      currentRepositoryTargets: () => {
-        if (get("currentRepository")) {
-          return get("repositories").get(get("currentRepository")).targets;
-        } else {
-          throw new VError(`${logName} current repository not defined`);
-        }
-      },
-      setCurrentRepositoryTargets: targetMap => {
-        if (get("currentRepository")) {
-          return get("repositories").get(get("currentRepository")).targets = targetMap; 
-        } else {
-          throw new VError(`${logName} Current repository not set`);
-        }
-      },
-      currentTarget: () => {
-        return get("currentTarget");
-      },
-      setCurrentTarget: targetName => {
-        return set("currentTarget", targetName);
-      },
-      currentTargetDef: () => {
-        if (get("currentRepository") && get("currentTarget")) {
-          return get("repositories").get(get("currentRepository")).targets.get(get("currentTarget"));
-        } else {
-          throw new VError(`${logName} Both currentRepository and currentTarget need to be defined `
-                           + `repo: ${state.get("currentRepository")} target: ${state.get("currentTarget")}`);
-        }
-      },
-      psqlPath: () => {
-        return get("psqlPath");
-      },
-      setPsqlPath: psql => {
-        return set("psqlPath", psql);
-      },
-      approvalType: () => {
-        return get("approvalType");
-      },
-      setApprovalType: type => {
-        return set("approvalType", type);
-      },
-      approvers: () => {
-        return get("approvers");
-      },
-      setApprovers: appMap => {
-        return set("approvers", appMap);
-      },
-      developmentPlans: () => {
-        return get("developmentPlans");
-      },
-      setDevelopmentPlans: planMap => {
-        return set("developmentPlans", planMap);
-      },
-      pendingPlans: () => {
-        return get("pendingPlans");
-      },
-      setPendingPlans: planMap => {
-        return set("pendingPlans", planMap);
-      },
-      approvedPlans: () => {
-        return get("approvedPlans");
-      },
-      setApprovedPlans: planMap => {
-        return set("approvedPlans", planMap);
-      },
-      rejectedPlans: () => {
-        return get("rejectedPlans");
-      },
-      setRejectedPlans: planMap => {
-        return set("rejectedPlans", planMap);
-      },
-      currentPlan: () => {
-        return get("currentPlan");
-      },
-      setCurrentPlan: id => {
-        return set("currentPlan", id);
-      },
-      currentPlanType: () => {
-        return get("currentPlanType");
-      },
-      setCurrentPlanType: type => {
-        return set("currentPlanType", type);
-      },
-      currentPlanDef: () => {
-        const logName = `${moduleName}.currentPlanDef`;
-
-        try {
-          let pType = get("currentPlanType");
-          let pId = get("currentPlan");
-          switch (pType) {
-          case "developmentPlans":
-            return get("developmentPlans").get(pId);
-          case "pendingPlans":
-            return get("pendingPlans").get(pId);
-          case "approvedPlans":
-            return get("approvedPlans").get(pId);
-          case "rejectedPlans":
-            return get("rejectedPlans").get(pId);
-          default:
-            throw new Error(`Unknown plan type: ${pType}`);
-          }
-        } catch (err) {
-          throw new VError(err, `${logName}`);
-        }
-      },
-      menuChoice: () => {
-        return get("menuChoice");
-      },
-      setMenuChoice: choice => {
-        return set("menuChoice", choice);
-      },
-      currentReleaseTag: () => {
-        return get("currentReleaseTag");
-      },
-      setCurrentReleaseTag: tag => {
-        return set("currentReleaseTag", tag);
-      },
-      writeConfigFile: async () => {
-        const logName = `${moduleName}.writeConfigFile`;
-        
-        try {
-          await writeConfig(state);
-        } catch (err) {
-          throw new VError(err, `${logName} Failed to write config file`);
-        }
-      },
-      dump: () => {
-        console.dir(state); 
-      }
-    };
+    this.state.set("repositories", repoMap);
+    this.state.set("currentRepository", config.currentRepository);
+    this.state.set("currentTarget", config.currentTarget);
+    this.state.set("currentPlan", config.currentPlan);
+    this.state.set("currentPlanType", config.currentPlanType);
+    this.state.set("psqlPath", config.psqlPath);
+    this.state.set("approvalType", "none");
+    this.state.set("approvers", new Map());
+    this.state.set("changePlans", new Map());
+    this.state.set("menuChoice", "unknown");
+    this.state.set("repoObject", undefined);
+    this.state.set("currentReleaseTag", config.currentReleaseTag);
   } catch (err) {
-    throw new VError(err, `${logName} Failed to initialise DBCM state`);
+    throw new VError(err, `${logName} Failed to initialise application state`);
   }
-}
+};
+
+AppState.prototype.get = function(key) {
+  const logName = `${moduleName}.get`;
+
+  try {
+    if (this.state.has(key)) {
+      return this.state.get(key);
+    }
+    console.log(`${logName}: Unknown key ${key}`);
+    return undefined;
+  } catch (err) {
+    throw new VError(err, `${logName} Error retrieving state value for ${key}`);
+  }
+};
+
+AppState.prototype.set = function(key, value) {
+  const logName = `${moduleName}.set`;
+
+  try {
+    if (!this.state.has(key)) {
+      console.log(`${logName}. New unknown key set: ${key}`);
+    }
+    this.state.set(key, value);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to set state value for key ${key}`);
+  }
+};
+
+AppState.prototype.username = function() {
+  return this.state.get("user").name;
+};
+
+AppState.prototype.email = function() {
+  return this.state.get("user").email;
+};
+
+AppState.prototype.home = function() {
+  return this.state.get("home");
+};
+
+AppState.prototype.repositories = function() {
+  return this.state.get("repositories");
+};
+
+AppState.prototype.setRepositories = function(repoMap) {
+  return this.state.get("repositories").set(repoMap);
+};
+
+AppState.prototype.repositoryDef = function(repoName) {
+  if (this.state.get("repositories").has(repoName)) {
+    return this.state.get("repositories").get(repoName);    
+  }
+  throw new Error(`Unknown repository ${repoName}`);
+};
+
+AppState.prototype.setRepositoryDef = function(repoName, defObject) {
+  return this.state.get("repository").set(repoName, defObject);
+};
+
+AppState.prototype.currentRepository = function() {
+  if (this.state.get("currentRepository")) {
+    return this.state.get("currentRepository");    
+  }
+  throw new Error("Current repository not defined");
+};
+
+AppState.prototype.setCurrentRepository = function(repoName) {
+  return this.state.set("currentRepository", repoName);
+};
+
+AppState.prototype.currentRepositoryDef = function() {
+  if (this.state.get("currentRepository")) {
+    return this.state.get("repositories").get(this.state.get("currentRepository"));    
+  }
+  throw new Error("Current repository not defined");
+};
+
+AppState.prototype.currentRepositoryUrl = function() {
+  if (this.state.get("currentRepository")) {
+    return this.state.get("repositories").get(this.state.get("currentRepository")).url;
+  }
+  throw new Error("Current repository not defined");
+};
+
+AppState.prototype.currentRepositoryTargets = function() {
+  if (this.state.get("currentRepository")) {
+    return this.state.get("repositories").get(this.state.get("currentRepository")).targets;
+  }
+  throw new Error("Current repository not defined");
+};
+
+AppState.prototype.setCurrentRepositoryTargets = function(targetMap) {
+  if (this.state.get("currentRepository")) {
+    return this.state.get("repositories").get(this.state.get("currentRepository")).targets = targetMap;
+  }
+  throw new Error("Current repository not defined");
+};
+
+AppState.prototype.currentTarget = function() {
+  if (this.state.get("currentTarget")) {
+    return this.state.get("currentTarget");
+  }
+  throw new Error("Current target not defined");
+};
+
+AppState.prototype.setCurrentTarget = function(targetName) {
+  return this.state.set("currentTarget", targetName);
+};
+
+AppState.prototype.currentTargetDef = function() {
+  if (this.state.get("currentRepository") && this.state.get("currentTarget")) {
+    return this.state.get("repositories")
+      .get(this.state.get("currentRepository"))
+      .targets.get(this.state.get("currentTarget"));
+  }
+  throw new Error("Either current repository or current target is not defined");
+};
+
+AppState.prototype.psqlPath = function() {
+  return this.state.get("psqlPath");
+};
+
+AppState.prototype.setPsqlPath = function(psql) {
+  return this.state.set("psqlPath", psql);
+};
+
+AppState.prototype.approvalType = function() {
+  return this.state.get("approvalType");
+};
+
+AppState.prototype.setApprovalType = function(type) {
+  return this.state.set("approvalType", type);
+};
+
+AppState.prototype.approvers = function() {
+  return this.state.get("approvers");
+};
+
+AppState.prototype.setApprovers = function(appMap) {
+  return this.state.set("approvers", appMap);
+};
+
+AppState.prototype.changePlans = function() {
+  return this.state.get("changePlans");
+};
+
+AppState.prototype.setChangePlans = function(plansMap) {
+  return this.state.set("changePlans", plansMap);
+};
+
+AppState.prototype.currentPlan = function() {
+  return this.state.get("currentPlan");
+};
+
+AppState.prototype.setCurrentPlan = function(id) {
+  return this.state.set("currentPlan", id);
+};
+
+AppState.prototype.currentPlanType = function() {
+  return this.state.get("currentPlanType");
+};
+
+AppState.prototype.setCurrentPlanType = function(type) {
+  return this.state.set("currentPlanType", type);
+};
+
+AppState.prototype.currentPlanDef = function() {
+  if (this.state.get("changePlans") && this.state.get("currentPlan")) {
+    return this.state.get("changePlans").get(this.state.get("currentPlan"));    
+  }
+  throw new Error("Either change plans is not defined or current plan is not defined");
+};
+
+AppState.prototype.menuChoice = function() {
+  return this.state.get("menuChoice");
+};
+
+AppState.prototype.setMenuChoice = function(choice) {
+  return this.state.set("menuChoice", choice);
+};
+
+AppState.prototype.currentReleaseTag = function() {
+  return this.state.get("currentReleaseTag");
+};
+
+AppState.prototype.setCurrentReleaseTag = function(tag) {
+  return this.state.set("currentReleaseTag", tag);
+};
+
+AppState.prototype.writeConfig = async function(fileName) {
+  const logName = `${moduleName}.writeConfig`;
+  
+  try {
+    let newConfig = {
+      version: "1.0.0",
+      user: this.state.get("user"),
+      repositoryHome: this.state.get("home"),
+      psqlPath: this.state.get("psqlPath"),
+      currentRepository: this.state.get("currentRepository"),
+      currentTarget: this.state.get("currentTarget"),
+      currentPlan: this.state.get("currentPlan"),
+      currentPlanType: this.state.get("currentPlanType"),
+      currentReleaseTag: this.state.get("currentReleaseTag"),
+    };
+    let repoList = [];
+    let repos = this.state.get("repositories");
+    for (let r of repos.keys()) {
+      let repo = repos.get(r);
+      let targets = [];
+      let targetMap = r.targets;
+      for (let t of targetMap.keys()) {
+        let params = targetMap.get(t);
+        targets.push({
+          targetName: t,
+          database: params.database,
+          host: params.host,
+          port: params.port,
+          user: params.user,
+          password: params.password
+        });
+        repoList.push({
+          name: r,
+          url: repo.url,
+          targets: targets
+        });
+      }
+    }
+    newConfig.repositories = repoList;
+    await fse.writeFile(fileName, JSON.stringify(newConfig, null, " "));
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to write config to ${fileName}`);
+  }
+};
 
 module.exports = {
   createApplicationState
