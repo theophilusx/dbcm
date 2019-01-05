@@ -29,6 +29,7 @@ Target.prototype.params = function() {
 };
 
 Target.prototype.isInitialised = async function() {
+  const logName = `${moduleName}.isInitialised`;
   const sql = "SELECT count(*) from dbcm.change_plans";
   
   try {
@@ -38,7 +39,7 @@ Target.prototype.isInitialised = async function() {
     if (err.message.match(/relation .* does not exist/)) {
       return false;
     }
-    throw err;
+    throw new VError(err, `${logName} `);
   }
 };
 
