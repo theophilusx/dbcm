@@ -43,3 +43,6 @@ Target.prototype.isInitialised = async function() {
   }
 };
 
+module.exports = {
+  Target
+};

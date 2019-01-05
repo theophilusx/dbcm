@@ -59,4 +59,15 @@ TargetMap.prototype.fromArray = function(targetObjects) {
   }
 };
 
+TargetMap.prototype.targetParams = function(targetName) {
+  return this.targets.get(targetName).params();
+};
+
+TargetMap.prototype.targetIsInitialised = async function(targetName) {
+  return await this.targets.get(targetName).isInitialised();
+};
+
+module.exports = {
+  TargetMap
+};
 
