@@ -57,7 +57,7 @@ function getRepository(repoUrl, dst) {
     });
 }
 
-function DbRepository() {
+function GitRepo() {
   const logName = `${logName}.DbRepository`;
   this.name = undefined;
   this.url = undefined;
@@ -65,21 +65,21 @@ function DbRepository() {
   this.repo = undefined;
 }
 
-DbRepository.prototype.name = function() {
+GitRepo.prototype.name = function() {
   if (this.name) {
     return this.name;    
   }
   throw new Error("Repository not initialised");
 };
 
-DbRepository.prototype.url = function() {
+GitRepo.prototype.url = function() {
   if (this.url) {
     return this.url;
   }
   throw new Error("Repository not initialised");
 };
 
-DbRepository.prototype.path = function() {
+GitRepo.prototype.path = function() {
   if (this.path) {
     return this.path;
   }
@@ -94,7 +94,7 @@ DbRepository.prototype.path = function() {
  * @return {array} list of reference names
  * 
  */
-DbRepository.prototype.getReferenceNames = async function() {
+GitRepo.prototype.getReferenceNames = async function() {
   const logName = `${moduleName}.getReferences`;
 
   try {
@@ -119,7 +119,7 @@ DbRepository.prototype.getReferenceNames = async function() {
  * @return {Object} reference to the new branch.
  * 
  */
-DbRepository.prototype.createBranch = async function(branchName) {
+GitRepo.prototype.createBranch = async function(branchName) {
   const logName = `${moduleName}.createBranch`;
 
   try {
@@ -144,7 +144,7 @@ DbRepository.prototype.createBranch = async function(branchName) {
  * @return {boolean} Return true on success - false otherwise
  * 
  */
-DbRepository.prototype.deleteBranch = async function deleteBranch(branchName) {
+GitRepo.prototype.deleteBranch = async function deleteBranch(branchName) {
   const logName = `${moduleName}.deleteBranch`;
 
   try {
@@ -174,7 +174,7 @@ DbRepository.prototype.deleteBranch = async function deleteBranch(branchName) {
  * @param {string} commitMsg - a commit message.
  * 
  */
-DbRepository.prototype.addCommit = async function(files, commitMsg, author, email) {
+GitRepo.prototype.addCommit = async function(files, commitMsg, author, email) {
   const logName = `${moduleName}.addCommit`;
 
   try {
@@ -207,7 +207,7 @@ DbRepository.prototype.addCommit = async function(files, commitMsg, author, emai
   }
 };
 
-DbRepository.prototype.mergeIntoMaster = async function(branch, author, email) {
+GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
   const logName = `${moduleName}.mergeIntoMaster`;
 
   try {
@@ -225,7 +225,7 @@ DbRepository.prototype.mergeIntoMaster = async function(branch, author, email) {
   }
 };
 
-DbRepository.prototype.addReleaseTag = async function(name, msg) {
+GitRepo.prototype.addReleaseTag = async function(name, msg) {
   const logName = `${moduleName}.addReleaseTag`;
 
   try {
@@ -246,7 +246,7 @@ DbRepository.prototype.addReleaseTag = async function(name, msg) {
   } 
 };
 
-DbRepository.prototype.getChangesSha = async function(plan) {
+GitRepo.prototype.getChangesSha = async function(plan) {
   const logName = `${moduleName}.getChangesSha`;
 
   try {
@@ -262,7 +262,7 @@ DbRepository.prototype.getChangesSha = async function(plan) {
   }
 };
 
-DbRepository.prototype.fileHistory = async function(fileName) {
+GitRepo.prototype.fileHistory = async function(fileName) {
   const logName = `${moduleName}.fileHistory`;
   
   async function compileHistory(repo, newCommits, commitHistory, file, depth) {
@@ -315,7 +315,7 @@ DbRepository.prototype.fileHistory = async function(fileName) {
   }
 };
 
-DbRepository.prototype.fileDiff = async function(commitSha) {
+GitRepo.prototype.fileDiff = async function(commitSha) {
   const logName = `${moduleName}.fileDiff`;
 
   try {
@@ -339,7 +339,7 @@ DbRepository.prototype.fileDiff = async function(commitSha) {
  * @return {string} a status string with status and file path
  * 
  */
-DbRepository.prototype.statusString = function() {
+GitRepo.prototype.statusString = function() {
   const logName = `${moduleName}.statusString`;
   
   function statusItem(s) {
@@ -377,13 +377,14 @@ DbRepository.prototype.statusString = function() {
   }
 };
 
-DbRepository.prototype.init = async function(state, name, url, dbHome) {
+GitRepo.prototype.init = async function(state) {
   const logName = `${moduleName}.init`;
 
   try {
-    this.name = name;
-    this.url = url;
-    this.path = path.join(dbHome, name);
+    let repoDef = state.currentRepositoryDef();
+    this.name = repoDef.name;
+    this.url = repoDef.url;
+    this.path = path.join(state.home, repoDef.name);
     this.repo = await getRepository(this.url, this.path);
     let initialised = await files.isInitialised(this.path);
     if (!initialised) {
@@ -418,22 +419,20 @@ DbRepository.prototype.init = async function(state, name, url, dbHome) {
  * uncommitted changes, display them. Do a refresh from master into
  * local master by performing a pull
  */
-async function setupRepository(state, repoName, repoUrl, repoHome) {
+async function setupRepository(state) {
   const logName = `${moduleName}.setupRepository`;
 
   try {
-    let repositories = state.repositories();
     let repo = new DbRepository();
-    await repo.init(state, repoName, repoUrl, repoHome);
-    repositories.set(repoName, repo);
-    state.setRepositories(repositories);
+    await repo.init(state);
+    state.setRepositoryObject(repo);
     return state;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to setup ${repoName}`);
+    throw new VError(err, `${logName} Failed to setup ${state.currentRepository}`);
   }
 }
 
 module.exports = {
-  DbRepository,
+  GitRepo,
   setupRepository
 };
