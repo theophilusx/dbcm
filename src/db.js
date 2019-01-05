@@ -24,28 +24,26 @@ function getClient(dbParams) {
   }
 }
 
-function execSQL(client, sql, params) {
+async function execSQL(dbCreds, sql, params) {
   const logName = `${moduleName}.execSQL`;
+  const client = getClient(dbCreds);
   
-  if (params !== undefined) {
-    return client.query(sql, params)
-      .then(rs => {
-        return rs;
-      })
-      .catch(err => {
-        throw new VError(err, `${logName} Failed to execute SQL ${sql}`);
-      });
+  try {
+    let rslt;
+    await client.connect();
+    if (params !== undefined) {
+      rslt = await client.query(sql, params);
+    } else {
+      rslt = await client.query(sql);
+    }
+    return rslt;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to execute SQL ${sql}`);
+  } finally {
+    client.end();
   }
-  return client.query(sql)
-    .then(rs => {
-      return rs;
-    })
-    .catch(err => {
-      throw new VError(err, `${logName} Failed toe execute SQl ${sql}`);
-    });
 }
 
 module.exports = {
-  getClient,
   execSQL
 };
