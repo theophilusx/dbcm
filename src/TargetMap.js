@@ -4,16 +4,27 @@ const moduleName = "TargetMap";
 
 const VError = require("verror");
 
-function TargetMap() {
-  this.targets = new Map();
+function TargetMap(targetList) {
+  const logName = `${moduleName}.TargetMap`;
+
+  try {
+    this.targets = new Map();
+    if (Array.isArray(targetList)) {
+      targetList.forEach(t => {
+        this.targets.set(t.name, t);
+      });
+    }
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to initialise TargetMap`);
+  }
 }
 
 TargetMap.prototype.get = function(targetName) {
   return this.targets.get(targetName);
 };
 
-TargetMap.prototype.set = function(targetName, targetDef) {
-  return this.targets.set(targetName, targetDef);
+TargetMap.prototype.set = function(target) {
+  return this.targets.set(target.name, target);
 };
 
 TargetMap.prototype.names = function() {
@@ -30,9 +41,7 @@ TargetMap.prototype.toArray = function() {
   try {
     let targets = [];
     for (let target of this.targets.keys()) {
-      let params = this.targets.get(target).params();
-      params.name = target;
-      targets.push(params);
+      targets.push(this.targets.get(target));
     }
     return targets;
   } catch (err) {
@@ -46,14 +55,9 @@ TargetMap.prototype.fromArray = function(targetObjects) {
   try {
     this.targets.clear();
     targetObjects.forEach(t => {
-      this.targets.set(t.name, {
-        database: t.database,
-        host: t.host,
-        port: t.port,
-        user: t.user,
-        password: t.password
-      });
+      this.targets.set(t.name, t);
     });
+    return this;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initilialise targets from array`);
   }
