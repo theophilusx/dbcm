@@ -6,17 +6,26 @@ const VError = require("verror");
 const db = require("./db");
 
 function Target(name, db, user, pwd, host="localhost", port=5432) {
-  this.name = name;
-  this.database = db;
-  this.host = host;
-  this.port = port;
-  this.user = user;
-  this.password = pwd;
-}
+  const logName = `${moduleName}.Target`;
 
-Target.prototype.name = function() {
-  return this.name;
-};
+  try {
+    if (name === undefined
+        || db === undefined
+        || user === undefined
+        || pwd === undefined) {
+      throw new Error("Missing arguments. Must specify a name, database, user "
+                      + "and password");
+    }
+    this.name = name;
+    this.database = db;
+    this.host = host;
+    this.port = port;
+    this.user = user;
+    this.password = pwd;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+}
 
 Target.prototype.params = function() {
   return {
