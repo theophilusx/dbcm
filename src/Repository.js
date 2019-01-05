@@ -110,6 +110,21 @@ Repository.prototype.isTargetInitialised = async function(targetName) {
   }
 };
 
+Repository.prototype.toObject = function() {
+  const logName = `${moduleName}.toObject`;
+
+  try {
+    let repoObject = {
+      name: this.name,
+      url: this.url,
+      targets: this.targets.toArray()
+    };
+    return repoObject;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 module.exports = {
   Repository
 };
