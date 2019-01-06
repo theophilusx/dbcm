@@ -3,12 +3,15 @@
 const moduleName = "repository";
 
 const VError = require("verror");
-const TargetMap = require("./TargetMap");
+const {TargetMap} = require("./TargetMap");
 
 function Repository(name, url) {
   const logName = `${moduleName}.Repository`;
 
   try {
+    if (name === undefined || url === undefined) {
+      throw new Error("Missing arguments. Must provide a repository name and url");
+    }
     this.name = name;
     this.url = url;
     this.approvalType = "none";
@@ -19,18 +22,6 @@ function Repository(name, url) {
     throw new VError(err, `${logName} Failed to initialise Repository object`);
   }
 }
-
-Repository.prototype.name = function() {
-  return this.name;
-};
-
-Repository.prototype.url = function() {
-  return this.url;
-};
-
-Repository.prototype.approvalType = function() {
-  return this.approvalType;
-};
 
 Repository.prototype.setApprovalType = function(type) {
   const logName = `${moduleName}.setApprovalType`;
@@ -50,12 +41,14 @@ Repository.prototype.setApprovers = function(approversList) {
   const logName = `${moduleName}.setApprovers`;
 
   try {
-    approversList.forEach(approver => {
-      this.approvers.set(approver.email, {
-        name: approver.name,
-        email: approver.email
+    if (Array.isArray(approversList)) {
+      approversList.forEach(approver => {
+        if (approver.name === undefined || approver.email === undefined) {
+          throw new Error("Missing properties. Approvers must have name and email property");
+        }
+        this.approvers.set(approver.email, approver);
       });
-    });
+    }
   } catch (err) {
     throw new VError(err, `${logName} Failed to set approvers for repositorhy ${this.name}`);
   }
@@ -74,6 +67,7 @@ Repository.prototype.approverList = function() {
   for (let approver of this.approvers.keys()) {
     approvers.push(this.approvers.get(approver));
   }
+  return approvers;
 };
 
 Repository.prototype.getTarget = function(targetName) {
@@ -81,7 +75,7 @@ Repository.prototype.getTarget = function(targetName) {
 };
 
 Repository.prototype.setTarget = function(target) {
-  return this.targets.set(target.name(), target);
+  return this.targets.set(target);
 };
 
 Repository.prototype.targetNames = function() {

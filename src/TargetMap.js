@@ -3,6 +3,7 @@
 const moduleName = "TargetMap";
 
 const VError = require("verror");
+const {Target} = require("./Target");
 
 function TargetMap(targetList) {
   const logName = `${moduleName}.TargetMap`;
@@ -24,7 +25,16 @@ TargetMap.prototype.get = function(targetName) {
 };
 
 TargetMap.prototype.set = function(target) {
-  return this.targets.set(target.name, target);
+  const logName = `${moduleName}.set`;
+
+  try {
+    if (target instanceof Target) {
+      return this.targets.set(target.name, target);    
+    }
+    throw new Error("Argument must be an instance of Target");
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to set target element`);
+  }
 };
 
 TargetMap.prototype.names = function() {
@@ -64,11 +74,18 @@ TargetMap.prototype.fromArray = function(targetObjects) {
 };
 
 TargetMap.prototype.targetParams = function(targetName) {
-  return this.targets.get(targetName).params();
+  if (this.targets.has(targetName)) {
+    return this.targets.get(targetName).params();    
+  }
+  return undefined;
 };
 
 TargetMap.prototype.targetIsInitialised = async function(targetName) {
   return await this.targets.get(targetName).isInitialised();
+};
+
+TargetMap.prototype.size = function() {
+  return this.targets.size;
 };
 
 module.exports = {
