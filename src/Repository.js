@@ -5,13 +5,10 @@ const moduleName = "repository";
 const VError = require("verror");
 const {TargetMap} = require("./TargetMap");
 
-function Repository(name, url) {
+function Repository(name="undefined", url="undefined") {
   const logName = `${moduleName}.Repository`;
 
   try {
-    if (name === undefined || url === undefined) {
-      throw new Error("Missing arguments. Must provide a repository name and url");
-    }
     this.name = name;
     this.url = url;
     this.approvalType = "none";
@@ -111,11 +108,35 @@ Repository.prototype.toObject = function() {
     let repoObject = {
       name: this.name,
       url: this.url,
-      targets: this.targets.toArray()
+      targets: this.targetsArray()
     };
     return repoObject;
   } catch (err) {
     throw new VError(err, `${logName}`);
+  }
+};
+
+Repository.prototype.fromObject = function(repObj) {
+  const logName = `${moduleName}.fromObject`;
+
+  try {
+    if (repObj && repObj.name) {
+      this.name = repObj.name;
+    } else {
+      throw new Error("Initialisation object must have name property");
+    }
+    if(repObj && repObj.url) {
+      this.url = repObj.url;
+    } else {
+      throw new Error("Initialisation object must have url property");
+    }
+    if (repObj && repObj.targets) {
+      this.initTargets(repObj.targets);
+    } else {
+      throw new Error("Initialisation object must have targets property");
+    }
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to initialise Repository from object`);
   }
 };
 
