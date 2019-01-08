@@ -14,6 +14,7 @@ function Repository(name="undefined", url="undefined") {
     this.approvalType = "none";
     this.approvers = new Map();
     this.targets = new TargetMap();
+    this.releaseTag = undefined;
     this.repo = undefined;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise Repository object`);
