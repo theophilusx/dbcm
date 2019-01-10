@@ -46,6 +46,14 @@ ApprovalHistory.prototype.fromObject = function(appHistory) {
   });
 };
 
+ApprovalHistory.prototype.setCurrentReleaseTag = function(tag) {
+  return this.current.setReleaseTag(tag);
+};
+
+ApprovalHistory.prototype.currentReleaseTag = function() {
+  return this.current.releaseTag;
+};
+
 module.exports = {
   ApprovalHistory
 };

@@ -65,5 +65,14 @@ describe("Test ApprovalHistory object", function() {
       expect(ah1.history.length).to.equal(1);
       expect(ah1.currentApprovalState()).to.equal(false);
     });
+
+    it("Get current release tag", function() {
+      expect(ah1.currentReleaseTag()).to.equal("0.0.0");
+    });
+
+    it("Set current release tag", function() {
+      ah1.setCurrentReleaseTag("0.1.0");
+      expect(ah1.currentReleaseTag()).to.equal("0.1.0");
+    });
   });
 });

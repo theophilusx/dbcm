@@ -6,6 +6,7 @@ function Approval() {
   this.approved = false;
   this.approvedDate = moment().format("YYYY-MM-DD HH:mm:ss");
   this.approvedSha = "",
+  this.releaseTag = "0.0.0", 
   this.approvers = [];
 }
 
@@ -26,6 +27,10 @@ Approval.prototype.setApprovalState = function(state, sha, appDate) {
   this.approved = state;
   this.approvedDate = appDate === undefined ? moment().format("YYYY-MM-DD HH:mm:ss") : appDate;
   this.approvedSha = sha;
+};
+
+Approval.prototype.setReleaseTag = function(tag) {
+  return this.releaseTag = tag;
 };
 
 Approval.prototype.fromObject = function(p) {
