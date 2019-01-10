@@ -19,8 +19,12 @@ ApprovalHistory.prototype.addApproval = function(author, email, sha) {
   return this.current.addApprover(author, email, sha);
 };
 
-ApprovalHistory.prototye.currentApprovalState = function() {
+ApprovalHistory.prototype.currentApprovalState = function() {
   return this.current.approved;
+};
+
+ApprovalHistory.prototype.setApprovalState = function(state, sha, appDate) {
+  return this.current.setApprovalState(state, sha, appDate);
 };
 
 ApprovalHistory.prototype.resetApproval = function() {
