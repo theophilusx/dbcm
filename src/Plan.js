@@ -52,15 +52,15 @@ Plan.prototype.currentApproval = function() {
   return this.approvals.currentApproval();
 };
 
-Plan.protothype.currentApprovalState = function() {
+Plan.prototype.currentApprovalState = function() {
   return this.approvals.currentApprovalState();
 };
 
-Plan.prototyupe.currentApprovalCount = function() {
+Plan.prototype.currentApprovalCount = function() {
   return this.approvals.currentApprovalCount();
 };
 
-Plan.protothype.addApproval = function(author, email, sha) {
+Plan.prototype.addApproval = function(author, email, sha) {
   return this.approvals.addApproval(author, email, sha);
 };
 

@@ -5,6 +5,7 @@ const moduleName = "state";
 const VError = require("verror");
 const fse = require("fse");
 const {RepositoryMap} = require("./RepositoryMap");
+const {PlanMap} = require("./PlanMap");
 
 function AppState() {
   this.state = new Map();
@@ -34,8 +35,6 @@ AppState.prototype.init = async function(rc) {
           currentRepository: undefined,
           currentTarget: undefined,
           currentPlan: undefined,
-          currentPlanType: undefined,
-          currentReleaseTag: "0.0.0"
         };
       }
       throw new VError(err, `${logName} Failed to access ${fileName}`);
@@ -58,7 +57,7 @@ AppState.prototype.init = async function(rc) {
     this.state.set("currentRepository", config.currentRepository);
     this.state.set("currentTarget", config.currentTarget);
     this.state.set("psqlPath", config.psqlPath);
-    this.state.set("changePlans", new Map());
+    this.state.set("changePlans", new PlanMap());
     this.state.set("currentPlan", config.currentPlan);
     this.state.set("menuChoice", "unknown");
     this.initialised = true;
@@ -127,17 +126,6 @@ AppState.prototype.repositoryCount = function() {
   return this.state.get("repositories").size();
 };
 
-AppState.prototype.repositoryDef = function(repoName) {
-  if (this.state.get("repositories").has(repoName)) {
-    return this.state.get("repositories").get(repoName);    
-  }
-  throw new Error(`Unknown repository ${repoName}`);
-};
-
-AppState.prototype.setRepositoryDef = function(repoName, defObject) {
-  return this.state.get("repository").set(repoName, defObject);
-};
-
 AppState.prototype.currentRepository = function() {
   const logName = `${moduleName}.currentRepository`;
 
@@ -153,6 +141,17 @@ AppState.prototype.currentRepository = function() {
 
 AppState.prototype.setCurrentRepository = function(repoName) {
   return this.state.set("currentRepository", repoName);
+};
+
+AppState.prototype.repositoryDef = function(repoName) {
+  if (this.state.get("repositories").has(repoName)) {
+    return this.state.get("repositories").get(repoName);    
+  }
+  throw new Error(`Unknown repository ${repoName}`);
+};
+
+AppState.prototype.setRepositoryDef = function(repoName, defObject) {
+  return this.state.get("repository").set(repoName, defObject);
 };
 
 AppState.prototype.currentRepositoryDef = function() {

@@ -29,3 +29,7 @@ PlanMap.prototype.fromObject = function(pList) {
     this.plans.set(plan.uuid, plan);
   });
 };
+
+module.exports = {
+  PlanMap
+};

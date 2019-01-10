@@ -43,6 +43,7 @@ describe("Testing Repository object", function() {
       expect(new Repository("name", "aUrl")).has.all.keys(
         "name",
         "url",
+        "releaseTag",
         "approvalType",
         "approvers",
         "targets",

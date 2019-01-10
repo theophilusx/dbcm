@@ -5,6 +5,7 @@ const expect = require("chai").expect;
 const should = require("chai").should();
 const {AppState} = require("../src/AppState");
 const {RepositoryMap} = require("../src/RepositoryMap");
+const {PlanMap} = require("../src/PlanMap");
 
 let testState;
 
@@ -110,6 +111,14 @@ describe("Test AppState", function() {
         (function() {
           testState.currentApprovers();
         }).should.throw(VError, /Current repository not defined/);
+      });
+
+      it("Change plans is a map", function() {
+        expect(testState.changePlans()).to.be.an.instanceof(PlanMap);
+      });
+
+      it("Current plan is undefined", function() {
+        expect(testState.currentPlan()).to.equal(undefined);
       });
 
       
