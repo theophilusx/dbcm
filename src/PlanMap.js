@@ -2,7 +2,7 @@
 
 const moduleName = "PlanMap";
 
-const {Plan} = require("./Plan");
+const Plan = require("./Plan");
 
 function PlanMap() {
   this.plans = new Map();

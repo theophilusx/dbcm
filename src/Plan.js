@@ -6,7 +6,7 @@ const VError = require("verror");
 const moment = require("moment");
 const path = require("path");
 const short = require("short-uuid");
-const {ApprovalHistory} = require("./ApprovalHistory");
+const ApprovalHistory = require("./ApprovalHistory");
 
 function Plan(initData) {
   const logName = `${moduleName}.Plan`;

@@ -3,7 +3,7 @@
 const moduleName = "repository";
 
 const VError = require("verror");
-const {TargetMap} = require("./TargetMap");
+const TargetMap = require("./TargetMap");
 
 function Repository(name="undefined", url="undefined") {
   const logName = `${moduleName}.Repository`;

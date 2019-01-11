@@ -3,7 +3,7 @@
 const moduleName = "TargetMap";
 
 const VError = require("verror");
-const {Target} = require("./Target");
+const Target = require("./Target");
 
 function TargetMap(targetList) {
   const logName = `${moduleName}.TargetMap`;

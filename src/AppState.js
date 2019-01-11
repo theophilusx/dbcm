@@ -4,8 +4,8 @@ const moduleName = "AppState";
 
 const VError = require("verror");
 const fse = require("fse");
-const {RepositoryMap} = require("./RepositoryMap");
-const {PlanMap} = require("./PlanMap");
+const RepositoryMap = require("./RepositoryMap");
+const PlanMap = require("./PlanMap");
 
 function AppState() {
   this.state = new Map();
@@ -388,7 +388,7 @@ AppState.prototype.setCurrentReleaseTag = function(tag) {
   return this.state.set("currentReleaseTag", tag);
 };
 
-AppState.prototype.writeConfig = async function(fileName) {
+AppState.prototype.writeUserInit = async function(fileName) {
   const logName = `${moduleName}.writeConfig`;
   
   try {

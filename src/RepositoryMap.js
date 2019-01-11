@@ -3,7 +3,7 @@
 const moduleName = "RepositoryMap";
 
 const VError = require("verror");
-const {Repository} = require("./Repository");
+const Repository = require("./Repository");
 
 function RepositoryMap() {
   this.repositories = new Map();

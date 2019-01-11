@@ -1,6 +1,6 @@
 "use strict";
 
-const {Approval} = require("./Approval");
+const Approval = require("./Approval");
 
 function ApprovalHistory() {
   this.current = new Approval();
