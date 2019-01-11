@@ -56,8 +56,8 @@ describe("Test AppState", function() {
         expect(testState.home()).to.equal(undefined);
       });
 
-      it("Repositories list is instance of RepositoryMap", function() {
-        expect(testState.repositories() instanceof RepositoryMap).to.equal(true);
+      it("repositoryMap returns an instance of RepositoryMap", function() {
+        expect(testState.repositoryMap() instanceof RepositoryMap).to.equal(true);
       });
       
       it("Empty repository list", function() {
@@ -172,12 +172,12 @@ describe("Test AppState", function() {
     });
 
     it("Repositories returns RepositoryMap", function() {
-      expect(testState.repositories()).to.be.an.instanceof(RepositoryMap);
+      expect(testState.repositoryMap()).to.be.an.instanceof(RepositoryMap);
     });
 
     it("Set repositories", function() {
-      testState.setRepositories(repoMap);
-      expect(testState.repositories()).to.be.an.instanceof(RepositoryMap);
+      testState.setRepositoryMap(repoMap);
+      expect(testState.repositoryMap()).to.be.an.instanceof(RepositoryMap);
       expect(testState.repositoryCount()).to.equal(1);
     });
 
@@ -233,5 +233,47 @@ describe("Test AppState", function() {
       expect(testState.currentTargetDef()).to.be.an.instanceof(Target);
       expect(testState.currentTargetDef().name).to.equal(target.name);
     });
+  });
+
+  describe("Test approver methods", function() {
+    let repo;
+    let target;
+    
+    before("Setup repostiory test data", async function() {
+      target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
+      repo = new Repository("test-repo", "git@example.com:test/repo.git");
+      repo.setTarget(target);
+      testState = new AppState();
+      await testState.init();
+      testState.setRepositoryDef(repo);
+    });
+
+    it("Current approver type throws exception", function() {
+      (function() {
+        testState.currentApprovalType();
+      }).should.throw(VError, /Current repository not defined/);
+    });
+
+    it("Current approver type returns none", function() {
+      testState.setCurrentRepository(repo.name);
+      expect(testState.currentApprovalType()).to.equal("none");
+    });
+
+    it("Set approval type to all", function() {
+      testState.setCurrentApprovalType("all");
+      expect(testState.currentApprovalType()).to.equal("all");
+    });
+
+    it("Set approval type to any", function() {
+      testState.setCurrentApprovalType("any");
+      expect(testState.currentApprovalType()).to.equal("any");
+    });
+
+    it("Setting bad approval type throws exception", function() {
+      (function() {
+        testState.setCurrentApprovalType("foobar");
+      }).should.throw(VError, /Invalid approval type/);
+    });
+    
   });
 });

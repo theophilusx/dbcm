@@ -28,7 +28,7 @@ Repository.prototype.setApprovalType = function(type) {
     if (type === "none" || type === "any" || type === "all") {
       this.approvalType = type;
     } else {
-      throw new Error(`Unknown approval type of ${type}`);
+      throw new Error(`Invalid approval type: ${type}`);
     }
   } catch (err) {
     throw new VError(err, `${logName} Failed to set approval type`);

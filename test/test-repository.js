@@ -88,7 +88,7 @@ describe("Testing Repository object", function() {
       it("Bad approver type throws error", function() {
         (function() {
           testRepo.setApprovalType("fred");
-        }).should.throw(VError, /Unknown approval type of fred/);
+        }).should.throw(VError, /Invalid approval type/);
       });
 
       it("Set approval type to none", function() {

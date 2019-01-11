@@ -1,6 +1,6 @@
 "use strict";
 
-const moduleName = "state";
+const moduleName = "AppState";
 
 const VError = require("verror");
 const fse = require("fse");
@@ -121,7 +121,7 @@ AppState.prototype.home = function() {
   return this.state.get("home");
 };
 
-AppState.prototype.repositories = function() {
+AppState.prototype.repositoryMap = function() {
   if (!this.initialised) {
     throw new Error("AppState not initialised");
   }
@@ -129,7 +129,7 @@ AppState.prototype.repositories = function() {
   return this.state.get("repositories");
 };
 
-AppState.prototype.setRepositories = function(repoMap) {
+AppState.prototype.setRepositoryMap = function(repoMap) {
   const logName = `${moduleName}.setRepositories`;
 
   try {
@@ -178,12 +178,12 @@ AppState.prototype.repositoryDef = function(repoName) {
   throw new Error(`Unknown repository ${repoName}`);
 };
 
-AppState.prototype.setRepositoryDef = function(repoName, defObject) {
+AppState.prototype.setRepositoryDef = function(defObject) {
   if (!this.initialised) {
     throw new Error("AppState not initialised");
   }
 
-  return this.state.get("repository").setRepo(defObject);
+  return this.state.get("repositories").setRepo(defObject);
 };
 
 AppState.prototype.currentRepositoryDef = function() {
@@ -297,8 +297,19 @@ AppState.prototype.currentApprovalType = function() {
   }
 };
 
-AppState.prototype.setApprovalType = function(type) {
-  return this.state.set("approvalType", type);
+AppState.prototype.setCurrentApprovalType = function(type) {
+  const logName = `${moduleName}.setCurrentApprovalType`;
+
+  try {
+    if (this.state.get("currentRepository")) {
+      return this.state.get("repositories")
+        .getRepo(this.state.get("currentRepository"))
+        .setApprovalType(type);
+    }
+    throw new Error("Current repository not defined");
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to set approval type`);
+  }
 };
 
 AppState.prototype.currentApprovers = function() {
