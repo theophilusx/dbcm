@@ -64,12 +64,6 @@ describe("Test AppState", function() {
         expect(testState.repositoryCount()).to.equal(0);
       });
 
-      it("Current repository throws an exception", function() {
-        (function() {
-          testState.currentRepository();
-        }).should.throw(VError, /Current repository not defined/);
-      });
-
       it("Current repository definition throws exception", function() {
         (function() {
           testState.currentRepositoryDef();
@@ -88,16 +82,14 @@ describe("Test AppState", function() {
         }).should.throw(VError, /Current repository not defined/);
       });
 
-      it("Current target throws exception", function() {
-        (function() {
-          testState.currentTarget();
-        }).should.throw(VError, /Current target not defined/);
-      });
 
       it("Current target def throws exception", function() {
         (function() {
           testState.currentTargetDef();
-        }).should.throw(VError, /Either current repository or current target is not defined/);
+        }).should.throw(
+          VError,
+          /Either current repository or current target is not defined/
+        );
       });
 
       it("PsqlPath is undefined", function() {
@@ -181,10 +173,8 @@ describe("Test AppState", function() {
       expect(testState.repositoryCount()).to.equal(1);
     });
 
-    it("Get current repository throw exception if not set", function() {
-      (function() {
-        testState.currentRepository();
-      }).should.throw(VError, /Current repository not defined/);
+    it("Get current repository returns undefined", function() {
+      expect(testState.currentRepository()).to.equal(undefined);
     });
 
     it("Repository Def throws exception if not exist", function() {
@@ -218,10 +208,8 @@ describe("Test AppState", function() {
       expect(testState.currentRepositoryTargets()).to.be.instanceof(TargetMap);
     });
 
-    it("Current target throws exception when not defined", function() {
-      (function() {
-        testState.currentTarget();
-      }).should.throw(VError, /Current target not defined/);
+    it("Current target returns undefined", function() {
+      expect(testState.currentTarget()).to.equal(undefined);
     });
 
     it("Set current target", function() {
