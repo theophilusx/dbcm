@@ -1,21 +1,18 @@
 "use strict";
 
-const moduleName = "repoUI";
+const moduleName = "repositories";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
 const menu = require("./textMenus");
-const git = require("./git");
 const screen = require("./textScreen");
+const Repository = require("../Repository");
 
-function setup(state) {
+function setupQuestions(state) {
   const logName = `${moduleName}.setup`;
 
   try {
-    let repoChoices = [];
-    for (let repo of state.repositories().keys()) {
-      repoChoices.push(repo);
-    }
+    let repoChoices = state.repositoryNames();
     repoChoices.push(new inquirer.Separator());
     repoChoices.push({
       name: "Add new repository",
@@ -90,17 +87,9 @@ function repoAction(appState) {
       if (answers.choice === "exitMenu") {
         return appState;
       } else if (answers.choice === "newRepository") {
-        let repoMap = appState.repositories();
-        repoMap.set(answers.newName, {
-          url: answers.newURL,
-          targets: new Map()
-        });
-        appState.setRepositories(repoMap);
-        appState.setCurrentRepository(answers.newName);
-        let approvalType = "none";
-        let approverMap = new Map();
+        let repo = new Repository(answers.newName, answers.newURL);
         if (answers.hasApprover) {
-          approvalType = answers.approvalType;
+          repo.setApprovalType(answers.approvalType);
           let approverQ = [
             {
               type: "input",
@@ -113,14 +102,14 @@ function repoAction(appState) {
               message: "Approver email:"
             }
           ];
-          let approverList = await menu.displayCollectionMenu("Approvers", approverQ);
-          for (let a of approverList) {
-            approverMap.set(a.email, a.name);
-          }
-          appState.setApprovalType(approvalType);
-          appState.setApprovers(approverMap);
-          appState = await git.setupRepository(appState);
+          let approverList = await menu.displayCollectionMenu(
+            "Approvers",
+            approverQ
+          );
+          repo.setApprovers(approverList);
         }
+        appState.setRepositoryDef(repo);
+        appState.setCurrentRepository(answers.newName);
       } else {
         appState.setCurrentRepository(answers.choice);
       }
@@ -134,8 +123,7 @@ function repoAction(appState) {
 
 function selectRepository(state) {
   const logName = `${moduleName}.selectRepository`;
-  let questions = setup(state);
-
+  let questions = setupQuestions(state);
 
   return menu.displayGenericMenu(state, "Repository Menu", questions, repoAction)
     .catch(err => {
