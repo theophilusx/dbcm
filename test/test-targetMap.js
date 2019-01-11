@@ -2,8 +2,8 @@
 
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {Target} = require("../src/Target");
-const {TargetMap} = require("../src/TargetMap");
+const Target = require("../src/Target");
+const TargetMap = require("../src/TargetMap");
 
 let testMap, newMap;
 let testTarget1, testTarget2, testTarget3;

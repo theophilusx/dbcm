@@ -54,7 +54,5 @@ ApprovalHistory.prototype.currentReleaseTag = function() {
   return this.current.releaseTag;
 };
 
-module.exports = {
-  ApprovalHistory
-};
+module.exports = ApprovalHistory;
 

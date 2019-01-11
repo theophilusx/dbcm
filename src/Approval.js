@@ -40,6 +40,5 @@ Approval.prototype.fromObject = function(p) {
   this.approvers = p.approvers;
 };
 
-module.exports = {
-  Approval
-};
+module.exports = Approval;
+

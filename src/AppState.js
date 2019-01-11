@@ -433,6 +433,5 @@ AppState.prototype.writeConfig = async function(fileName) {
   }
 };
 
-module.exports = {
-  AppState
-};
+module.exports = AppState;
+

@@ -3,7 +3,7 @@
 const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {Target} = require("../src/Target");
+const Target = require("../src/Target");
 
 describe("Test Target object", function() {
   describe("Test object creation", function() {

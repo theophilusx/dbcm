@@ -3,9 +3,9 @@
 const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {Repository} = require("../src/Repository");
-const {Target} = require("../src/Target");
-const {TargetMap} = require("../src/TargetMap");
+const Repository = require("../src/Repository");
+const Target = require("../src/Target");
+const TargetMap = require("../src/TargetMap");
 
 let testRepo, testRepo2;
 let testApprovers;

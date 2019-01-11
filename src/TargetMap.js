@@ -88,7 +88,6 @@ TargetMap.prototype.size = function() {
   return this.targets.size;
 };
 
-module.exports = {
-  TargetMap
-};
+module.exports = TargetMap;
+
 

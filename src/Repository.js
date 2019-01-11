@@ -141,6 +141,5 @@ Repository.prototype.fromObject = function(repObj) {
   }
 };
 
-module.exports = {
-  Repository
-};
+module.exports = Repository;
+

@@ -1,9 +1,8 @@
 "use srict";
 
-const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {Approval} = require("../src/Approval");
+const Approval = require("../src/Approval");
 
 describe("Test Approval object", function() {
   describe("Test Approval cnstruction", function() {

@@ -30,6 +30,5 @@ PlanMap.prototype.fromObject = function(pList) {
   });
 };
 
-module.exports = {
-  PlanMap
-};
+module.exports = PlanMap;
+

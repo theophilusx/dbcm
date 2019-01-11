@@ -3,8 +3,8 @@
 const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {Repository} = require("../src/Repository");
-const {RepositoryMap} = require("../src/RepositoryMap");
+const Repository = require("../src/Repository");
+const RepositoryMap = require("../src/RepositoryMap");
 
 describe("Testing RepositoryMap object", function() {
   let r1 = new Repository("name1", "url1");

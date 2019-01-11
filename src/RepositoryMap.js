@@ -72,6 +72,5 @@ RepositoryMap.prototype.size = function() {
   return this.repositories.size;
 };
 
-module.exports = {
-  RepositoryMap
-};
+module.exports = RepositoryMap;
+

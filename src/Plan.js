@@ -88,6 +88,5 @@ Plan.prototype.fromObject = function(pObj) {
   }
 };
 
-module.exports = {
-  Plan
-};
+module.exports = Plan;
+

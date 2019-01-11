@@ -3,12 +3,12 @@
 const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {AppState} = require("../src/AppState");
-const {Repository} = require("../src/Repository");
-const {RepositoryMap} = require("../src/RepositoryMap");
-const {PlanMap} = require("../src/PlanMap");
-const {Target} = require("../src/Target");
-const {TargetMap} = require("../src/TargetMap");
+const AppState = require("../src/AppState");
+const Repository = require("../src/Repository");
+const RepositoryMap = require("../src/RepositoryMap");
+const PlanMap = require("../src/PlanMap");
+const Target = require("../src/Target");
+const TargetMap = require("../src/TargetMap");
 
 let testState;
 

@@ -1,10 +1,9 @@
 "use strict";
 
-const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
-const {ApprovalHistory} = require("../src/ApprovalHistory");
-const {Approval} = require("../src/Approval");
+const ApprovalHistory = require("../src/ApprovalHistory");
+const Approval = require("../src/Approval");
 
 describe("Test ApprovalHistory object", function() {
   describe("Test object construction", function() {
