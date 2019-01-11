@@ -26,16 +26,16 @@ function heading(txt) {
 }
 
 function status(state) {
-  let width = cliWidth({defaultWidth: 80});
+  const width = cliWidth({defaultWidth: 80});
+  const repo = `${state.currentRepository()}`;
+  const target = `${state.currentTarget()}`;
   let strLength = "Repository: ".length
-      + state.currentRepository().length
+      + repo.length
       + "Target: ".length
-      + state.currentTarget().length;
+      + target.length;
   let padding = " ".repeat(width - strLength - 6);
-  
-  let repo = chalk`{bold ${state.currentRepository()}}`;
-  let target = chalk`{bold ${state.currentTarget()}}`;
-  console.log(boxen(`  Repository: ${repo}${padding}Target: ${target}  `));
+  console.log(boxen(`  Repository: ${chalk.bold(repo)}${padding}`
+                    + `Target: ${chalk.bold(target)}  `));
 }
 
 function errorMsg(title, msg) {

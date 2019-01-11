@@ -88,7 +88,7 @@ function displayGenericMenu(state, title, questions, actionFN) {
     };
   }
 
-  let fn = actionFN || defaultAction;
+  let fn = actionFN === undefined ? defaultAction : actionFN;
   screen.status(state);
   return doMenu(title, questions, fn(state))
     .catch(err => {
