@@ -150,21 +150,8 @@ AppState.prototype.repositoryCount = function() {
   return this.state.get("repositories").size();
 };
 
-AppState.prototype.currentRepository = function() {
-  const logName = `${moduleName}.currentRepository`;
-
-  try {
-    if (this.state.get("currentRepository")) {
-      return this.state.get("currentRepository");    
-    }
-    throw new Error("Current repository not defined");
-  } catch (err) {
-    throw new VError(err, `${logName}`);
-  }
-};
-
-AppState.prototype.setCurrentRepository = function(repoName) {
-  return this.state.set("currentRepository", repoName);
+AppState.prototype.repositoryNames = function() {
+  return this.state.get("repositories").repositoryNames();
 };
 
 AppState.prototype.repositoryDef = function(repoName) {
@@ -184,6 +171,14 @@ AppState.prototype.setRepositoryDef = function(defObject) {
   }
 
   return this.state.get("repositories").setRepo(defObject);
+};
+
+AppState.prototype.currentRepository = function() {
+  return this.state.get("currentRepository");    
+};
+
+AppState.prototype.setCurrentRepository = function(repoName) {
+  return this.state.set("currentRepository", repoName);
 };
 
 AppState.prototype.currentRepositoryDef = function() {
@@ -237,16 +232,7 @@ AppState.prototype.setCurrentRepositoryTargets = function(targetMap) {
 };
 
 AppState.prototype.currentTarget = function() {
-  const logName = `${moduleName}.currentTarget`;
-
-  try {
-    if (this.state.get("currentTarget")) {
-      return this.state.get("currentTarget");
-    }
-    throw new Error("Current target not defined");
-  } catch (err) {
-    throw new VError(err, `${logName}`);
-  }
+  return this.state.get("currentTarget");
 };
 
 AppState.prototype.setCurrentTarget = function(targetName) {
@@ -403,29 +389,7 @@ AppState.prototype.writeUserInit = async function(fileName) {
       currentPlanType: this.state.get("currentPlanType"),
       currentReleaseTag: this.state.get("currentReleaseTag"),
     };
-    let repoList = [];
-    let repos = this.state.get("repositories");
-    for (let r of repos.keys()) {
-      let repo = repos.get(r);
-      let targets = [];
-      let targetMap = r.targets;
-      for (let t of targetMap.keys()) {
-        let params = targetMap.get(t);
-        targets.push({
-          targetName: t,
-          database: params.database,
-          host: params.host,
-          port: params.port,
-          user: params.user,
-          password: params.password
-        });
-        repoList.push({
-          name: r,
-          url: repo.url,
-          targets: targets
-        });
-      }
-    }
+    let repoList = this.state.get("repositories").toArray();
     newConfig.repositories = repoList;
     await fse.writeFile(fileName, JSON.stringify(newConfig, null, " "));
   } catch (err) {
