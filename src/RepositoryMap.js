@@ -72,5 +72,13 @@ RepositoryMap.prototype.size = function() {
   return this.repositories.size;
 };
 
+RepositoryMap.prototype.repositoryNames = function() {
+  let names = [];
+  for (let n of this.repositories.keys()) {
+    names.push(n);
+  }
+  return names;
+};
+
 module.exports = RepositoryMap;
 
