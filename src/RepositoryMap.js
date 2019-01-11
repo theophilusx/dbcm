@@ -64,6 +64,10 @@ RepositoryMap.prototype.fromArray = function(repoArray) {
   }
 };
 
+RepositoryMap.prototype.has = function(key) {
+  return this.repositories.has(key);
+};
+
 RepositoryMap.prototype.size = function() {
   return this.repositories.size;
 };
