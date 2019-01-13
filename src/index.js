@@ -2,6 +2,10 @@
 
 const VError = require("verror");
 const AppState = require("./AppState");
+const userOptions = require("./tui/userOptions");
+const repo = require("./tui/repositories.js");
+const dumper = require("./dumper");
+
 // const repoui = require("./repoUI");
 // const targetui = require("./targetUI");
 // const configui = require("./configUI");
@@ -42,13 +46,20 @@ const AppState = require("./AppState");
 // }
 
 async function main() {
+  const logName = "main";
   const appState = new AppState();
 
   try {
     await appState.init();
-    
+    if (!appState.username()) {
+      await userOptions.getOptions(appState);
+
+    }
+    await repo.selectRepository(appState);
+    console.log(dumper.dumpValue(appState, "", "appState"));
+    await appState.writeUserInit("/tmp/dbcmrc");
   } catch (err) {
-    
+    throw new VError(err, `${logName}`);
   }
 }
 

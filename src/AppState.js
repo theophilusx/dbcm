@@ -397,5 +397,10 @@ AppState.prototype.writeUserInit = async function(fileName) {
   }
 };
 
+AppState.prototype.dump = function() {
+  for (let k of this.state.keys()) {
+    
+  }
+}
 module.exports = AppState;
 
