@@ -2,10 +2,10 @@
 
 const moduleName = "git";
 
+const assert = require("assert");
 const VError = require("verror");
 const path = require("path");
 const Git = require("nodegit");
-const files = require("./files");
 
 const cloneOptions = {
   fetchOpts : {
@@ -25,65 +25,41 @@ const cloneOptions = {
   } 
 };
 
-/**
- * @async
- *
- * Returns an open Repository object. If repository does not exit
- * it will be cloned from the remote repository and opened.
- * If it does exist, it will just be opened and the object returned
- *
- * @param {string} repoUrl - URL of the remote Git repository.
- * @param {string} dst - local destination for the repository.
- *
- * @return {Object} repo - a repository object
- * 
- */
-function getRepository(repoUrl, dst) {
-  const logName = `${moduleName}.getRepository`;
-  
-  return Git.Clone(repoUrl, dst, cloneOptions)
-    .then(repo => {
-      return repo;
-    })
-    .catch(err => {
-      if (err.errno === -4) {
-        // looks like repo already there - try opening and pull
-        return Git.Repository.open(dst)
-          .catch(err => {
-            throw new VError(err, `${logName} Failed to open repo ${dst}`);
-          });
+function GitRepo(name, url, baseRoot) {
+  const logName = `${moduleName}.GitRepo`;
+
+  try {
+    assert.ok(
+      name && url && baseRoot,
+      "Must provide a repository name, url and local path"
+    );
+    this.name = name;
+    this.url = url;
+    this.path = path.join(baseRoot, name);
+    this.repoObj = undefined;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to create Git repository object`);
+  }
+}
+
+GitRepo.prototype.init = async function() {
+  const logName = `${moduleName}.init`;
+
+  try {
+    this.repoObj = await Git.Clone(this.url, this.path, cloneOptions);
+    return this.repoObj;
+  } catch (err) {
+    if (err.errno === -4) {
+      try {
+        // looks like repo already there - try opening and pulling
+        this.repoObj = await Git.Repository.open(this.path);
+        return this.repoObj;
+      } catch (err) {
+        throw new VError(err, `${logName} Failed to open ${this.path}`);
       }
-      throw new VError(err, `${logName} Failed to clone ${repoUrl}`);
-    });
-}
-
-function GitRepo() {
-  const logName = `${logName}.DbRepository`;
-  this.name = undefined;
-  this.url = undefined;
-  this.path = undefined;
-  this.repo = undefined;
-}
-
-GitRepo.prototype.name = function() {
-  if (this.name) {
-    return this.name;    
+    }
+    throw new VError(err, `${logName} Error cloning repo ${this.url}`);
   }
-  throw new Error("Repository not initialised");
-};
-
-GitRepo.prototype.url = function() {
-  if (this.url) {
-    return this.url;
-  }
-  throw new Error("Repository not initialised");
-};
-
-GitRepo.prototype.path = function() {
-  if (this.path) {
-    return this.path;
-  }
-  throw new Error("Repository not initialised");
 };
 
 /**
@@ -98,10 +74,10 @@ GitRepo.prototype.getReferenceNames = async function() {
   const logName = `${moduleName}.getReferences`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    let names = await this.repo.getReferenceNames(Git.Reference.TYPE.LISTALL);
+    let names = await this.repoObj.getReferenceNames(Git.Reference.TYPE.LISTALL);
     return names;
   } catch (err) {
     throw new VError(err, `${logName} Failed to get references for repository`);
@@ -123,10 +99,10 @@ GitRepo.prototype.createBranch = async function(branchName) {
   const logName = `${moduleName}.createBranch`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    return await this.repo.createBranch(branchName);
+    return await this.repoObj.createBranch(branchName);
   } catch (err) {
     throw new VError(err, `${logName} Failed to create branch ${branchName}`);
   }
@@ -148,12 +124,12 @@ GitRepo.prototype.deleteBranch = async function deleteBranch(branchName) {
   const logName = `${moduleName}.deleteBranch`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    await this.repo.checkoutBranch("master");
+    await this.repoObj.checkoutBranch("master");
     let ref = await Git.Branch.lookup(
-      this.repo,
+      this.repoObj,
       branchName,
       Git.Branch.BRANCH.LOCAL
     );
@@ -178,10 +154,10 @@ GitRepo.prototype.addCommit = async function(files, commitMsg, author, email) {
   const logName = `${moduleName}.addCommit`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    let index = await this.repo.refreshIndex();
+    let index = await this.repoObj.refreshIndex();
     let promises = [];
     files.forEach(f => {
       promises.push(index.addByPath(f.path()));
@@ -189,11 +165,11 @@ GitRepo.prototype.addCommit = async function(files, commitMsg, author, email) {
     await Promise.all(promises);
     await index.write();
     let oid = await index.writeTree();
-    let head = await Git.Reference.nameToId(this.repo, "HEAD");
-    let parent = await this.repo.getCommit(head);
+    let head = await Git.Reference.nameToId(this.repoObj, "HEAD");
+    let parent = await this.repoObj.getCommit(head);
     let authorSig = Git.Signature.now(author, email);
     let committerSig = Git.Signature.now(author, email);
-    let commitOid = await this.repo.createCommit(
+    let commitOid = await this.repoObj.createCommit(
       "HEAD",
       authorSig,
       committerSig,
@@ -211,13 +187,16 @@ GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
   const logName = `${moduleName}.mergeIntoMaster`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
     let mergeSig = Git.Signature.now(author, email);
-    await this.repo.mergeBranches("master", branch, mergeSig);
-    let remote = await this.repo.getRemote("origin", cloneOptions.fetchOpts);
-    await remote.push(["refs/heads/master:refs/heads/master"], cloneOptions.fetchOpts);
+    await this.repoObj.mergeBranches("master", branch, mergeSig);
+    let remote = await this.repoObj.getRemote("origin", cloneOptions.fetchOpts);
+    await remote.push(
+      ["refs/heads/master:refs/heads/master"],
+      cloneOptions.fetchOpts
+    );
     await this.deleteBranch(branch);
     return true;
   } catch (err) {
@@ -225,16 +204,39 @@ GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
   }
 };
 
+GitRepo.prototype.commitAndMerge = async function(branch, msg, author, email) {
+  const logName = `${logName}.commitAndMerge`;
+
+  try {
+    if (!this.repoObj) {
+      throw new Error("Git repository not initialised");
+    }
+    await this.checkoutBranch("master");
+    let fileList = await this.getStatus();
+    await this.addCommit(fileList, msg);
+    let mergeSig = Git.Signature.now(author, email);
+    await this.mergeBranches("master", branch, mergeSig);
+    let remote = await this.repoObj.getRemote("origin", cloneOptions.fetchOpts);
+    await remote.push(
+      ["refs/heads/master:refs/heads/master"],
+      cloneOptions.fetchOpts
+    );
+    await this.deleteBranch(branch);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to commit and merge branch ${branch}`);
+  }
+};
+
 GitRepo.prototype.addReleaseTag = async function(name, msg) {
   const logName = `${moduleName}.addReleaseTag`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    let commit = await this.repo.getMasterCommit();
-    await this.repo.createTag(commit.id(), name, msg);
-    let remote = await this.repo.getRemote("origin", cloneOptions.fetchOpts);
+    let commit = await this.repoObj.getMasterCommit();
+    await this.repoObj.createTag(commit.id(), name, msg);
+    let remote = await this.repoObj.getRemote("origin", cloneOptions.fetchOpts);
     await remote.push(
       ["refs/heads/master:refs/heads/master"],
       cloneOptions.fetchOpts
@@ -250,10 +252,10 @@ GitRepo.prototype.getChangesSha = async function(plan) {
   const logName = `${moduleName}.getChangesSha`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    let commit = await this.repo.getHeadCommit();
+    let commit = await this.repoObj.getHeadCommit();
     let entry = await commit.getEntry(plan.change);
     return entry.sha();
   } catch (err) {
@@ -294,16 +296,16 @@ GitRepo.prototype.fileHistory = async function(fileName) {
   }
   
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    let masterCommit = await this.repo.getMasterCommit();
-    let walker = this.repo.createRevWalk();
+    let masterCommit = await this.repoObj.getMasterCommit();
+    let walker = this.repoObj.createRevWalk();
     walker.push(masterCommit.sha());
     walker.sorting(Git.Revwalk.SORT.TIME);
     let newCommits = await walker.fileHistoryWalk(fileName, 500);
     let commitHistory = await compileHistory(
-      this.repo,
+      this.repoObj,
       newCommits,
       [],
       fileName,
@@ -314,15 +316,15 @@ GitRepo.prototype.fileHistory = async function(fileName) {
     throw new VError(err, `${logName} Failed to get history for ${fileName}`);
   }
 };
-
+ 
 GitRepo.prototype.fileDiff = async function(commitSha) {
   const logName = `${moduleName}.fileDiff`;
 
   try {
-    if (!this.repo) {
+    if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    let commit = await this.repo.getCommit(commitSha);
+    let commit = await this.repoObj.getCommit(commitSha);
     let diffList = await commit.getDiff();
     return diffList;
   } catch (err) {
@@ -377,62 +379,5 @@ GitRepo.prototype.statusString = function() {
   }
 };
 
-GitRepo.prototype.init = async function(state) {
-  const logName = `${moduleName}.init`;
+module.exports = GitRepo;
 
-  try {
-    let repoDef = state.currentRepositoryDef();
-    this.name = repoDef.name;
-    this.url = repoDef.url;
-    this.path = path.join(state.home, repoDef.name);
-    this.repo = await getRepository(this.url, this.path);
-    let initialised = await files.isInitialised(this.path);
-    if (!initialised) {
-      let branchRef = await this.createBranch("setup");
-      await this.repo.checkoutBranch(branchRef);
-      await files.initialiseRepo(this.path);
-      let fileList = await this.repo.getStatus();
-      await this.addCommit(fileList, "DBCM Init");
-      let mergeSig = Git.Signature.now(state.username(), state.email());
-      await this.repo.mergeBranches("master", "setup", mergeSig);
-      let remote = await this.repo.getRemote("origin", cloneOptions.fetchOpts);
-      await remote.push(
-        ["refs/heads/master:refs/heads/master"],
-        cloneOptions.fetchOpts
-      );
-      await this.deleteBranch("setup");
-      let tag = await this.addReleaseTag("0.0.1", "Initial release");
-      state.setCurrentReleaserTag(tag);
-    } else {
-      this.pullMaster();
-    }
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to initialise ${name}`);
-  }
-};
-
-/**
- * @async
- *
- * Setup a repository for DBCM. If teh repository has not yet been
- * cloned locally, do the cloning, then open it. If the repository has
- * uncommitted changes, display them. Do a refresh from master into
- * local master by performing a pull
- */
-async function setupRepository(state) {
-  const logName = `${moduleName}.setupRepository`;
-
-  try {
-    let repo = new DbRepository();
-    await repo.init(state);
-    state.setRepositoryObject(repo);
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to setup ${state.currentRepository}`);
-  }
-}
-
-module.exports = {
-  GitRepo,
-  setupRepository
-};
