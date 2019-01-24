@@ -12,8 +12,8 @@ let testApprovers;
 let testTarget1, testTarget2;
 
 function initTestRepo() {
-  testRepo = new Repository("testRepoName", "testRepoUrl");
-  testRepo2 = new Repository("testRepoName2", "testRepoUrl2");
+  testRepo = new Repository("testRepoName", "testRepoUrl", "/tmp");
+  testRepo2 = new Repository("testRepoName2", "testRepoUrl2", "/tmp");
 }
 
 function initTestApprovers() {
@@ -36,18 +36,18 @@ describe("Testing Repository object", function() {
   
   describe("Create Repository object", function() {
     it("Create an object", function() {
-      expect(new Repository("repoName", "repoUrl")).is.an("object");
+      expect(new Repository("repoName", "repoUrl", "/tmp")).is.an("object");
     });
 
     it("Object has right properties", function() {
-      expect(new Repository("name", "aUrl")).has.all.keys(
+      expect(new Repository("name", "aUrl", "/tmp")).has.all.keys(
         "name",
         "url",
         "releaseTag",
         "approvalType",
         "approvers",
         "targets",
-        "repo"
+        "gitRepo"
       );
     });
   });
