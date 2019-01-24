@@ -87,7 +87,7 @@ function repoAction(appState) {
       if (answers.choice === "exitMenu") {
         return appState;
       } else if (answers.choice === "newRepository") {
-        let repo = new Repository(answers.newName, answers.newURL);
+        let repo = new Repository(answers.newName, answers.newURL, appState.home());
         if (answers.hasApprover) {
           repo.setApprovalType(answers.approvalType);
           let approverQ = [
