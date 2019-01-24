@@ -8,7 +8,9 @@ const should = require("chai").should();
 const GitRepo = require("../src/GitRepo");
 const fse = require("fse");
 const chaiAsPromised = require("chai-as-promised");
+const chaiSubset = require('chai-subset');
 
+chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 describe("Test GitRepo Object", function() {
@@ -58,11 +60,28 @@ describe("Test GitRepo Object", function() {
       expect(testRepo.path).to.equal(path.join(root, name));
       expect(testRepo.repoObj).to.equal(undefined);
     });
-    it("Clone repo test", async function() {
+    it("Clone repo test", function() {
       return expect(testRepo.init()).to.be.fulfilled;
     });
     it("Existing repo test pull", function() {
       return expect(testRepo.init()).to.be.fulfilled;
+    });
+    it("Test retrieval of reference names", function() {
+      return expect(testRepo.getReferenceNames()).to.eventually.be.an("array");
+    });
+    it("Test branch creation", async function() {
+      await testRepo.createBranch("test-branch");
+      return expect(testRepo.getReferenceNames())
+        .to.eventually.containSubset([
+          "refs/heads/test-branch"
+        ]);
+    });
+    it("Test delete branch", async function() {
+      await testRepo.deleteBranch("test-branch");
+      return expect(testRepo.getReferenceNames())
+        .to.eventually.not.containSubset([
+          "refs/heads/test-branch"
+        ]);
     });
     
   });
