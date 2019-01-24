@@ -1,6 +1,6 @@
 "use strict";
 
-const moduleName = "git";
+const moduleName = "GitRepo";
 
 const assert = require("assert");
 const VError = require("verror");
@@ -102,7 +102,8 @@ GitRepo.prototype.createBranch = async function(branchName) {
     if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    return await this.repoObj.createBranch(branchName);
+    let commit = await this.repoObj.getHeadCommit();
+    return await this.repoObj.createBranch(branchName, commit, 0);
   } catch (err) {
     throw new VError(err, `${logName} Failed to create branch ${branchName}`);
   }
