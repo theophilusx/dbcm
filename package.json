@@ -26,12 +26,12 @@
   "homepage": "https://github.com/theophilusx/dbcm#readme",
   "devDependencies": {
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset": "^1.6.0",
     "mocha": "^5.2.0"
   },
   "dependencies": {
     "boxen": "^2.0.0",
-    "chai-as-promised": "^7.1.1",
-    "chai-subset": "^1.6.0",
     "chalk": "^2.4.1",
     "cli-table3": "^0.5.1",
     "cli-width": "^2.2.0",
