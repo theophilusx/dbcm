@@ -7,8 +7,10 @@ const Repository = require("../src/Repository");
 const RepositoryMap = require("../src/RepositoryMap");
 
 describe("Testing RepositoryMap object", function() {
-  let r1 = new Repository("name1", "url1");
-  let r2 = new Repository("name2", "url2");
+  const url = "git@github.com:theophilusx/test-repo";
+  const home = "/tmp"; 
+  let r1 = new Repository("name1", url, home);
+  let r2 = new Repository("name2", url, home);
   let rm = new RepositoryMap();
 
   describe("Object construction", function() {

@@ -152,15 +152,17 @@ describe("Test AppState", function() {
   describe("Repository and target methods", function() {
     let repo, repoMap;
     let target;
+    let url = "git@github.com:theophilusx/test-repo";
     
     before("Setup repostiory test data", async function() {
+      testState = new AppState();
+      await testState.init();
+      testState.set("home", "/home");
       target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
-      repo = new Repository("test-repo", "git@example.com:test/repo.git");
+      repo = new Repository("test-repo", url, testState.home());
       repo.setTarget(target);
       repoMap = new RepositoryMap();
       repoMap.setRepo(repo);
-      testState = new AppState();
-      await testState.init();
     });
 
     it("Repositories returns RepositoryMap", function() {
@@ -226,13 +228,15 @@ describe("Test AppState", function() {
   describe("Test approver methods", function() {
     let repo;
     let target;
+    const url = "git@github.com:theophilusx/test-repo";
     
     before("Setup repostiory test data", async function() {
-      target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
-      repo = new Repository("test-repo", "git@example.com:test/repo.git");
-      repo.setTarget(target);
       testState = new AppState();
       await testState.init();
+      testState.set("home", "/tmp");
+      repo = new Repository("test-repo", url, testState.home());
+      target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
+      repo.setTarget(target);
       testState.setRepositoryDef(repo);
     });
 
