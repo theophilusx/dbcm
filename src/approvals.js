@@ -10,7 +10,10 @@ const git = require("./git");
 
 function readApprovalsFile(state) {
   const logName = `${moduleName}.readApprovalsFile`;
-  const filePath = path.join(state.home(), state.currentRepository(), "approvals.json");
+  const filePath = path.join(
+    state.home(),
+    state.currentRepositoryName(),
+    "approvals.json");
 
   return fse.readJson(filePath)
     .then(data => {
@@ -29,7 +32,11 @@ function readApprovalsFile(state) {
 
 function writeApprovalsFile(state) {
   const logName = `${moduleName}.writeApprovalsFile`;
-  const filePath = path.join(state.home(), state.currentRepository(), "approvals.json");
+  const filePath = path.join(
+    state.home(),
+    state.currentRepositoryName(),
+    "approvals.json"
+  );
   let content = {
     name: "Change Approvals",
     version: "1.0.0",

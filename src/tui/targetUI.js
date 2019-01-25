@@ -19,7 +19,7 @@ const cliWidth = require("cli-width");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `
-Target database ${state.currentTarget()} needs to be initialised for DBCM
+Target database ${state.currentTargetName()} needs to be initialised for DBCM
 Please either run the shell script in bin/dbcm-init.sh or execute the SQL
 script in sql/dbcm-init.sql in the target database.
 

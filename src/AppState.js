@@ -3,9 +3,11 @@
 const moduleName = "AppState";
 
 const VError = require("verror");
+const assert = require("assert");
 const fse = require("fse");
 const RepositoryMap = require("./RepositoryMap");
 const PlanMap = require("./PlanMap");
+const Repository = require("./Repository");
 
 function AppState() {
   this.state = new Map();
@@ -32,9 +34,9 @@ AppState.prototype.init = async function(rc) {
           repositoryHome: undefined,
           repositories: [],
           psqlPath: undefined,
-          currentRepository: undefined,
-          currentTarget: undefined,
-          currentPlan: undefined,
+          currentRepositoryName: undefined,
+          currentTargetName: undefined,
+          currentPlanUUID: undefined,
         };
       }
       throw new VError(err, `${logName} Failed to access ${fileName}`);
@@ -54,11 +56,11 @@ AppState.prototype.init = async function(rc) {
       repoMap.fromArray(config.repositories);
     }
     this.state.set("repositories", repoMap);
-    this.state.set("currentRepository", config.currentRepository);
-    this.state.set("currentTarget", config.currentTarget);
+    this.state.set("currentRepositoryName", config.currentRepository);
+    this.state.set("currentTargetName", config.currentTarget);
     this.state.set("psqlPath", config.psqlPath);
     this.state.set("changePlans", new PlanMap());
-    this.state.set("currentPlan", config.currentPlan);
+    this.state.set("currentPlanUUID", config.currentPlan);
     this.state.set("menuChoice", "unknown");
     this.initialised = true;
   } catch (err) {
@@ -100,33 +102,19 @@ AppState.prototype.set = function(key, value) {
 };
 
 AppState.prototype.username = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-  return this.state.get("user").name;
+  return this.get("user").name;
 };
 
 AppState.prototype.email = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-  return this.state.get("user").email;
+  return this.get("user").email;
 };
 
 AppState.prototype.home = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.get("home");
+  return this.get("home");
 };
 
 AppState.prototype.repositoryMap = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.get("repositories");
+  return this.get("repositories");
 };
 
 AppState.prototype.setRepositoryMap = function(repoMap) {
@@ -134,7 +122,7 @@ AppState.prototype.setRepositoryMap = function(repoMap) {
 
   try {
     if (repoMap instanceof RepositoryMap) {
-      return this.state.set("repositories", repoMap);      
+      return this.set("repositories", repoMap);      
     }
     throw new Error("Argument must be an instance of RepositoryMap");
   } catch (err) {
@@ -143,51 +131,54 @@ AppState.prototype.setRepositoryMap = function(repoMap) {
 };
 
 AppState.prototype.repositoryCount = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.get("repositories").size();
+  return this.get("repositories").size();
 };
 
 AppState.prototype.repositoryNames = function() {
-  return this.state.get("repositories").repositoryNames();
+  return this.get("repositories").repositoryNames();
 };
 
-AppState.prototype.repositoryDef = function(repoName) {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
+AppState.prototype.repository = function(repoName) {
+  const logName = `${moduleName}.repository`;
+
+  try {
+    if (this.get("repositories").has(repoName)) {
+      return this.get("repositories").getRepo(repoName);    
+    }
+    throw new Error(`Unknown repository ${repoName}`);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
+};
 
-  if (this.state.get("repositories").has(repoName)) {
-    return this.state.get("repositories").getRepo(repoName);    
+AppState.prototype.setRepository = function(defObject) {
+  const logName = `${moduleName}.setRepository`;
+
+  try {
+    if (defObject instanceof Repository) {
+      return this.get("repositories").setRepo(defObject);
+    }
+    throw new Error("Argument must be a Repostiory object");
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
-  throw new Error(`Unknown repository ${repoName}`);
 };
 
-AppState.prototype.setRepositoryDef = function(defObject) {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.get("repositories").setRepo(defObject);
+AppState.prototype.currentRepositoryName = function() {
+  return this.get("currentRepositoryName");    
 };
 
-AppState.prototype.currentRepository = function() {
-  return this.state.get("currentRepository");    
-};
-
-AppState.prototype.setCurrentRepository = function(repoName) {
-  return this.state.set("currentRepository", repoName);
+AppState.prototype.setCurrentRepositoryName = function(repoName) {
+  return this.set("currentRepositoryName", repoName);
 };
 
 AppState.prototype.currentRepositoryDef = function() {
   const logName = `${moduleName}.currentRepositoryDef`;
 
   try {
-    if (this.state.get("currentRepository")) {
-      return this.state.get("repositories")
-        .getRepo(this.state.get("currentRepository"));    
+    if (this.get("currentRepositoryName")) {
+      return this.get("repositories")
+        .getRepo(this.get("currentRepositoryName"));    
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -199,9 +190,9 @@ AppState.prototype.currentRepositoryUrl = function() {
   const logName = `${moduleName}.currentRepositoryUrl`;
 
   try {
-    if (this.state.get("currentRepository")) {
-      return this.state.get("repositories")
-        .getRepo(this.state.get("currentRepository")).url;
+    if (this.get("currentRepositoryName")) {
+      return this.get("repositories")
+        .getRepo(this.get("currentRepositoryName")).url;
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -213,9 +204,9 @@ AppState.prototype.currentRepositoryTargets = function() {
   const logName = `${moduleName}.currentRepositoryTargets`;
 
   try {
-    if (this.state.get("currentRepository")) {
-      return this.state.get("repositories")
-        .getRepo(this.state.get("currentRepository")).targets;
+    if (this.get("currentRepositoryName")) {
+      return this.get("repositories")
+        .getRepo(this.get("currentRepositoryName")).targets;
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -224,33 +215,29 @@ AppState.prototype.currentRepositoryTargets = function() {
 };
 
 AppState.prototype.setCurrentRepositoryTargets = function(targetMap) {
-  if (this.state.get("currentRepository")) {
-    return this.state.get("repositories")
-      .getRepo(this.state.get("currentRepository")).targets = targetMap;
+  if (this.get("currentRepositoryName")) {
+    return this.get("repositories")
+      .getRepo(this.get("currentRepositoryName")).targets = targetMap;
   }
   throw new Error("Current repository not defined");
 };
 
-AppState.prototype.currentTarget = function() {
-  return this.state.get("currentTarget");
+AppState.prototype.currentTargetName = function() {
+  return this.get("currentTargetName");
 };
 
 AppState.prototype.setCurrentTarget = function(targetName) {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.set("currentTarget", targetName);
+  return this.set("currentTargetName", targetName);
 };
 
 AppState.prototype.currentTargetDef = function() {
   const logName = `${moduleName}.currentTargetDef`;
 
   try {
-    if (this.state.get("currentRepository") && this.state.get("currentTarget")) {
-      return this.state.get("repositories")
-        .getRepo(this.state.get("currentRepository"))
-        .targets.get(this.state.get("currentTarget"));
+    if (this.get("currentRepositoryName") && this.get("currentTargetName")) {
+      return this.get("repositories")
+        .getRepo(this.get("currentRepositoryName"))
+        .targets.get(this.get("currentTargetName"));
     }
     throw new Error("Either current repository or current target is not defined");
   } catch (err) {
@@ -259,22 +246,18 @@ AppState.prototype.currentTargetDef = function() {
 };
 
 AppState.prototype.psqlPath = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.get("psqlPath");
+  return this.get("psqlPath");
 };
 
 AppState.prototype.setPsqlPath = function(psql) {
-  return this.state.set("psqlPath", psql);
+  return this.set("psqlPath", psql);
 };
 
 AppState.prototype.currentApprovalType = function() {
   const logName = `${moduleName}.currentApprovalType`;
 
   try {
-    if (this.state.get("currentRepository")) {
+    if (this.get("currentRepositoryName")) {
       return this.currentRepositoryDef().approvalType;
     }
     throw new Error("Current repository not defined");
@@ -287,10 +270,8 @@ AppState.prototype.setCurrentApprovalType = function(type) {
   const logName = `${moduleName}.setCurrentApprovalType`;
 
   try {
-    if (this.state.get("currentRepository")) {
-      return this.state.get("repositories")
-        .getRepo(this.state.get("currentRepository"))
-        .setApprovalType(type);
+    if (this.get("currentRepositoryName")) {
+      return this.currentRepositoryDef().setApprovalType(type);
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -302,7 +283,7 @@ AppState.prototype.currentApprovers = function() {
   const logName = `${moduleName}.currentApprovers`;
 
   try {
-    if (this.state.get("currentRepository")) {
+    if (this.get("currentRepositoryName")) {
       return this.currentRepositoryDef().approvers;
     }
     throw new Error("Current repository not defined");
@@ -312,66 +293,77 @@ AppState.prototype.currentApprovers = function() {
 };
 
 AppState.prototype.setApprovers = function(appMap) {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
+  const logName = `${moduleName}.setApprovers`;
 
-  return this.state.set("approvers", appMap);
+  try {
+    assert.ok(appMap instanceof Map, "Argument must be a Map() instance");
+    if (this.get("currentRepositoryName")) {
+      return this.currentRepositoryDef().approvers = appMap;
+    }
+    throw new Error("Current repository not defined");
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
 };
 
 AppState.prototype.changePlans = function() {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
-  }
-
-  return this.state.get("changePlans");
+  return this.get("changePlans");
 };
 
 AppState.prototype.setChangePlans = function(plansMap) {
-  if (!this.initialised) {
-    throw new Error("AppState not initialised");
+  const logName = `${moduleName}.setChangePlans`;
+
+  try {
+    assert.ok(plansMap instanceof PlanMap, "Argument must be a PlanMap() instance");
+    return this.set("changePlans", plansMap);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
-
-  return this.state.set("changePlans", plansMap);
 };
 
-AppState.prototype.currentPlan = function() {
-  return this.state.get("currentPlan");
+AppState.prototype.currentPlanUUID = function() {
+  return this.get("currentPlanUUID");
 };
 
-AppState.prototype.setCurrentPlan = function(id) {
-  return this.state.set("currentPlan", id);
+AppState.prototype.setCurrentPlanUUID = function(id) {
+  return this.set("currentPlanUUID", id);
 };
 
 AppState.prototype.currentPlanType = function() {
-  return this.state.get("currentPlanType");
+  return this.get("currentPlanType");
 };
 
 AppState.prototype.setCurrentPlanType = function(type) {
-  return this.state.set("currentPlanType", type);
+  return this.set("currentPlanType", type);
 };
 
 AppState.prototype.currentPlanDef = function() {
-  if (this.state.get("changePlans") && this.state.get("currentPlan")) {
-    return this.state.get("changePlans").get(this.state.get("currentPlan"));    
+  const logName = `${moduleName}.currentPlanDef`;
+
+  try {
+    if (this.get("changePlans") && this.get("currentPlanUUID")) {
+      return this.get("changePlans").get(this.get("currentPlanUUID"));    
+    }
+    throw new Error("Both changePlans and currentPlanUUID must be defined");
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
-  throw new Error("Either change plans is not defined or current plan is not defined");
 };
 
 AppState.prototype.menuChoice = function() {
-  return this.state.get("menuChoice");
+  return this.get("menuChoice");
 };
 
 AppState.prototype.setMenuChoice = function(choice) {
-  return this.state.set("menuChoice", choice);
+  return this.set("menuChoice", choice);
 };
 
 AppState.prototype.currentReleaseTag = function() {
-  return this.state.get("currentReleaseTag");
+  return this.get("currentReleaseTag");
 };
 
 AppState.prototype.setCurrentReleaseTag = function(tag) {
-  return this.state.set("currentReleaseTag", tag);
+  return this.set("currentReleaseTag", tag);
 };
 
 AppState.prototype.writeUserInit = async function(fileName) {
@@ -380,14 +372,14 @@ AppState.prototype.writeUserInit = async function(fileName) {
   try {
     let newConfig = {
       version: "1.0.0",
-      user: this.state.get("user"),
-      repositoryHome: this.state.get("home"),
-      psqlPath: this.state.get("psqlPath"),
-      currentRepository: this.state.get("currentRepository"),
-      currentTarget: this.state.get("currentTarget"),
-      currentPlan: this.state.get("currentPlan"),
-      currentPlanType: this.state.get("currentPlanType"),
-      currentReleaseTag: this.state.get("currentReleaseTag"),
+      user: this.get("user"),
+      repositoryHome: this.get("home"),
+      psqlPath: this.get("psqlPath"),
+      currentRepositoryName: this.get("currentRepositoryName"),
+      currentTargetName: this.get("currentTargetName"),
+      currentPlanUUID: this.get("currentPlanUUID"),
+      currentPlanType: this.get("currentPlanType"),
+      currentReleaseTag: this.get("currentReleaseTag"),
     };
     let repoList = this.state.get("repositories").toArray();
     newConfig.repositories = repoList;
@@ -397,10 +389,5 @@ AppState.prototype.writeUserInit = async function(fileName) {
   }
 };
 
-AppState.prototype.dump = function() {
-  for (let k of this.state.keys()) {
-    
-  }
-}
 module.exports = AppState;
 

@@ -113,7 +113,7 @@ describe("Test AppState", function() {
       });
 
       it("Current plan is undefined", function() {
-        expect(testState.currentPlan()).to.equal(undefined);
+        expect(testState.currentPlanUUID()).to.equal(undefined);
       });
 
       
@@ -176,7 +176,7 @@ describe("Test AppState", function() {
     });
 
     it("Get current repository returns undefined", function() {
-      expect(testState.currentRepository()).to.equal(undefined);
+      expect(testState.currentRepositoryName()).to.equal(undefined);
     });
 
     it("Repository Def throws exception if not exist", function() {
@@ -186,16 +186,16 @@ describe("Test AppState", function() {
     });
     
     it("Set current repository", function() {
-      expect(testState.setCurrentRepository(repo.name));
-      expect(testState.state.get("currentRepository")).to.equal(repo.name);
+      expect(testState.setCurrentRepositoryName(repo.name));
+      expect(testState.currentRepositoryName()).to.equal(repo.name);
     });
 
     it("Get current repository returns repo name", function() {
-      expect(testState.currentRepository()).to.equal(repo.name);
+      expect(testState.currentRepositoryName()).to.equal(repo.name);
     });
 
     it("Get repository def", function() {
-      expect(testState.repositoryDef(repo.name)).to.deep.equal(repo);
+      expect(testState.repository(repo.name)).to.deep.equal(repo);
     });
 
     it("Get current repository", function() {
@@ -211,12 +211,12 @@ describe("Test AppState", function() {
     });
 
     it("Current target returns undefined", function() {
-      expect(testState.currentTarget()).to.equal(undefined);
+      expect(testState.currentTargetName()).to.equal(undefined);
     });
 
     it("Set current target", function() {
       testState.setCurrentTarget(target.name);
-      expect(testState.currentTarget()).to.equal(target.name);
+      expect(testState.currentTargetName()).to.equal(target.name);
     });
 
     it("Get current target definition", function() {
@@ -237,7 +237,7 @@ describe("Test AppState", function() {
       repo = new Repository("test-repo", url, testState.home());
       target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
       repo.setTarget(target);
-      testState.setRepositoryDef(repo);
+      testState.setRepository(repo);
     });
 
     it("Current approver type throws exception", function() {
@@ -247,7 +247,7 @@ describe("Test AppState", function() {
     });
 
     it("Current approver type returns none", function() {
-      testState.setCurrentRepository(repo.name);
+      testState.setCurrentRepositoryName(repo.name);
       expect(testState.currentApprovalType()).to.equal("none");
     });
 

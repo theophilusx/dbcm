@@ -167,7 +167,7 @@ async function selectPlan(state, planType) {
       planChoices
     );
     if (!menu.doExit(choice)) {
-      if (choice === state.currentPlan()) {
+      if (choice === state.currentPlanUUID()) {
         // same plan - no change
         return [state, choice];
       }
@@ -205,9 +205,9 @@ async function editPlan(state) {
     if (!menu.doExit(choice)) {
       let plan = state.currentPlanDef();
       let files = [
-        path.join(state.home(), state.currentRepository(), plan.change),
-        path.join(state.home(), state.currentRepository(), plan.verify),
-        path.join(state.home(), state.currentRepository(), plan.rollback)
+        path.join(state.home(), state.currentRepositoryName(), plan.change),
+        path.join(state.home(), state.currentRepositoryName(), plan.verify),
+        path.join(state.home(), state.currentRepositoryName(), plan.rollback)
       ];
       edit.editFiles(files);
     }

@@ -46,7 +46,11 @@ async function rejectPlan(state) {
       let repo = state.get("repoObject");
       await git.createBranch(repo, "reject");
       await repo.checkoutBranch("reject");
-      let changeFile = path.join(state.home(), state.currentRepository(), planDef.change);
+      let changeFile = path.join(
+        state.home(),
+        state.currentRepositoryName(),
+        planDef.change
+      );
       await fse.appendFile(changeFile, rejectMsg, {encoding: "utf-8"});
       state = plans.movePlanToRejected(state);
       await plans.writePlanFiles(state);

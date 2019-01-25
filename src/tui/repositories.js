@@ -108,7 +108,7 @@ function repoAction(appState) {
           );
           repo.setApprovers(approverList);
         }
-        appState.setRepositoryDef(repo);
+        appState.setRepository(repo);
         appState.setCurrentRepository(answers.newName);
       } else {
         appState.setCurrentRepository(answers.choice);

@@ -27,8 +27,8 @@ function heading(txt) {
 
 function status(state) {
   const width = cliWidth({defaultWidth: 80});
-  const repo = `${state.currentRepository()}`;
-  const target = `${state.currentTarget()}`;
+  const repo = `${state.currentRepositoryName()}`;
+  const target = `${state.currentTargetName()}`;
   let strLength = "Repository: ".length
       + repo.length
       + "Target: ".length

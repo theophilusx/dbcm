@@ -40,9 +40,9 @@ function approvalActions(state) {
         }
         let planDef = state.currentPlanDef();
         let fileList = [
-          path.join(state.home(), state.currentRepository(), planDef.change),
-          path.join(state.home(), state.currentRepository(), planDef.verify),
-          path.join(state.home(), state.currentRepository(), planDef.rollback)
+          path.join(state.home(), state.currentRepositoryName(), planDef.change),
+          path.join(state.home(), state.currentRepositoryName(), planDef.verify),
+          path.join(state.home(), state.currentRepositoryName(), planDef.rollback)
         ];
         edit.viewFiles(fileList);
         break;

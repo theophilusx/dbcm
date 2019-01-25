@@ -89,7 +89,11 @@ async function applyCurrentPlan(state) {
   try {
     let plan = state.currentPlanDef();
     let pType = state.currentPlanType();
-    let changeFile = path.join(state.home(), state.currentRepository(), plan.change);
+    let changeFile = path.join(
+      state.home(),
+      state.currentRepositoryName(),
+      plan.change
+    );
     let sha = await git.getChangesSha(state, plan);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, changeFile);
@@ -119,7 +123,11 @@ async function verifyCurrentPlan(state) {
 
   try {
     let plan = state.currentPlanDef();
-    let verifyFile = path.join(state.home(), state.currentRepository(), plan.verify);
+    let verifyFile = path.join(
+      state.home(),
+      state.currentRepositoryName(),
+      plan.verify
+    );
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, verifyFile);
     if (errors) {
@@ -147,7 +155,11 @@ async function rollbackPlan(state, plan) {
   const logName = `${moduleName}.rollbackCurrentPlan`;
 
   try {
-    let rollbackFile = path.join(state.home(), state.currentRepository(), plan.rollback);
+    let rollbackFile = path.join(
+      state.home(),
+      state.currentRepositoryName(),
+      plan.rollback
+    );
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, rollbackFile);
     if (errors) {
