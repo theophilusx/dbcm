@@ -332,7 +332,7 @@ function planTypeAction(state) {
         switch (answer.choice) {
         case "developmentPlans":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Development Plan Menu",
               "Select Plan Action",
@@ -344,7 +344,7 @@ function planTypeAction(state) {
           break;
         case "pendingPlans":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Pending Plan Menu",
               "Select Plan Action",
@@ -356,7 +356,7 @@ function planTypeAction(state) {
           break;
         case "approvedPlans":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Approved Plan Menu",
               "Selet Plan Action",
@@ -368,7 +368,7 @@ function planTypeAction(state) {
           break;
         case "rejectedPlans":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Rejected Plans Menu",
               "Select Plan Action",
@@ -405,7 +405,7 @@ function mainAction(state) {
         switch (answer.choice) {
         case "managePlans":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Plan Menu",
               "Select Change Plan Group",
@@ -417,7 +417,7 @@ function mainAction(state) {
           break;
         case "manageTargets":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Database Target Menu",
               "Select Target Action",
@@ -429,7 +429,7 @@ function mainAction(state) {
           break;
         case "manageRepositories":
           do {
-            state = await menu.displayListMenu(
+            state = await menu.listMenu(
               state,
               "Repository Management Menu",
               "Select Repository Action",
@@ -458,7 +458,7 @@ async function mainMenu(appState) {
 
   try {
     do {
-      appState = await menu.displayListMenu(
+      appState = await menu.listMenu(
         appState,
         "Main Menu",
         "Select Action",

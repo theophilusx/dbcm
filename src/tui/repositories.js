@@ -84,7 +84,7 @@ function repoAction(appState) {
   return async answers => {
     try {
       appState.setMenuChoice(answers.choice);
-      if (answers.choice === "exitMenu") {
+      if (menu.doExit(answers.choice)) {
         return appState;
       } else if (answers.choice === "newRepository") {
         let repo = new Repository(answers.newName, answers.newURL, appState.home());
@@ -102,7 +102,7 @@ function repoAction(appState) {
               message: "Approver email:"
             }
           ];
-          let approverList = await menu.displayCollectionMenu(
+          let approverList = await menu.collectionMenu(
             "Approvers",
             approverQ
           );
@@ -125,7 +125,7 @@ function selectRepository(state) {
   const logName = `${moduleName}.selectRepository`;
   let questions = setupQuestions(state);
 
-  return menu.displayGenericMenu(state, "Repository Menu", questions, repoAction)
+  return menu.genericMenu(state, "Repository Menu", questions, repoAction)
     .catch(err => {
       throw new VError(err, `${logName} `);
     });

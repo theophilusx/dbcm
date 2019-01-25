@@ -43,8 +43,8 @@ function doMenu(title, question, actionFN) {
 }
 
 
-function displayListMenu(state, title, prompt, choices, actionFN) {
-  const logName = `${moduleName}.displayListMenu`;
+function listMenu(state, title, prompt, choices, actionFN) {
+  const logName = `${moduleName}.listMenu`;
 
   function defaultAction(answer) {
     const logName = `${moduleName}.defaultAction`;
@@ -73,7 +73,7 @@ function displayListMenu(state, title, prompt, choices, actionFN) {
     });
 }
 
-function displayGenericMenu(state, title, questions, actionFN) {
+function genericMenu(state, title, questions, actionFN) {
   const logName = `${moduleName}.displayGenricMenu`;
 
   function defaultAction(theState) {
@@ -96,7 +96,7 @@ function displayGenericMenu(state, title, questions, actionFN) {
     });
 }
 
-async function displayCollectionMenu(title, questions) {
+async function collectionMenu(title, questions) {
   try {
     questions.push({
       type: "confirm",
@@ -115,8 +115,8 @@ async function displayCollectionMenu(title, questions) {
   }
 }
 
-async function displaySelectMenu(state, title, selectItems) {
-  const logName = `${moduleName}.displaySelectMenu`;
+async function selectMenu(state, title, selectItems) {
+  const logName = `${moduleName}.selectMenu`;
 
   try {
     let choices = buildChoices(selectItems);
@@ -137,8 +137,8 @@ async function displaySelectMenu(state, title, selectItems) {
   }
 }
 
-async function displayConfirmMenu(title, msg) {
-  const logName = `${moduleName}.displayConfirmMenu`;
+async function confirmMenu(title, msg) {
+  const logName = `${moduleName}.confirmMenu`;
 
   try {
     let answer = await inquirer.prompt([{
@@ -162,10 +162,10 @@ function doExit(choice) {
 module.exports = {
   buildChoices,
   doMenu,
-  displayListMenu,
-  displayGenericMenu,
-  displayCollectionMenu,
-  displaySelectMenu,
-  displayConfirmMenu,
+  listMenu,
+  genericMenu,
+  collectionMenu,
+  selectMenu,
+  confirmMenu,
   doExit
 };

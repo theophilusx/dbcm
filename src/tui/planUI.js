@@ -133,7 +133,7 @@ async function listPlans(state, planType) {
     let planChoices = buildPlanListUI(planMap);
     let choice;
     do {
-      choice = await menu.displayListMenu(
+      choice = await menu.listMenu(
         state,
         `Change Plans - (${planType})`,
         "Select Plan:",
@@ -160,7 +160,7 @@ async function selectPlan(state, planType) {
       return [state, undefined];
     }
     let planChoices = buildPlanListUI(planMap);
-    let choice = await menu.displayListMenu(
+    let choice = await menu.listMenu(
       state,
       `Change Plan - (${planType})`,
       "Select Plan:",

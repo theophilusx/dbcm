@@ -252,7 +252,7 @@ async function applyNextChange(state) {
     if (approvedPlans.size) {
       let plan = approvedPlans.values().next().value;
       planui.displayPlanRecord(plan);
-      let choice = await menu.displayConfirmMenu(
+      let choice = await menu.confirmMenu(
         "Apply Change Record",
         "Apply this change record:");
       if (choice) {
@@ -295,9 +295,15 @@ function rollbackActions(state) {
             + "will be rolled back. \n"
             + `A total of ${sequence + 1} plans will be rolled back`
         );
-        let doIt = menu.displayConfirmMenu("Apply Multiple Rollbacks", `Rollback ${sequence + 1} plans:`);
+        let doIt = menu.confirmMenu(
+          "Apply Multiple Rollbacks",
+          `Rollback ${sequence + 1} plans:`
+        );
         if (doIt) {
-          let planList = await queries.getRollbackSets(state.currentTargetDef(), pId);
+          let planList = await queries.getRollbackSets(
+            state.currentTargetDef(),
+            pId
+          );
           let planDefs = planList.map(id => plans.findPlan(state, id));
           console.log("Will rollback these plans");
           console.dir(planDefs);
@@ -327,7 +333,7 @@ async function performPlanRollback(state) {
     let candidateList = await queries.getRollbackCandidates(state.currentTargetDef());
     if (candidateList.length) {
       let choices = menu.buildChoices(candidateList);
-      state = await menu.displayListMenu(
+      state = await menu.listMenu(
         state,
         "Rollback Changes",
         "Select plan for rollback:",

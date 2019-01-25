@@ -115,7 +115,7 @@ async function processPlanApproval(state) {
   
   try {
     do {
-      state = await menu.displayListMenu(
+      state = await menu.listMenu(
         state,
         "Plan Approval Menu",
         "Select approval action:",
@@ -147,7 +147,7 @@ async function selectApprovalType(state) {
   
   try {
     console.log(`Current Approval Type: ${state.approvalType()}`);
-    let choice = await menu.displayListMenu(
+    let choice = await menu.listMenu(
       state,
       "Approval Type",
       "Select approval type:",
