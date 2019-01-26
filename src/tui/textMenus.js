@@ -107,7 +107,13 @@ async function collectionMenu(title, questions) {
     let result = [];
     do {
       answers = await inquirer.prompt(questions);
-      result.push(answers);
+      let tmpObj = {};
+      for (let k of Object.keys(answers)) {
+        if (k !== "more") {
+          tmpObj[k] = answers[k];
+        }
+      }
+      result.push(tmpObj);
     } while (answers.more);
     return result;
   } catch (err) {
