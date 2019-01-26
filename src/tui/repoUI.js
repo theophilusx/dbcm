@@ -1,6 +1,6 @@
 "use strict";
 
-const moduleName = "repositories";
+const moduleName = "repoUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
@@ -109,9 +109,9 @@ function repoAction(appState) {
           repo.setApprovers(approverList);
         }
         appState.setRepository(repo);
-        appState.setCurrentRepository(answers.newName);
+        appState.setCurrentRepositoryName(answers.newName);
       } else {
-        appState.setCurrentRepository(answers.choice);
+        appState.setCurrentRepositoryName(answers.choice);
       }
       return appState;
     } catch (err) {
