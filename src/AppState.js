@@ -200,6 +200,15 @@ AppState.prototype.currentRepositoryUrl = function() {
   }
 };
 
+AppState.prototype.currentReleaseTag = function() {
+  return this.currentRepositoryDef().releaseTag;
+};
+
+AppState.prototype.setCurrentReleaseTag = function(tag) {
+  return this.currentRpositoryDef().releaseTag = tag;
+};
+
+
 AppState.prototype.currentRepositoryTargets = function() {
   const logName = `${moduleName}.currentRepositoryTargets`;
 
@@ -226,7 +235,7 @@ AppState.prototype.currentTargetName = function() {
   return this.get("currentTargetName");
 };
 
-AppState.prototype.setCurrentTarget = function(targetName) {
+AppState.prototype.setCurrentTargetName = function(targetName) {
   return this.set("currentTargetName", targetName);
 };
 
@@ -329,14 +338,6 @@ AppState.prototype.setCurrentPlanUUID = function(id) {
   return this.set("currentPlanUUID", id);
 };
 
-AppState.prototype.currentPlanType = function() {
-  return this.get("currentPlanType");
-};
-
-AppState.prototype.setCurrentPlanType = function(type) {
-  return this.set("currentPlanType", type);
-};
-
 AppState.prototype.currentPlanDef = function() {
   const logName = `${moduleName}.currentPlanDef`;
 
@@ -350,20 +351,37 @@ AppState.prototype.currentPlanDef = function() {
   }
 };
 
+AppState.prototype.currentPlanType = function() {
+  const logName = `${moduleName}.currentPlanType`;
+
+  try {
+    if (this.get("changePlans") && this.get("currentPlanUUID")) {
+      return this.currentPlanDef().planType;
+    }
+    throw new Error("Both changePlans and currentPlanUUID must be defined");
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+AppState.prototype.setCurrentPlanType = function(type) {
+  const logName = `${moduleName}.setCurrentPlanType`;
+
+  try {
+    if (this.get("changePlans") && this.get("currentPlanUUID")) {
+      return this.currentPlanDef().setPlanType(type);
+    }
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 AppState.prototype.menuChoice = function() {
   return this.get("menuChoice");
 };
 
 AppState.prototype.setMenuChoice = function(choice) {
   return this.set("menuChoice", choice);
-};
-
-AppState.prototype.currentReleaseTag = function() {
-  return this.get("currentReleaseTag");
-};
-
-AppState.prototype.setCurrentReleaseTag = function(tag) {
-  return this.set("currentReleaseTag", tag);
 };
 
 AppState.prototype.writeUserInit = async function(fileName) {
@@ -377,9 +395,7 @@ AppState.prototype.writeUserInit = async function(fileName) {
       psqlPath: this.get("psqlPath"),
       currentRepositoryName: this.get("currentRepositoryName"),
       currentTargetName: this.get("currentTargetName"),
-      currentPlanUUID: this.get("currentPlanUUID"),
-      currentPlanType: this.get("currentPlanType"),
-      currentReleaseTag: this.get("currentReleaseTag"),
+      currentPlanUUID: this.get("currentPlanUUID")
     };
     let repoList = this.state.get("repositories").toArray();
     newConfig.repositories = repoList;

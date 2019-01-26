@@ -215,7 +215,7 @@ describe("Test AppState", function() {
     });
 
     it("Set current target", function() {
-      testState.setCurrentTarget(target.name);
+      testState.setCurrentTargetName(target.name);
       expect(testState.currentTargetName()).to.equal(target.name);
     });
 

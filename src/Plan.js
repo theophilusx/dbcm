@@ -23,9 +23,18 @@ function Plan(initData) {
       this.authorEmail = initData.email;
       this.planType = initData.planType ? initData.planType : "Development";
       this.approvals = new ApprovalHistory(),
-      this.change = path.join("change", `${initData.name.replace(/\s+/g, "-")}.sql`);
-      this.verify = path.join("verify", `${initData.name.replace(/\s+/g, "-")}.sql`);
-      this.rollback = path.join("rollback", `${initData.name.replace(/\s+/g, "-")}.sql`);
+      this.change = path.join(
+        "change",
+        `${initData.name.replace(/\s+/g, "-")}.sql`
+      );
+      this.verify = path.join(
+        "verify",
+        `${initData.name.replace(/\s+/g, "-")}.sql`
+      );
+      this.rollback = path.join(
+        "rollback",
+        `${initData.name.replace(/\s+/g, "-")}.sql`
+      );
     }
     throw new Error("Must provide at least name, description, author and email "
                     + "properties when initialising a new Plan object");

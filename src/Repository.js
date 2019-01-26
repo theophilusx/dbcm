@@ -146,6 +146,7 @@ Repository.prototype.toObject = function() {
     let repoObject = {
       name: this.name,
       url: this.url,
+      path: this.path,
       targets: this.targetsArray()
     };
     return repoObject;
