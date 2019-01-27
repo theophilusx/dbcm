@@ -3,6 +3,7 @@
 const VError = require("verror");
 const expect = require("chai").expect;
 const should = require("chai").should();
+const path = require("path");
 const AppState = require("../src/AppState");
 const Repository = require("../src/Repository");
 const RepositoryMap = require("../src/RepositoryMap");
@@ -29,7 +30,7 @@ describe("Test AppState", function() {
     });
 
     it("Init without rc file", async function() {
-      await testState.init();
+      await testState.init("/no/such/file");
       expect(testState.initialised).to.equal(true);
     });
 
@@ -41,7 +42,7 @@ describe("Test AppState", function() {
     describe("Verify default values", function() {
       before("Create test state", async function() {
         testState = new AppState();
-        await testState.init();
+        await testState.init("./no-such-file");
       });
 
       it("Undefined username", function() {
@@ -152,6 +153,7 @@ describe("Test AppState", function() {
   describe("Repository and target methods", function() {
     let repo, repoMap;
     let target;
+    const name = "test-repo";
     let url = "git@github.com:theophilusx/test-repo";
     
     before("Setup repostiory test data", async function() {
@@ -159,7 +161,7 @@ describe("Test AppState", function() {
       await testState.init();
       testState.set("home", "/home");
       target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
-      repo = new Repository("test-repo", url, testState.home());
+      repo = new Repository(name, url, path.join(testState.home(), name));
       repo.setTarget(target);
       repoMap = new RepositoryMap();
       repoMap.setRepo(repo);
@@ -229,12 +231,13 @@ describe("Test AppState", function() {
     let repo;
     let target;
     const url = "git@github.com:theophilusx/test-repo";
+    const name = "test-repo";
     
     before("Setup repostiory test data", async function() {
       testState = new AppState();
       await testState.init();
       testState.set("home", "/tmp");
-      repo = new Repository("test-repo", url, testState.home());
+      repo = new Repository(name, url, path.join(testState.home(), name));
       target = new Target("tst-targe", "tstdb", "tstuser", "tstpwd");
       repo.setTarget(target);
       testState.setRepository(repo);

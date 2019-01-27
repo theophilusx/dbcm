@@ -7,6 +7,7 @@ const inquirer = require("inquirer");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
 const Repository = require("../Repository");
+const path = require("path");
 
 function setupQuestions(state) {
   const logName = `${moduleName}.setup`;
@@ -87,7 +88,11 @@ function repoAction(appState) {
       if (menu.doExit(answers.choice)) {
         return appState;
       } else if (answers.choice === "newRepository") {
-        let repo = new Repository(answers.newName, answers.newURL, appState.home());
+        let repo = new Repository(
+          answers.newName,
+          answers.newURL,
+          path.join(appState.home(), answers.newName)
+        );
         if (answers.hasApprover) {
           repo.setApprovalType(answers.approvalType);
           let approverQ = [
@@ -122,7 +127,7 @@ function repoAction(appState) {
         appState.setCurrentRepositoryName(answers.choice);
         await appState.currentRepositoryDef().readApprovers();
       }
-      await appState.writeUserInit("/tmp/dbcmrc");
+      await appState.writeUserInit();
       return appState;
     } catch (err) {
       screen.errorMsg(logName, err.message);

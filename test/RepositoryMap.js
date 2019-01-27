@@ -5,12 +5,14 @@ const expect = require("chai").expect;
 const should = require("chai").should();
 const Repository = require("../src/Repository");
 const RepositoryMap = require("../src/RepositoryMap");
+const path = require("path");
 
 describe("Testing RepositoryMap object", function() {
   const url = "git@github.com:theophilusx/test-repo";
-  const home = "/tmp"; 
-  let r1 = new Repository("name1", url, home);
-  let r2 = new Repository("name2", url, home);
+  const home = "/tmp";
+  
+  let r1 = new Repository("name1", url, path.join(home, "name1"));
+  let r2 = new Repository("name2", url, path.join(home, "name2"));
   let rm = new RepositoryMap();
 
   describe("Object construction", function() {

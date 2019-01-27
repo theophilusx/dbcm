@@ -55,9 +55,9 @@ RepositoryMap.prototype.fromArray = function(repoArray) {
   try {
     this.repositories.clear();
     repoArray.forEach(r => {
-      let repo = new Repository(r.name, r.url);
+      let repo = new Repository(r.name, r.url, r.path);
       repo.initTargets(r.targets);
-      this.set(repo);
+      this.setRepo(repo);
     });
   } catch (err) {
     throw new VError(err, `${logName}`);

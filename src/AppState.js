@@ -8,13 +8,16 @@ const fse = require("fse");
 const RepositoryMap = require("./RepositoryMap");
 const PlanMap = require("./PlanMap");
 const Repository = require("./Repository");
+const path = require("path");
+
+const defaultInit = path.join(process.env.HOME, ".dbcmrc");
 
 function AppState() {
   this.state = new Map();
   this.initialised = false;
 }
 
-AppState.prototype.init = async function(rc) {
+AppState.prototype.init = async function(rc=defaultInit) {
   const logName = `${moduleName}.init`;
 
   async function readConfig(fileName) {
@@ -48,6 +51,7 @@ AppState.prototype.init = async function(rc) {
       this.state.clear();
       this.initialised = false;
     }
+    this.state.set("initFile", rc);
     let config = await readConfig(rc);
     this.state.set("user", config.user);
     this.state.set("home", config.repositoryHome);
@@ -384,10 +388,11 @@ AppState.prototype.setMenuChoice = function(choice) {
   return this.set("menuChoice", choice);
 };
 
-AppState.prototype.writeUserInit = async function(fileName) {
+AppState.prototype.writeUserInit = async function(rc) {
   const logName = `${moduleName}.writeConfig`;
   
   try {
+    let initFile = rc ? rc : this.get("initFile");
     let newConfig = {
       version: "1.0.0",
       user: this.get("user"),
@@ -399,9 +404,9 @@ AppState.prototype.writeUserInit = async function(fileName) {
     };
     let repoList = this.state.get("repositories").toArray();
     newConfig.repositories = repoList;
-    await fse.writeFile(fileName, JSON.stringify(newConfig, null, " "));
+    await fse.writeFile(initFile, JSON.stringify(newConfig, null, " "));
   } catch (err) {
-    throw new VError(err, `${logName} Failed to write config to ${fileName}`);
+    throw new VError(err, `${logName} Failed to write config to ${rc}`);
   }
 };
 

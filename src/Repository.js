@@ -10,21 +10,21 @@ const files = require("./files");
 const path = require("path");
 const fse = require("fse");
 
-function Repository(name, url, root) {
+function Repository(name, url, repoPath) {
   const logName = `${moduleName}.Repository`;
 
   try {
     assert.ok(name, "Must provide a repository name");
     assert.ok(url, "Must provide a Git URL");
-    assert.ok(root, "Must provide a path to DBCM repositories root");
+    assert.ok(repoPath, "Must provide a path to DBCM repositories root");
     this.name = name;
     this.url = url;
-    this.path = path.join(root, name);
+    this.path = repoPath;
     this.approvalType = "none";
     this.approvers = new Map();
     this.targets = new TargetMap();
     this.releaseTag = undefined;
-    this.gitRepo = new GitRepo(name, url, root);
+    this.gitRepo = new GitRepo(name, url, repoPath);
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise change repository object`);
   }

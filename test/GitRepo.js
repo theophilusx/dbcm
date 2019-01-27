@@ -44,7 +44,7 @@ describe("Test GitRepo Object", function() {
     const root = "/home/tim/dbcm";
     
     before("Setup test repo", function() {
-      testRepo = new GitRepo(name, url, root);
+      testRepo = new GitRepo(name, url, path.join(root, name));
     });
     after("Cleanup after test", async function() {
       try {

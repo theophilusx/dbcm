@@ -6,14 +6,23 @@ const should = require("chai").should();
 const Repository = require("../src/Repository");
 const Target = require("../src/Target");
 const TargetMap = require("../src/TargetMap");
+const path = require("path");
 
 let testRepo, testRepo2;
 let testApprovers;
 let testTarget1, testTarget2;
 
 function initTestRepo() {
-  testRepo = new Repository("testRepoName", "testRepoUrl", "/tmp");
-  testRepo2 = new Repository("testRepoName2", "testRepoUrl2", "/tmp");
+  testRepo = new Repository(
+    "testRepoName",
+    "testRepoUrl",
+    path.join("/tmp", "testRepoName")
+  );
+  testRepo2 = new Repository(
+    "testRepoName2",
+    "testRepoUrl2",
+    path.join("/tmp", "testRepoName2")
+  );
 }
 
 function initTestApprovers() {

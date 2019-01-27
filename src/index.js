@@ -5,6 +5,7 @@ const AppState = require("./AppState");
 const user = require("./tui/userUI");
 const repo = require("./tui/repoUI.js");
 const dumper = require("./dumper");
+const path = require("path");
 
 // const repoui = require("./repoUI");
 // const targetui = require("./targetUI");
@@ -48,12 +49,12 @@ const dumper = require("./dumper");
 async function main() {
   const logName = "main";
   const appState = new AppState();
-
+  const rcFile = path.join(process.env.HOME, ".dbcmrc");
+  
   try {
-    await appState.init();
+    await appState.init(rcFile);
     if (!appState.username()) {
       await user.getOptions(appState);
-
     }
     await repo.selectRepository(appState);
     console.log(dumper.dumpValue(appState, "", "appState"));

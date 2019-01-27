@@ -25,17 +25,17 @@ const cloneOptions = {
   } 
 };
 
-function GitRepo(name, url, baseRoot) {
+function GitRepo(name, url, repoPath) {
   const logName = `${moduleName}.GitRepo`;
 
   try {
     assert.ok(
-      name && url && baseRoot,
+      name && url && repoPath,
       "Must provide a repository name, url and local path"
     );
     this.name = name;
     this.url = url;
-    this.path = path.join(baseRoot, name);
+    this.path = repoPath
     this.repoObj = undefined;
   } catch (err) {
     throw new VError(err, `${logName} Failed to create Git repository object`);
