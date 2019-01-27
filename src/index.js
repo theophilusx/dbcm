@@ -2,8 +2,8 @@
 
 const VError = require("verror");
 const AppState = require("./AppState");
-const userOptions = require("./tui/userOptions");
-const repo = require("./tui/repositories.js");
+const user = require("./tui/userUI");
+const repo = require("./tui/repoUI.js");
 const dumper = require("./dumper");
 
 // const repoui = require("./repoUI");
@@ -52,12 +52,11 @@ async function main() {
   try {
     await appState.init();
     if (!appState.username()) {
-      await userOptions.getOptions(appState);
+      await user.getOptions(appState);
 
     }
     await repo.selectRepository(appState);
     console.log(dumper.dumpValue(appState, "", "appState"));
-    await appState.writeUserInit("/tmp/dbcmrc");
   } catch (err) {
     throw new VError(err, `${logName}`);
   }

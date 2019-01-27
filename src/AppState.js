@@ -20,7 +20,7 @@ AppState.prototype.init = async function(rc) {
   async function readConfig(fileName) {
     try {
       await fse.access(fileName, fse.constants.R_OK | fse.constants.W_OK);
-      let config = fse.readJson(fileName);
+      let config = await fse.readJson(fileName);
       return config;
     } catch (err) {
       if (err.code === "ENOENT" || err.code === undefined) {

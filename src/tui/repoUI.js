@@ -109,11 +109,20 @@ function repoAction(appState) {
           repo.setApprovers(approverList);
         }
         appState.setRepository(repo);
-        await repo.initGit(appState);
+        await repo.initGit("setup");
         appState.setCurrentRepositoryName(answers.newName);
+        await repo.writeApprovers();
+        await repo.commitAndMerge(
+          "setup",
+          "Initial setup",
+          appState.username(),
+          appState.email()
+        );
       } else {
         appState.setCurrentRepositoryName(answers.choice);
+        await appState.currentRepositoryDef().readApprovers();
       }
+      await appState.writeUserInit("/tmp/dbcmrc");
       return appState;
     } catch (err) {
       screen.errorMsg(logName, err.message);

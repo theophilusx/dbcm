@@ -8,6 +8,7 @@ const TargetMap = require("./TargetMap");
 const GitRepo = require("./GitRepo");
 const files = require("./files");
 const path = require("path");
+const fse = require("fse");
 
 function Repository(name, url, root) {
   const logName = `${moduleName}.Repository`;
@@ -29,32 +30,6 @@ function Repository(name, url, root) {
   }
 }
 
-Repository.prototype.initGit = async function(state) {
-  const logName = `${moduleName}.initGit`;
-
-  try {
-    await this.gitRepo.init();
-    let initialised = await files.isInitialised(this.path);
-    if (!initialised) {
-      let branchRef = await this.gitRepo.createBranch("setup");
-      await this.gitRepo.checkoutBranch(branchRef);
-      await files.initialiseRepo(this.path);
-      await this.gitRepo.commitAndMerge(
-        "setup",
-        "DBCM Initialise",
-        state.username(),
-        state.email()
-      );
-      await this.gitReo.addReleaseTag("0.0.1", "Initial release");
-      state.setCurrentReleaserTag("0.0.1");
-    } else {
-      this.gitRepo.pullMaster();
-      state.setCurrentReleaseTag("FIXME");
-    }
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to initialise git repository`);
-  } 
-};
 
 Repository.prototype.setApprovalType = function(type) {
   const logName = `${moduleName}.setApprovalType`;
@@ -176,6 +151,71 @@ Repository.prototype.fromObject = function(repObj) {
     }
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise Repository from object`);
+  }
+};
+
+Repository.prototype.writeApprovers = async function() {
+  const logName = `${moduleName}.writeApprovers`;
+
+  try {
+    let approverFile = path.join(this.path, "approval.json");
+    let appObj = {
+      name: "Change Approval",
+      version: "1.0.0",
+      approvalType: this.approvalType
+    };
+    let approvers = [];
+    for (let entry of this.approvers.values()) {
+      approvers.push(entry);
+    }
+    appObj.approvers = approvers;
+    return await fse.writeFile(approverFile, JSON.stringify(appObj, null, " "));
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to write approval file`);
+  }
+}; 
+
+Repository.prototype.readApprovers = async function() {
+  const logName = `${moduleName}.readApprovers`;
+
+  try {
+    let approverFile = path.join(this.path, "approval.json");
+    await fse.access(approverFile, fse.constants.R_OK | fse.constants.W_OK);
+    let appObj = await fse.readJson(approverFile);
+    this.setApprovalType(appObj.approvalType);
+    this.setApprovers(appObj.approvers);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to initialise approver details`);
+  }
+};
+
+Repository.prototype.initGit = async function(branch) {
+  const logName = `${moduleName}.initGit`;
+
+  try {
+    await this.gitRepo.init();
+    let initialised = await files.isInitialised(this.path);
+    if (!initialised) {
+      let branchRef = await this.gitRepo.createBranch(branch);
+      await this.gitRepo.checkoutBranch(branchRef);
+      await files.initialiseRepo(this.path);
+      // await this.gitRepo.addReleaseTag("0.0.1", "Initial release");
+    } else {
+      this.gitRepo.pullMaster();
+      //state.setCurrentReleaseTag("FIXME");
+    }
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to initialise git repository`);
+  } 
+};
+
+Repository.prototype.commitAndMerge = async function(branch, msg, author, email) {
+  const logName = `${moduleName}.commitAndMerge`;
+
+  try {
+    await this.gitRepo.commitAndMerge(branch, msg, author, email);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
 };
 
