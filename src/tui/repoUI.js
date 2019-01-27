@@ -8,6 +8,7 @@ const menu = require("./textMenus");
 const screen = require("./textScreen");
 const Repository = require("../Repository");
 const path = require("path");
+const PlanMap = require("../PlanMap");
 
 function setupQuestions(state) {
   const logName = `${moduleName}.setup`;
@@ -87,7 +88,9 @@ function repoAction(appState) {
       appState.setMenuChoice(answers.choice);
       if (menu.doExit(answers.choice)) {
         return appState;
-      } else if (answers.choice === "newRepository") {
+      }
+      appState.saveRepoMetadata();
+      if (answers.choice === "newRepository") {
         let repo = new Repository(
           answers.newName,
           answers.newURL,
@@ -123,9 +126,11 @@ function repoAction(appState) {
           appState.username(),
           appState.email()
         );
+        appState.setChangePlans(new PlanMap);
       } else {
         appState.setCurrentRepositoryName(answers.choice);
         await appState.currentRepositoryDef().readApprovers();
+        await appState.readChangePlans();
       }
       await appState.writeUserInit();
       return appState;

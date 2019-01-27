@@ -5,6 +5,7 @@ const moduleName = "PlanMap";
 const VError = require("verror");
 const assert = require("assert");
 const Plan = require("./Plan");
+const fse = require("fse");
 
 function PlanMap() {
   this.plans = new Map();
@@ -30,9 +31,10 @@ PlanMap.prototype.toObject = function() {
 
   try {
     let plans = [];
-    for (let p of this.plans.keys()) {
-      plans.push(this.plans.get(p));
+    for (let plan of this.plans.values()) {
+      plans.push(this.plans.get(plan));
     }
+    return plans;
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
@@ -48,6 +50,34 @@ PlanMap.prototype.fromObject = function(pList) {
     });
   } catch (err) {
     throw new VError(err, `${logName}`);
+  }
+};
+
+PlanMap.prototype.readPlans = async function(filePath) {
+  const logName = `${moduleName}.readPlans`;
+
+  try {
+    await fse.access(filePath, fse.constants.R_OK | fse.constants.W_OK);
+    let plansObj = await fse.readJson(filePath);
+    this.plans.clear();
+    this.fromObject(plansObj.plans);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to read plans file ${filePath}`);
+  }
+};
+
+PlanMap.prototype.writePlans = async function(filePath) {
+  const logName = `${moduleName}.writePlans`;
+
+  try {
+    let plansObj = {
+      name: "Change Plans",
+      version: "1.0.0",
+      plans: this.toObject()
+    };
+    await fse.writeFile(filePath, JSON.stringify(plansObj, null, " "));
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to write change plans: ${filePath}`);
   }
 };
 

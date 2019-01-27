@@ -212,7 +212,6 @@ AppState.prototype.setCurrentReleaseTag = function(tag) {
   return this.currentRpositoryDef().releaseTag = tag;
 };
 
-
 AppState.prototype.currentRepositoryTargets = function() {
   const logName = `${moduleName}.currentRepositoryTargets`;
 
@@ -334,6 +333,32 @@ AppState.prototype.setChangePlans = function(plansMap) {
   }
 };
 
+AppState.prototype.readChangePlans = async function() {
+  const logName = `${moduleName}.readChangePlans`;
+
+  try {
+    assert.ok(this.currentRepositoryName(), "Current repositorhy not defined");
+    let plansFile = path.join(this.currentRepositoryDef().path, "change-plans.json");
+    await this.changePlans().readPlans(plansFile);
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+AppState.prototype.writeChangePlans = async function() {
+  const logName = `${moduleName}.writeChangePlans`;
+
+  try {
+    assert.ok(this.currentRepositoryname(), "Current repository not defined");
+    let plansFile = path.join(this.currentRepositoryDef().path, "change-plans.json");
+    await this.changePlans().writePlans(plansFile);
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 AppState.prototype.currentPlanUUID = function() {
   return this.get("currentPlanUUID");
 };
@@ -407,6 +432,18 @@ AppState.prototype.writeUserInit = async function(rc) {
     await fse.writeFile(initFile, JSON.stringify(newConfig, null, " "));
   } catch (err) {
     throw new VError(err, `${logName} Failed to write config to ${rc}`);
+  }
+};
+
+AppState.prototype.saveRepoMetadata = async function() {
+  const logName = `${moduleName}.saveRepoMetadata`;
+
+  try {
+    if (this.currentRepositoryName()) {
+      await this.writeChangePlans();
+    }
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
 };
 
