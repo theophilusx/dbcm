@@ -109,6 +109,16 @@ GitRepo.prototype.createBranch = async function(branchName) {
   }
 };
 
+GitRepo.prototype.checkoutBranch = async function(branchName) {
+  const logName = `${moduleName}.checkoutBranch`;
+
+  try {
+    return await this.repoObj.checkoutBranch(branchName);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 /**
  * @async
  *
@@ -206,23 +216,16 @@ GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
 };
 
 GitRepo.prototype.commitAndMerge = async function(branch, msg, author, email) {
-  const logName = `${logName}.commitAndMerge`;
+  const logName = `${moduleName}.commitAndMerge`;
 
   try {
     if (!this.repoObj) {
       throw new Error("Git repository not initialised");
     }
-    await this.checkoutBranch("master");
-    let fileList = await this.getStatus();
-    await this.addCommit(fileList, msg);
-    let mergeSig = Git.Signature.now(author, email);
-    await this.mergeBranches("master", branch, mergeSig);
-    let remote = await this.repoObj.getRemote("origin", cloneOptions.fetchOpts);
-    await remote.push(
-      ["refs/heads/master:refs/heads/master"],
-      cloneOptions.fetchOpts
-    );
-    await this.deleteBranch(branch);
+    await this.checkoutBranch(branch);
+    let fileList = await this.repoObj.getStatus();
+    await this.addCommit(fileList, msg, author, email);
+    await this.mergeIntoMaster(branch, author, email);
   } catch (err) {
     throw new VError(err, `${logName} Failed to commit and merge branch ${branch}`);
   }
@@ -372,7 +375,7 @@ GitRepo.prototype.statusString = function() {
   }
 
   try {
-    let fileList = this.getStatus();
+    let fileList = this.repoObj.getStatus();
     let statusItems = fileList.map(f => statusItem(f));
     return statusItems.join("\n");
   } catch (err) {

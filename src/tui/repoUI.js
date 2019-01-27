@@ -109,6 +109,7 @@ function repoAction(appState) {
           repo.setApprovers(approverList);
         }
         appState.setRepository(repo);
+        await repo.initGit(appState);
         appState.setCurrentRepositoryName(answers.newName);
       } else {
         appState.setCurrentRepositoryName(answers.choice);
