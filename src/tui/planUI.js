@@ -4,11 +4,15 @@ const moduleName = "planUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const plans = require("./plans");
-const menu = require("./textMenus");
-const psql = require("./psql");
-const gitui = require("./gitUI");
 const screen = require("./textScreen");
+const menu = require("./textMenus");
+const Plan = require("../Plan");
+
+//const plans = require("./plans");
+
+const psql = require("./psql");
+//const gitui = require("./gitUI");
+
 const Table = require("cli-table3");
 const chalk = require("chalk");
 const path = require("path");
@@ -31,32 +35,8 @@ function emptyGroupWarning(type) {
   );
 }
 
-function displayPlanRecord(record) {
-  function approvedList(r) {
-    let data = [];
-    for (let a of r.approvals) {
-      data.push(`${a.name} <${a.email}> on ${a.date}`);
-    }
-    return data.join("\n");
-  }
-  const table = new Table();
-  table.push(
-    {"Created Date": chalk.green(record.createdDate)},
-    {"Author": chalk.green(record.author)},
-    {"Plan Name": chalk.green(record.name)},
-    {"UUID": chalk.green(record.uuid)},
-    {"Description": chalk.green(record.description)},
-    {"Change File": chalk.green(record.change)},
-    {"Verify File": chalk.green(record.verify)},
-    {"Rollback File": chalk.green(record.rollback)},
-    {"Approval Status": record.approved ? chalk.green("Approved") : chalk.red("Not Approved")},
-  );
-  if (record.approved) {
-    table.push({
-      "Approvals": chalk.green(approvedList(record))
-    });
-  }
-  console.log(table.toString());
+function displayPlan(plan) {
+  plan.textDisplay();
 }
 
 async function createPlan(state) {

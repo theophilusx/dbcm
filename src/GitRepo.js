@@ -35,7 +35,7 @@ function GitRepo(name, url, repoPath) {
     );
     this.name = name;
     this.url = url;
-    this.path = repoPath
+    this.path = repoPath;
     this.repoObj = undefined;
   } catch (err) {
     throw new VError(err, `${logName} Failed to create Git repository object`);
@@ -336,6 +336,17 @@ GitRepo.prototype.fileDiff = async function(commitSha) {
   }
 };
 
+GitRepo.prototype.getStatus = async function() {
+  const logName = `${moduleName}.getStatus`;
+
+  try {
+    let fileList = await this.repoObj.getStatus();
+    return fileList;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 /**
  * Generates a status string for objects which are new, modified etc
  * Similar to the git status command
@@ -345,7 +356,7 @@ GitRepo.prototype.fileDiff = async function(commitSha) {
  * @return {string} a status string with status and file path
  * 
  */
-GitRepo.prototype.statusString = function() {
+GitRepo.prototype.statusString = async function() {
   const logName = `${moduleName}.statusString`;
   
   function statusItem(s) {
@@ -375,7 +386,7 @@ GitRepo.prototype.statusString = function() {
   }
 
   try {
-    let fileList = this.repoObj.getStatus();
+    let fileList = await this.repoObj.getStatus();
     let statusItems = fileList.map(f => statusItem(f));
     return statusItems.join("\n");
   } catch (err) {

@@ -1,6 +1,11 @@
 "use strict";
 
+const moduleName = "Approval";
+
 const moment = require("moment");
+const VError = require("verror");
+const Table = require("cli-table3");
+const chalk = require("chalk");
 
 function Approval() {
   this.approved = false;
@@ -12,7 +17,8 @@ function Approval() {
 
 Approval.prototype.addApprover = function(author, email, sha, appDate) {
   this.approvers.push({
-    approvedDate: appDate === undefined ? moment().format("YYYY-MM-DD HH:mm:ss") : appDate,
+    approvedDate: appDate === undefined ?
+      moment().format("YYYY-MM-DD HH:mm:ss") : appDate,
     author: author,
     email: email,
     versionSha: sha
@@ -38,6 +44,29 @@ Approval.prototype.fromObject = function(p) {
   this.approvedDate = p.approvedDate;
   this.approvedSha = p.approvedSha;
   this.approvers = p.approvers;
+};
+
+Approval.prototype.textDisplay = function() {
+  const logName = `${moduleName}.textDisplay`;
+
+  try {
+    const table = new Table();
+    table.push({"Approved": this.approved ? chalk.green("Yes") : chalk.red("No")});
+    if (this.approved) {
+      table.push(
+        {"Approval Date": chalk.green(this.approvalDate)},
+        {"Approved SHA": chalk.green(this.approvedSha)},
+        {"Release Tag": chalk.green(this.releaseTag)}
+      );
+      let appList = this.approvers.map(a => {
+        return `${a.author} <${a.email}> on ${a.approvedDate}`;
+      });
+      table.push({"Approvers": chalk.green(appList.join("\n"))});
+    }
+    console.log(table.toString());
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
 };
 
 module.exports = Approval;

@@ -6,6 +6,9 @@ const VError = require("verror");
 const moment = require("moment");
 const path = require("path");
 const short = require("short-uuid");
+const Table = require("cli-table3");
+const chalk = require("chalk");
+
 const ApprovalHistory = require("./ApprovalHistory");
 
 function Plan(initData) {
@@ -94,6 +97,29 @@ Plan.prototype.fromObject = function(pObj) {
     this.rollback = pObj.rollback;
   } catch (err) {
     throw new VError(err, `${logName} Failed to create plan from object`);
+  }
+};
+
+Plan.prototype.textDisplay = function() {
+  const logName = `${moduleName}.textdisplay`;
+
+  try {
+    const table = new Table();
+    table.push(
+      {"Created Date": chalk.green(this.createdDate)},
+      {"Author": chalk.green(this.author)},
+      {"Plan Name": chalk.green(this.name)},
+      {"UUID": chalk.green(this.uuid)},
+      {"Description": chalk.green(this.description)},
+      {"Type": chalk.green(this.planType)},
+      {"Change File": chalk.green(this.change)},
+      {"Verify File": chalk.green(this.verify)},
+      {"Rollback File": chalk.green(this.rollback)}
+    );
+    console.log(table.toString());
+    this.approvals.currentApproval().textdisplay();
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
 };
 

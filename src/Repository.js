@@ -113,6 +113,14 @@ Repository.prototype.isTargetInitialised = async function(targetName) {
   }
 };
 
+Repository.prototype.getStatus = async function() {
+  return await this.gitRepo.getStatus();  
+};
+
+Repository.prototype.getStatusString = async function() {
+  return await this.gitRepo.statusString();
+};
+
 Repository.prototype.toObject = function() {
   const logName = `${moduleName}.toObject`;
 
@@ -206,6 +214,16 @@ Repository.prototype.initGit = async function(branch) {
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise git repository`);
   } 
+};
+
+Repository.prototype.commit = async function(files, msg, author, email) {
+  const logName = `${moduleName}.commit`;
+
+  try {
+    return await this.gitRepo.addCommit(files, msg, author, email);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
 };
 
 Repository.prototype.commitAndMerge = async function(branch, msg, author, email) {

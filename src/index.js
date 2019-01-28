@@ -7,12 +7,13 @@ const repo = require("./tui/repoUI.js");
 const dumper = require("./dumper");
 const path = require("path");
 const target = require("./tui/targetUI");
+const mainui = require("./tui/mainUI");
 
 // const repoui = require("./repoUI");
 // const targetui = require("./targetUI");
 // const configui = require("./configUI");
 // const state = require("./state");
-// const mainui = require("./mainUI");
+
 // const git = require("./git");
 // const plans = require("./plans");
 // const approvals = require("./approvals");
@@ -59,6 +60,7 @@ async function main() {
     }
     await repo.selectRepository(appState);
     await target.selectTarget(appState);
+    await mainui.mainMenu(appState);
     console.log(dumper.dumpValue(appState, "", "appState"));
   } catch (err) {
     throw new VError(err, `${logName}`);

@@ -1,14 +1,16 @@
 "use strict";
 
-const VError = require("verror");
 const moduleName = "mainUI";
+
+const VError = require("verror");
 const menu = require("./textMenus");
-const planui = require("./planUI");
-const targetui = require("./targetUI");
 const screen = require("./textScreen");
+// const planui = require("./planUI");
+const targetui = require("./targetUI");
+
 const repoui = require("./repoUI");
-const approvals = require("./approvals");
-const approvalsui = require("./approvalsUI");
+// const approvals = require("./approvals");
+// const approvalsui = require("./approvalsUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
