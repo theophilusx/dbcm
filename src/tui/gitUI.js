@@ -4,7 +4,6 @@ const moduleName = "gitUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const git = require("./git");
 const screen = require("./textScreen");
 const Table = require("cli-table3");
 const chalk = require("chalk");
@@ -40,8 +39,7 @@ async function commitChanges(state) {
   }];
   
   try {
-    let repo = state.get("repoObject");
-    let files = await repo.getStatus();
+    let files = await state.currentRepositoryDef().getStatus();
     if (files.length) {
       let conflicts = getConflictedChange(files);
       if (conflicts.length) {
@@ -52,14 +50,19 @@ async function commitChanges(state) {
         );
         return false;
       }
-      let changeStrings = files.map(f => git.statusString(f));
+      let changeStrings = await state.currentRepositoryDef().getStatusString();
       screen.infoMsg(
         `Changed File Status - ${files.length} file(s)`,
         changeStrings.join("\n")
       );
       let answer = await inquirer.prompt(questions);
       if (answer.choice) {
-        await git.addAndCommit(state, files, answer.msg);
+        await state.currentRepositoryDef().commit(
+          files,
+          "Commit WIP",
+          state.username(),
+          state.email()
+        );
         return true;
       }
       return false;
