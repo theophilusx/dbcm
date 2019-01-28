@@ -12,7 +12,14 @@ function TargetMap(targetList) {
     this.targets = new Map();
     if (Array.isArray(targetList)) {
       targetList.forEach(t => {
-        this.targets.set(t.name, t);
+        this.targets.set(t.name, new Target(
+          t.name,
+          t.database,
+          t.user,
+          t.password,
+          t.host,
+          t.port
+        ));
       });
     }
   } catch (err) {
@@ -50,8 +57,8 @@ TargetMap.prototype.toArray = function() {
 
   try {
     let targets = [];
-    for (let target of this.targets.keys()) {
-      targets.push(this.targets.get(target));
+    for (let target of this.targets.values()) {
+      targets.push(target);
     }
     return targets;
   } catch (err) {
@@ -59,15 +66,22 @@ TargetMap.prototype.toArray = function() {
   }
 };
 
-TargetMap.prototype.fromArray = function(targetObjects) {
+TargetMap.prototype.fromArray = function(targetList) {
   const logName = `${moduleName}.fromArray`;
 
   try {
     this.targets.clear();
-    targetObjects.forEach(t => {
-      this.targets.set(t.name, t);
+    targetList.forEach(t => {
+      this.targets.set(t.name, new Target(
+        t.name,
+        t.database,
+        t.user,
+        t.password,
+        t.host,
+        t.port
+      ));
     });
-    return this;
+    return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initilialise targets from array`);
   }

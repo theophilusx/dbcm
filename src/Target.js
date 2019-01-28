@@ -39,11 +39,14 @@ Target.prototype.params = function() {
 
 Target.prototype.isInitialised = async function() {
   const logName = `${moduleName}.isInitialised`;
-  const sql = "SELECT count(*) from dbcm.change_plans";
+  const sql = "SELECT count(*) cnt from dbcm.change_plans";
   
   try {
-    await db.execSQL(this.params(), sql);
-    return true;
+    let rslt = await db.execSQL(this.params(), sql);
+    if (rslt.rows[0].cnt == 1) {
+      return true;
+    }
+    return false;
   } catch (err) {
     if (err.message.match(/relation .* does not exist/)) {
       return false;

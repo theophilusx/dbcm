@@ -6,6 +6,7 @@ const user = require("./tui/userUI");
 const repo = require("./tui/repoUI.js");
 const dumper = require("./dumper");
 const path = require("path");
+const target = require("./tui/targetUI");
 
 // const repoui = require("./repoUI");
 // const targetui = require("./targetUI");
@@ -57,6 +58,7 @@ async function main() {
       await user.getOptions(appState);
     }
     await repo.selectRepository(appState);
+    await target.selectTarget(appState);
     console.log(dumper.dumpValue(appState, "", "appState"));
   } catch (err) {
     throw new VError(err, `${logName}`);

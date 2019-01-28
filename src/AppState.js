@@ -234,6 +234,16 @@ AppState.prototype.setCurrentRepositoryTargets = function(targetMap) {
   throw new Error("Current repository not defined");
 };
 
+AppState.prototype.addCurrentRepositoryTarget = function(target) {
+  const logName = `${moduleName}.addTarget`;
+
+  try {
+    return this.currentRepositoryDef().setTarget(target);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 AppState.prototype.currentTargetName = function() {
   return this.get("currentTargetName");
 };
@@ -247,9 +257,7 @@ AppState.prototype.currentTargetDef = function() {
 
   try {
     if (this.get("currentRepositoryName") && this.get("currentTargetName")) {
-      return this.get("repositories")
-        .getRepo(this.get("currentRepositoryName"))
-        .targets.get(this.get("currentTargetName"));
+      return this.currentRepositoryDef().getTarget(this.get("currentTargetName"));
     }
     throw new Error("Either current repository or current target is not defined");
   } catch (err) {

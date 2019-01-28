@@ -1,9 +1,14 @@
 "use strict";
 
 const VError = require("verror");
+const chai = require("chai");
 const expect = require("chai").expect;
 const should = require("chai").should();
 const Target = require("../src/Target");
+const chaiAsPromised = require("chai-as-promised");
+
+chai.use(chaiAsPromised);
+
 
 describe("Test Target object", function() {
   describe("Test object creation", function() {
@@ -62,20 +67,28 @@ describe("Test Target object", function() {
   });
 
   describe("Test Target methods", function() {
-    let t = new Target(
-      "testName",
-      "testDb",
-      "testUser",
-      "testPwd"
-    );
+    let testTarget;
+    const name = "testName";
+    const db = "tim";
+    const user = "tim";
+    const pwd = "Stan:100";
+    
+    before("Setup target test data", function() {
+      testTarget = new Target(name, db, user, pwd);
+    });
+    
     it("Test params() method", function() {
-      expect(t.params()).to.deep.equal({
-        database: "testDb",
+      expect(testTarget.params()).to.deep.equal({
+        database: db,
         host: "localhost",
         port: 5432,
-        user: "testUser",
-        password: "testPwd"
+        user: user,
+        password: pwd
       });
+    });
+
+    it("Test isInitialised() method", function() {
+      return expect(testTarget.isInitialised()).to.eventually.be.a("boolean");
     });
   });
 });

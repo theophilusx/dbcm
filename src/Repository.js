@@ -30,7 +30,6 @@ function Repository(name, url, repoPath) {
   }
 }
 
-
 Repository.prototype.setApprovalType = function(type) {
   const logName = `${moduleName}.setApprovalType`;
 
