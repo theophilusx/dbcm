@@ -122,7 +122,7 @@ async function planExists(state, planId) {
   } 
 }
 
-async function updateAppliedPlanStatus(state, plan, status, type, sha) {
+async function updateAppliedPlanStatus(state, plan, status, sha) {
   const logName = `${moduleName}.updatePlanStatus`;
   const insertSQL = "INSERT INTO dbcm.change_plans "
         + "(plan_id, applied_by, plan_name, description, status, "
@@ -146,7 +146,7 @@ async function updateAppliedPlanStatus(state, plan, status, type, sha) {
       let rslt = await db.execSQL(client, updateSQL, [
         state.email(),
         status,
-        type,
+        plan.planType,
         state.currentReleaseTag(),
         sha,
         plan.uuid
@@ -159,7 +159,7 @@ async function updateAppliedPlanStatus(state, plan, status, type, sha) {
         plan.name,
         plan.description,
         status,
-        type,
+        plan.planType,
         state.currentReleaseTag(),
         sha
       ]);
