@@ -50,6 +50,7 @@ function extractErrors(data) {
     throw new VError(err, `${logName} `);
   }
 }
+
 function psqlExec(state, script) {
 
   return new Promise((resolve, reject) => {
@@ -88,20 +89,19 @@ async function applyCurrentPlan(state) {
 
   try {
     let plan = state.currentPlanDef();
-    let pType = state.currentPlanType();
     let changeFile = path.join(
       state.home(),
       state.currentRepositoryName(),
       plan.change
     );
-    let sha = await git.getChangesSha(state, plan);
+    let sha = await state.currentRepositoryDef().gitRepo.getChangesSha(plan);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, changeFile);
     if (errors) {
       let filteredErrors = extractErrors(errors);
       if (filteredErrors.length) {
         screen.errorMsg("Plan Failed", filteredErrors);
-        await query.updateAppliedPlanStatus(state, plan, "Failed", pType, sha);
+        await query.updateAppliedPlanStatus(state, plan, "Failed", sha);
         await query.addLogRecord(target, plan, errors);
         return false;
       }
@@ -110,7 +110,7 @@ async function applyCurrentPlan(state) {
     screen.infoMsg(
       "Plan Applied Successfully",
       `Plan ${plan.name} applied without error`);
-    await query.updateAppliedPlanStatus(state, plan, "Applied", pType, sha);
+    await query.updateAppliedPlanStatus(state, plan, "Applied", sha);
     await query.addLogRecord(target, plan, output);
     return true;
   } catch (err) {
