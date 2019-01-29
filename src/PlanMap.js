@@ -12,6 +12,22 @@ function PlanMap() {
   this.plans = new Map();
 }
 
+PlanMap.prototype.count = function(type) {
+  const logName = `${moduleName}.count`;
+
+  try {
+    let cnt = 0;
+    for (let p of this.plans.values()) {
+      if (p.planType === type) {
+        cnt++;
+      }
+    }
+    return cnt;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 PlanMap.prototype.add = async function(repoPath, plan) {
   const logName = `${moduleName}.add`;
 
@@ -84,16 +100,18 @@ PlanMap.prototype.writePlans = async function(filePath) {
   }
 };
 
-PlanMap.protothype.plansUIList = function() {
+PlanMap.prototype.plansUIList = function(type) {
   const logName = `${moduleName}.plansUIList`;
 
   try {
     let choices = [];
     for (let p of this.plans.values()) {
-      choices.push([
-        p.summaryLine(),
-        p.uuid
-      ]);
+      if (p.planType === type) {
+        choices.push([
+          p.summaryLine(),
+          p.uuid
+        ]);
+      }
     }
     return choices;
   } catch (err) {
