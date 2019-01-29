@@ -8,14 +8,7 @@ const screen = require("./textScreen");
 const menu = require("./textMenus");
 const Plan = require("../Plan");
 const gitui = require("./gitUI");
-
-//const plans = require("./plans");
-
 const psql = require("./psql");
-
-
-const Table = require("cli-table3");
-const chalk = require("chalk");
 const path = require("path");
 const edit = require("./edit");
 
