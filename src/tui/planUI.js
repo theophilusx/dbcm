@@ -7,11 +7,12 @@ const inquirer = require("inquirer");
 const screen = require("./textScreen");
 const menu = require("./textMenus");
 const Plan = require("../Plan");
+const gitui = require("./gitUI");
 
 //const plans = require("./plans");
 
 const psql = require("./psql");
-//const gitui = require("./gitUI");
+
 
 const Table = require("cli-table3");
 const chalk = require("chalk");
@@ -28,15 +29,11 @@ a new plan or switch to an alternative plan
   screen.warningMsg(title, msg);
 }
 
-function emptyGroupWarning(type) {
+function emptyGroupWarning() {
   screen.infoMsg(
     "Empty Plan Group",
-    `There are currently no plans defined in the ${type} group`
+    "There are currently no plans defined in this repository"
   );
-}
-
-function displayPlan(plan) {
-  plan.textDisplay();
 }
 
 async function createPlan(state) {
@@ -57,15 +54,22 @@ async function createPlan(state) {
     let committedChanges = await gitui.commitChanges(state);
     if (committedChanges) {
       let answers = await inquirer.prompt(questions);
-      let planRecord = plans.makePlanRecord(state, answers.name, answers.description);
-      displayPlanRecord(planRecord);
+      let changePlan = new Plan({
+        name: answers.name,
+        description: answers.descritpion,
+        author: state.username(),
+        email: state.email()
+      });
+      changePlan.textDisplay();
       answers = await inquirer.prompt([{
         type: "confirm",
         name: "createPlan",
         message: "Create this change record:"
       }]);
       if (answers.createPlan) {
-        state = await plans.createChangePlan(state, planRecord);
+        state.addChangePlan(changePlan);
+        state.setCurrentPlanUUID(changePlan.uuid);
+        state.writeChangePlans();
       } else {
         screen.infoMsg("Cancelled", "Plan creation cancelled");
       }
@@ -78,49 +82,25 @@ async function createPlan(state) {
   }
 }
 
-function buildPlanListUI(pMap) {
-  const logName = `${moduleName}.buildPlanListUI`;
-  const choices = [];
-
-  function displayLine(r) {
-    return `${r.name} : ${r.author} : ${r.createdDate} : `
-      + `${r.approved ? "Approved" : "Unapproved"}`;
-  }
-
-  try {
-    for (let p of pMap.keys()) {
-      let pData = pMap.get(p);
-      choices.push([
-        displayLine(pData),
-        p
-      ]);
-    }
-    return menu.buildChoices(choices);
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to build up plan list`);
-  }
-}
-
-async function listPlans(state, planType) {
+async function listPlans(state) {
   const logName = `${moduleName}.listPlans`;
 
   try {
-    let planMap = state.get(planType);
-    if (planMap.size === 0) {
-      emptyGroupWarning(planType);
+    if (state.changePlans().size === 0) {
+      emptyGroupWarning();
       return state;
     }
-    let planChoices = buildPlanListUI(planMap);
+    let planChoices = menu.buildChoices(state.changePlans().plansUIList());
     let choice;
     do {
       choice = await menu.listMenu(
         state,
-        `Change Plans - (${planType})`,
+        "Change Plans",
         "Select Plan:",
         planChoices
       );
       if (!menu.doExit(choice)) {
-        displayPlanRecord(planMap.get(choice));
+        state.planDef(choice).textDisplay();
       }
     } while (!menu.doExit(choice));
     state.setMenuChoice("");
@@ -130,19 +110,18 @@ async function listPlans(state, planType) {
   }
 }
 
-async function selectPlan(state, planType) {
+async function selectPlan(state) {
   const logName = `${moduleName}.selectPlan`;
 
   try {
-    let planMap = state.get(planType);
-    if (planMap.size === 0) {
-      emptyGroupWarning(planType);
+    if (stte.changePlans().size === 0) {
+      emptyGroupWarning();
       return [state, undefined];
     }
-    let planChoices = buildPlanListUI(planMap);
+    let planChoices = menu.buildChoices(state.changePlans().plansUIList());
     let choice = await menu.listMenu(
       state,
-      `Change Plan - (${planType})`,
+      "Change Plans",
       "Select Plan:",
       planChoices
     );
@@ -155,15 +134,13 @@ async function selectPlan(state, planType) {
       let allCommitted = await gitui.commitChanges(state);
       if (allCommitted) {
         // we have committed changes and can now switch to new plan
-        let plan = planMap.get(choice);
-        let repo = state.get("repoObject");
-        state.setCurrentPlanType(planType);
-        state.setCurrentPlan(plan.uuid);
-        if (planType === "developmentPlans") {
+        let plan = state.planDef(choice);
+        state.setCurrentPlanUUID(choice);
+        if (plan.planType === "Development") {
           let branchName = `${plan.name.replace(/\s+/g, "-")}`;
-          await repo.checkoutBranch(branchName);
+          await state.currentRepositoryDef().checkoutBranch(branchName);
         } else {
-          await repo.checkoutBranch("master");
+          await state.currentRepositoryDef().checkoutBranch("master");
         }
         return [state, choice];
       }
@@ -181,7 +158,7 @@ async function editPlan(state) {
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state, "developmentPlans");
+    [state, choice] = await selectPlan(state);
     if (!menu.doExit(choice)) {
       let plan = state.currentPlanDef();
       let files = [
@@ -197,12 +174,12 @@ async function editPlan(state) {
   }
 }
 
-async function applyChangePlan(state, type) {
+async function applyChangePlan(state) {
   const logName = `${moduleName}.applyChangePlan`;
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state, type);
+    [state, choice] = await selectPlan(state);
     if (menu.doExit(choice)) {
       // no plan selected to act on
       return state;
@@ -220,12 +197,12 @@ async function applyChangePlan(state, type) {
   }
 }
 
-async function rollbackChangePlan(state, type) {
+async function rollbackChangePlan(state) {
   const logName = `${moduleName}.rollbackChangePlan`;
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state, type);
+    [state, choice] = await selectPlan(state);
     if (menu.doExit(choice)) {
       // no plan selected to act on
       return state;
@@ -243,7 +220,7 @@ async function submitPlanForApproval(state) {
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state, "developmentPlans");
+    [state, choice] = await selectPlan(state);
     if (menu.doExit(choice)) {
       // no plan selected to act on
       return state;
@@ -253,7 +230,15 @@ async function submitPlanForApproval(state) {
       "Moving Plan to Pending",
       `Moving ${pName} plan to pending group for approval`
     );
-    state = await plans.movePlanToPending(state);
+    let branch = pName.replace(/\s+/g, "-");
+    state.setCurrentPlanType("Pending");
+    state.writeChangePlans();
+    state.currentRepositoryDef().commitAndMerge(
+      branch,
+      `Submitting plan ${pName} for approval`,
+      state.username(),
+      state.email()
+    );
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to move plan to pending gorup`);
@@ -261,7 +246,6 @@ async function submitPlanForApproval(state) {
 }
 
 module.exports = {
-  displayPlanRecord,
   createPlan,
   listPlans,
   selectPlan,

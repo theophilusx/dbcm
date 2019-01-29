@@ -367,12 +367,32 @@ AppState.prototype.writeChangePlans = async function() {
   }
 };
 
+AppState.protothype.addChangePlan = async function(plan) {
+  const logName = `${moduleName}.addChangePlan`;
+
+  try {
+    assert.ok(this.currentRepositoryName(), "Current repository not defined");
+    let branch = plan.name.replace(/\s+/g, "-");
+    await this.currentRepositoryDef().gitRepo.createBranch(branch);
+    await this.currentRepositoryDef().gitRepo.checkoutBranch(branch);
+    let rootPath = path.join(this.home(), this.currentRepositoryName());
+    await this.changePlans.add(rootPath, plan);
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 AppState.prototype.currentPlanUUID = function() {
   return this.get("currentPlanUUID");
 };
 
 AppState.prototype.setCurrentPlanUUID = function(id) {
   return this.set("currentPlanUUID", id);
+};
+
+AppState.prototype.planDef = function(planUUID) {
+  return this.get("changePlans").get(planUUID);
 };
 
 AppState.prototype.currentPlanDef = function() {
@@ -406,7 +426,7 @@ AppState.prototype.setCurrentPlanType = function(type) {
 
   try {
     if (this.get("changePlans") && this.get("currentPlanUUID")) {
-      return this.currentPlanDef().setPlanType(type);
+      return this.currentPlanDef().setType(type);
     }
   } catch (err) {
     throw new VError(err, `${logName}`);

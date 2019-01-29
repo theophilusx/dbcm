@@ -6,17 +6,20 @@ const VError = require("verror");
 const assert = require("assert");
 const Plan = require("./Plan");
 const fse = require("fse");
+const files = require("./files");
 
 function PlanMap() {
   this.plans = new Map();
 }
 
-PlanMap.prototype.add = function(plan) {
+PlanMap.prototype.add = async function(repoPath, plan) {
   const logName = `${moduleName}.add`;
 
   try {
     assert.ok(plan instanceof Plan, "Argument must be an Plan() instance");
+    await files.createChangeFiles(repoPath, plan);
     this.plans.set(plan.uuid, plan);
+    return true;
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
@@ -78,6 +81,23 @@ PlanMap.prototype.writePlans = async function(filePath) {
     await fse.writeFile(filePath, JSON.stringify(plansObj, null, " "));
   } catch (err) {
     throw new VError(err, `${logName} Failed to write change plans: ${filePath}`);
+  }
+};
+
+PlanMap.protothype.plansUIList = function() {
+  const logName = `${moduleName}.plansUIList`;
+
+  try {
+    let choices = [];
+    for (let p of this.plans.values()) {
+      choices.push([
+        p.summaryLine(),
+        p.uuid
+      ]);
+    }
+    return choices;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
 };
 

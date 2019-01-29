@@ -8,7 +8,6 @@ const path = require("path");
 const short = require("short-uuid");
 const Table = require("cli-table3");
 const chalk = require("chalk");
-
 const ApprovalHistory = require("./ApprovalHistory");
 
 function Plan(initData) {
@@ -118,6 +117,18 @@ Plan.prototype.textDisplay = function() {
     );
     console.log(table.toString());
     this.approvals.currentApproval().textdisplay();
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+Plan.prototype.summaryLine = function() {
+  const logName = `${moduleName}.summaryLine`;
+
+  try {
+    let line = `${this.name} : ${this.author} : ${this.cretedDate} : `
+        + `${this.approvals.currentApproval().approved ? "Approved" : "Unapproved"}`;
+    return line;
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
