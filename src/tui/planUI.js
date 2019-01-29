@@ -75,15 +75,15 @@ async function createPlan(state) {
   }
 }
 
-async function listPlans(state) {
+async function listPlans(state, type) {
   const logName = `${moduleName}.listPlans`;
 
   try {
-    if (state.changePlans().size === 0) {
+    if (state.changePlans().count(type) === 0) {
       emptyGroupWarning();
       return state;
     }
-    let planChoices = menu.buildChoices(state.changePlans().plansUIList());
+    let planChoices = menu.buildChoices(state.changePlans().plansUIList(type));
     let choice;
     do {
       choice = await menu.listMenu(
@@ -103,15 +103,15 @@ async function listPlans(state) {
   }
 }
 
-async function selectPlan(state) {
+async function selectPlan(state, type) {
   const logName = `${moduleName}.selectPlan`;
 
   try {
-    if (stte.changePlans().size === 0) {
+    if (state.changePlans().count(type) === 0) {
       emptyGroupWarning();
       return [state, undefined];
     }
-    let planChoices = menu.buildChoices(state.changePlans().plansUIList());
+    let planChoices = menu.buildChoices(state.changePlans().plansUIList(type));
     let choice = await menu.listMenu(
       state,
       "Change Plans",
@@ -151,7 +151,7 @@ async function editPlan(state) {
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state);
+    [state, choice] = await selectPlan(state, "Development");
     if (!menu.doExit(choice)) {
       let plan = state.currentPlanDef();
       let files = [
@@ -167,12 +167,12 @@ async function editPlan(state) {
   }
 }
 
-async function applyChangePlan(state) {
+async function applyChangePlan(state, type) {
   const logName = `${moduleName}.applyChangePlan`;
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state);
+    [state, choice] = await selectPlan(state, type);
     if (menu.doExit(choice)) {
       // no plan selected to act on
       return state;
@@ -190,12 +190,12 @@ async function applyChangePlan(state) {
   }
 }
 
-async function rollbackChangePlan(state) {
+async function rollbackChangePlan(state, type) {
   const logName = `${moduleName}.rollbackChangePlan`;
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state);
+    [state, choice] = await selectPlan(state, type);
     if (menu.doExit(choice)) {
       // no plan selected to act on
       return state;
@@ -213,7 +213,7 @@ async function submitPlanForApproval(state) {
   let choice;
   
   try {
-    [state, choice] = await selectPlan(state);
+    [state, choice] = await selectPlan(state, "Development");
     if (menu.doExit(choice)) {
       // no plan selected to act on
       return state;
