@@ -358,7 +358,7 @@ AppState.prototype.writeChangePlans = async function() {
   const logName = `${moduleName}.writeChangePlans`;
 
   try {
-    assert.ok(this.currentRepositoryname(), "Current repository not defined");
+    assert.ok(this.currentRepositoryName(), "Current repository not defined");
     let plansFile = path.join(this.currentRepositoryDef().path, "change-plans.json");
     await this.changePlans().writePlans(plansFile);
     return true;
