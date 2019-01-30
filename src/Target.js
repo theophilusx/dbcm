@@ -43,10 +43,7 @@ Target.prototype.isInitialised = async function() {
   
   try {
     let rslt = await db.execSQL(this.params(), sql);
-    if (rslt.rows[0].cnt == 1) {
-      return true;
-    }
-    return false;
+    return true;
   } catch (err) {
     if (err.message.match(/relation .* does not exist/)) {
       return false;

@@ -8,9 +8,9 @@ const screen = require("./textScreen");
 const menu = require("./textMenus");
 const Plan = require("../Plan");
 const gitui = require("./gitUI");
-const psql = require("./psql");
+const psql = require("../psql");
 const path = require("path");
-const edit = require("./edit");
+const edit = require("../edit");
 
 function commitWarning() {
   let title = "Uncommitted Changes";

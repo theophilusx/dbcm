@@ -208,7 +208,7 @@ Repository.prototype.initGit = async function(branch) {
       await files.initialiseRepo(this.path);
       // await this.gitRepo.addReleaseTag("0.0.1", "Initial release");
     } else {
-      this.gitRepo.pullMaster();
+      await this.gitRepo.pullMaster();
       //state.setCurrentReleaseTag("FIXME");
     }
   } catch (err) {

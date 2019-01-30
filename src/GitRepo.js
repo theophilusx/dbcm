@@ -42,26 +42,6 @@ function GitRepo(name, url, repoPath) {
   }
 }
 
-GitRepo.prototype.init = async function() {
-  const logName = `${moduleName}.init`;
-
-  try {
-    this.repoObj = await Git.Clone(this.url, this.path, cloneOptions);
-    return this.repoObj;
-  } catch (err) {
-    if (err.errno === -4) {
-      try {
-        // looks like repo already there - try opening and pulling
-        this.repoObj = await Git.Repository.open(this.path);
-        return this.repoObj;
-      } catch (err) {
-        throw new VError(err, `${logName} Failed to open ${this.path}`);
-      }
-    }
-    throw new VError(err, `${logName} Error cloning repo ${this.url}`);
-  }
-};
-
 /**
  * @async
  *
@@ -91,7 +71,7 @@ GitRepo.prototype.pullMaster = async function() {
     if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
-    await this.repoObj.fetch(cloneOptions.fetchOpts);
+    await this.repoObj.fetch("origin", cloneOptions.fetchOpts);
     await this.repoObj.mergeBranches("master", "origin/master");
     return true;
   } catch (err) {
@@ -357,8 +337,10 @@ GitRepo.prototype.getStatus = async function() {
   const logName = `${moduleName}.getStatus`;
 
   try {
-    let fileList = await this.repoObj.getStatus();
-    return fileList;
+    if (!this.repoObj) {
+      throw new Error("Repository not initilised");
+    }
+    return await this.repoObj.getStatus();
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
@@ -408,6 +390,27 @@ GitRepo.prototype.statusString = async function() {
     return statusItems.join("\n");
   } catch (err) {
     throw new VError(err, `${logName} Failed to generate status string`);
+  }
+};
+
+GitRepo.prototype.init = async function() {
+  const logName = `${moduleName}.init`;
+
+  try {
+    this.repoObj = await Git.Clone(this.url, this.path, cloneOptions);
+    return this.repoObj;
+  } catch (err) {
+    if (err.errno === -4) {
+      try {
+        // looks like repo already there - try opening and pulling
+        this.repoObj = await Git.Repository.open(this.path);
+        this.pullMaster();
+        return this.repoObj;
+      } catch (err) {
+        throw new VError(err, `${logName} Failed to open ${this.path}`);
+      }
+    }
+    throw new VError(err, `${logName} Error cloning repo ${this.url}`);
   }
 };
 

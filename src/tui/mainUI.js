@@ -5,12 +5,10 @@ const moduleName = "mainUI";
 const VError = require("verror");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
-// const planui = require("./planUI");
+const planui = require("./planUI");
 const targetui = require("./targetUI");
-
 const repoui = require("./repoUI");
-// const approvals = require("./approvals");
-// const approvalsui = require("./approvalsUI");
+const approvalsui = require("./approvalsUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -84,19 +82,19 @@ function developmentPlanActions(state) {
           state = await planui.createPlan(state);
           break;
         case "editPlan":
-          state = await planui.editPlan(state);
+          state = await planui.editPlan(state, "Development");
           break;
         case "testDevPlan":
-          state = await planui.applyChangePlan(state, "developmentPlans");
+          state = await planui.applyChangePlan(state, "Development");
           break;
         case "rollbackDevPlan":
-          state = await planui.rollbackChangePlan(state, "developmentPlans");
+          state = await planui.rollbackChangePlan(state, "Development");
           break;
         case "commitPlan":
           state = await planui.submitPlanForApproval(state);
           break;
         case "listDevPlans":
-          state = await planui.listPlans(state, "developmentPlans");
+          state = await planui.listPlans(state, "Development");
           break;
         default:
           screen.errorMsg(
@@ -124,16 +122,16 @@ function pendingPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listPendingPlans":
-          state = await planui.listPlans(state, "pendingPlans");
+          state = await planui.listPlans(state, "Pending");
           break;
         case "approvalRequests":
-          if (!approvals.isApprover(state)) {
+          if (!state.currentRepositoryDef().isApprover(state.email())) {
             screen.warningMsg(
               "You Are Not An Approver",
               "You are not a registered approver for this repository"
             );
           } else {
-            state = await planui.listPlans(state, "pendingPlans");
+            state = await planui.listPlans(state, "Pending");
           }
           break;
         case "approveActions":
@@ -165,7 +163,7 @@ function approvedPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listApprovedPlans":
-          state = await planui.listPlans(state, "approvedPlans");
+          state = await planui.listPlans(state, "Approved");
           break;
         case "viewSource":
           screen.warningMsg(
@@ -205,7 +203,7 @@ function rejectedPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listRejectedPlans":
-          state = await planui.listPlans(state, "rejectedPlans");
+          state = await planui.listPlans(state, "Rejected");
           break;
         case "reworkRejectedPlan":
           screen.warningMsg(
@@ -297,7 +295,10 @@ function repositoryActions(state) {
         );
         break;
       case "editApprovals":
-        state = await approvalsui.editApprovalSettings(state);
+        screen.infoMsg(
+          "Not Implemented",
+          "This function has not yet been implemented"
+        );
         break;
       case "listRepos":
         screen.infoMsg(

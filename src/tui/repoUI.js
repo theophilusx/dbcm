@@ -129,6 +129,7 @@ function repoAction(appState) {
         appState.setChangePlans(new PlanMap);
       } else {
         appState.setCurrentRepositoryName(answers.choice);
+        await appState.currentRepositoryDef().initGit();
         await appState.currentRepositoryDef().readApprovers();
         await appState.readChangePlans();
       }

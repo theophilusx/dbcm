@@ -7,7 +7,7 @@ const menu = require("./textMenus");
 const screen = require("./textScreen");
 const planui = require("./planUI");
 const path = require("path");
-const edit = require("./edit");
+const edit = require("../edit");
 const gitui = require("./gitUI");
 const rejectui = require("./rejectUI");
 
