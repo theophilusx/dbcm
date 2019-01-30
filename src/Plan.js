@@ -67,6 +67,10 @@ Plan.prototype.currentApprovalState = function() {
   return this.approvals.currentApprovalState();
 };
 
+Plan.prototype.setCurrentApprovalState = function(appState, sha, appDate) {
+  return this.approvals.setCurrentApprovalState(appState, sha, appDate);
+};
+
 Plan.prototype.currentApprovalCount = function() {
   return this.approvals.currentApprovalCount();
 };
