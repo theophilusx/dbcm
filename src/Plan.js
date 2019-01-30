@@ -9,37 +9,36 @@ const short = require("short-uuid");
 const Table = require("cli-table3");
 const chalk = require("chalk");
 const ApprovalHistory = require("./ApprovalHistory");
+const assert = require("assert");
 
-function Plan(initData) {
+function Plan({uuid, name, description, author, email, createdDate, planType}) {
   const logName = `${moduleName}.Plan`;
 
   try {
-    if (initData.name && initData.description
-        && initData.author && initData.email) {
-      this.uuid = initData.uuid ? initData.uuid : short().new();
-      this.name = initData.name;
-      this.description = initData.description;
-      this.createdDate = initData.createdDate ?
-        initData.creaedDate : moment().format("YYYY-MM-DD HHm:m:ss");
-      this.author = initData.author;
-      this.authorEmail = initData.email;
-      this.planType = initData.planType ? initData.planType : "Development";
-      this.approvals = new ApprovalHistory(),
-      this.change = path.join(
-        "change",
-        `${initData.name.replace(/\s+/g, "-")}.sql`
-      );
-      this.verify = path.join(
-        "verify",
-        `${initData.name.replace(/\s+/g, "-")}.sql`
-      );
-      this.rollback = path.join(
-        "rollback",
-        `${initData.name.replace(/\s+/g, "-")}.sql`
-      );
-    }
-    throw new Error("Must provide at least name, description, author and email "
-                    + "properties when initialising a new Plan object");
+    assert.ok(name, "Missing plan name argument");
+    assert.ok(description, "Missing pln description argument");
+    assert.ok(author, "Missing author argument");
+    assert.ok(email, "Missing email argument");
+    this.uuid = uuid ? uuid : short().new();
+    this.name = name;
+    this.description = description;
+    this.createdDate = createdDate ? createdDate : moment().format("YYYY-MM-DD HH:mm:ss");
+    this.author = author;
+    this.authorEmail = email;
+    this.planType = planType ? planType : "Development";
+    this.approvals = new ApprovalHistory(),
+    this.change = path.join(
+      "change",
+      `${name.replace(/\s+/g, "-")}.sql`
+    );
+    this.verify = path.join(
+      "verify",
+      `${name.replace(/\s+/g, "-")}.sql`
+    );
+    this.rollback = path.join(
+      "rollback",
+      `${name.replace(/\s+/g, "-")}.sql`
+    );
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
@@ -104,7 +103,7 @@ Plan.prototype.fromObject = function(pObj) {
 };
 
 Plan.prototype.textDisplay = function() {
-  const logName = `${moduleName}.textdisplay`;
+  const logName = `${moduleName}.textDisplay`;
 
   try {
     const table = new Table();
@@ -120,7 +119,7 @@ Plan.prototype.textDisplay = function() {
       {"Rollback File": chalk.green(this.rollback)}
     );
     console.log(table.toString());
-    this.approvals.currentApproval().textdisplay();
+    this.approvals.currentApproval().textDisplay();
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
