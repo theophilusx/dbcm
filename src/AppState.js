@@ -367,7 +367,7 @@ AppState.prototype.writeChangePlans = async function() {
   }
 };
 
-AppState.protothype.addChangePlan = async function(plan) {
+AppState.prototype.addChangePlan = async function(plan) {
   const logName = `${moduleName}.addChangePlan`;
 
   try {
