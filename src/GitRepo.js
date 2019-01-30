@@ -84,6 +84,21 @@ GitRepo.prototype.getReferenceNames = async function() {
   }
 };
 
+GitRepo.prototype.pullMaster = async function() {
+  const logName = `${moduleName}.pullMaster`;
+
+  try {
+    if (!this.repoObj) {
+      throw new Error("Repository not initialised");
+    }
+    await this.repoObj.fetch(cloneOptions.fetchOpts);
+    await this.repoObj.mergeBranches("master", "origin/master");
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 /**
  * @async
  *
@@ -201,6 +216,8 @@ GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
     if (!this.repoObj) {
       throw new Error("Repository not initialised");
     }
+    await this.checkoutBranch("master");
+    await this.pullMaster();
     let mergeSig = Git.Signature.now(author, email);
     await this.repoObj.mergeBranches("master", branch, mergeSig);
     let remote = await this.repoObj.getRemote("origin", cloneOptions.fetchOpts);
