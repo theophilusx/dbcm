@@ -15,7 +15,7 @@ ApprovalHistory.prototype.currentApprovalCount = function() {
   return this.current.approvalCount();
 };
 
-ApprovalHistory.prototype.addApproval = function(author, email, sha) {
+ApprovalHistory.prototype.addCurrentApproval = function(author, email, sha) {
   return this.current.addApprover(author, email, sha);
 };
 
@@ -23,7 +23,7 @@ ApprovalHistory.prototype.currentApprovalState = function() {
   return this.current.approved;
 };
 
-ApprovalHistory.prototype.setApprovalState = function(state, sha, appDate) {
+ApprovalHistory.prototype.setCurrentApprovalState = function(state, sha, appDate) {
   return this.current.setApprovalState(state, sha, appDate);
 };
 
