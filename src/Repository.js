@@ -206,10 +206,6 @@ Repository.prototype.initGit = async function(branch, author, email) {
       let branchRef = await this.gitRepo.createBranch(branch);
       await this.gitRepo.checkoutBranch(branchRef);
       await files.initialiseRepo(this.path);
-      let files = await this.gitRepo.getStatus();
-      await this.gitRepo.addCommit(files, "Initialise for DBCM", author, email);
-      await this.gitRepo.addReleaseTag("0.0.1", "Initial release");
-      await this.gitRepo.mergeIntoMaster(branch, author, email);
     } else {
       await this.gitRepo.pullMaster();
       await this.gitRepo.rebaseBranch(branch, "master", author, email);

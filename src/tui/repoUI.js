@@ -8,7 +8,6 @@ const menu = require("./textMenus");
 const screen = require("./textScreen");
 const Repository = require("../Repository");
 const path = require("path");
-const PlanMap = require("../PlanMap");
 
 function setupQuestions(state) {
   const logName = `${moduleName}.setup`;
@@ -46,34 +45,7 @@ function setupQuestions(state) {
         when: answers => {
           return answers.choice === "newRepository";
         }
-      },
-      {
-        type: "confirm",
-        name: "hasApprover",
-        message: "Do changes need to be approved:",
-        when: answers => {
-          return answers.choice === "newRepository";
-        }
-      },
-      {
-        type: "list",
-        name: "approvalType",
-        choices: [
-          {
-            name: "Any single approver can approve change",
-            value: "any"
-          },
-          {
-            name: "All listed approvers must approve the change",
-            value: "all"
-          }
-        ],
-        message: "Approval Type:",
-        when: answers => {
-          return answers.hasApprover;
-        }
-      }
-    ];
+      }];
     return questions;
   } catch (err) {
     throw new VError(err, `${logName} Failed to setup repository questions`);
@@ -85,54 +57,43 @@ function repoAction(appState) {
   
   return async answers => {
     try {
+      let branch = `${process.env.USER}-local`;
       appState.setMenuChoice(answers.choice);
       if (menu.doExit(answers.choice)) {
         return appState;
       }
-      appState.saveRepoMetadata();
       if (answers.choice === "newRepository") {
         let repo = new Repository(
           answers.newName,
           answers.newURL,
           path.join(appState.home(), answers.newName)
         );
-        if (answers.hasApprover) {
-          repo.setApprovalType(answers.approvalType);
-          let approverQ = [
-            {
-              type: "input",
-              name: "name",
-              message: "Approver name:"
-            },
-            {
-              type: "input",
-              name: "email",
-              message: "Approver email:"
-            }
-          ];
-          let approverList = await menu.collectionMenu(
-            "Approvers",
-            approverQ
-          );
-          repo.setApprovers(approverList);
-        }
         appState.setRepository(repo);
-        await repo.initGit("setup");
         appState.setCurrentRepositoryName(answers.newName);
-        await repo.writeApprovers();
-        await repo.commitAndMerge(
-          "setup",
-          "Initial setup",
+        await repo.initGit(branch, appState.username(), appState.emial());
+        let files = await repo.gitRepo.getStatus();
+        await repo.gitRepo.addCommit(
+          files,
+          "Initialise for DBCM",
           appState.username(),
           appState.email()
         );
-        appState.setChangePlans(new PlanMap);
+        await repo.gitRepo.addReleaseTag("0.0.1", "Initial release");
+        await repo.gitRepo.mergeIntoMaster(
+          branch,
+          appState.username(),
+          appState.email()
+        );
       } else {
         appState.setCurrentRepositoryName(answers.choice);
-        await appState.currentRepositoryDef().initGit();
-        await appState.currentRepositoryDef().readApprovers();
-        await appState.readChangePlans();
+        await appState.currentRepositoryDef().initGit(
+          branch,
+          appState.username(),
+          appState.email()
+        );
       }
+      await appState.currentRepositoryDef().readApprovers();
+      await appState.readChangePlans();
       await appState.writeUserInit();
       return appState;
     } catch (err) {
