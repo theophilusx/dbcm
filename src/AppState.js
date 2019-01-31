@@ -142,8 +142,8 @@ AppState.prototype.repositoryNames = function() {
   return this.get("repositories").repositoryNames();
 };
 
-AppState.prototype.repository = function(repoName) {
-  const logName = `${moduleName}.repository`;
+AppState.prototype.repositoryDef = function(repoName) {
+  const logName = `${moduleName}.repositoryDef`;
 
   try {
     if (this.get("repositories").has(repoName)) {
@@ -155,8 +155,8 @@ AppState.prototype.repository = function(repoName) {
   }
 };
 
-AppState.prototype.setRepository = function(defObject) {
-  const logName = `${moduleName}.setRepository`;
+AppState.prototype.setRepositoryDef = function(defObject) {
+  const logName = `${moduleName}.setRepositoryDef`;
 
   try {
     if (defObject instanceof Repository) {
