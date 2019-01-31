@@ -79,6 +79,41 @@ Repository.prototype.approverList = function() {
   return approvers;
 };
 
+Repository.prototype.writeApprovers = async function() {
+  const logName = `${moduleName}.writeApprovers`;
+
+  try {
+    let approverFile = path.join(this.path, "approval.json");
+    let appObj = {
+      name: "Change Approval",
+      version: "1.0.0",
+      approvalType: this.approvalType
+    };
+    let approvers = [];
+    for (let entry of this.approvers.values()) {
+      approvers.push(entry);
+    }
+    appObj.approvers = approvers;
+    return await fse.writeFile(approverFile, JSON.stringify(appObj, null, " "));
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to write approval file`);
+  }
+}; 
+
+Repository.prototype.readApprovers = async function() {
+  const logName = `${moduleName}.readApprovers`;
+
+  try {
+    let approverFile = path.join(this.path, "approval.json");
+    await fse.access(approverFile, fse.constants.R_OK | fse.constants.W_OK);
+    let appObj = await fse.readJson(approverFile);
+    this.setApprovalType(appObj.approvalType);
+    this.setApprovers(appObj.approvers);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to initialise approver details`);
+  }
+};
+
 Repository.prototype.getTarget = function(targetName) {
   return this.targets.get(targetName);
 };
@@ -161,42 +196,7 @@ Repository.prototype.fromObject = function(repObj) {
   }
 };
 
-Repository.prototype.writeApprovers = async function() {
-  const logName = `${moduleName}.writeApprovers`;
-
-  try {
-    let approverFile = path.join(this.path, "approval.json");
-    let appObj = {
-      name: "Change Approval",
-      version: "1.0.0",
-      approvalType: this.approvalType
-    };
-    let approvers = [];
-    for (let entry of this.approvers.values()) {
-      approvers.push(entry);
-    }
-    appObj.approvers = approvers;
-    return await fse.writeFile(approverFile, JSON.stringify(appObj, null, " "));
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to write approval file`);
-  }
-}; 
-
-Repository.prototype.readApprovers = async function() {
-  const logName = `${moduleName}.readApprovers`;
-
-  try {
-    let approverFile = path.join(this.path, "approval.json");
-    await fse.access(approverFile, fse.constants.R_OK | fse.constants.W_OK);
-    let appObj = await fse.readJson(approverFile);
-    this.setApprovalType(appObj.approvalType);
-    this.setApprovers(appObj.approvers);
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to initialise approver details`);
-  }
-};
-
-Repository.prototype.initGit = async function(branch) {
+Repository.prototype.initGit = async function(branch, author, email) {
   const logName = `${moduleName}.initGit`;
 
   try {
@@ -206,11 +206,15 @@ Repository.prototype.initGit = async function(branch) {
       let branchRef = await this.gitRepo.createBranch(branch);
       await this.gitRepo.checkoutBranch(branchRef);
       await files.initialiseRepo(this.path);
-      // await this.gitRepo.addReleaseTag("0.0.1", "Initial release");
+      let files = await this.gitRepo.getStatus();
+      await this.gitRepo.addCommit(files, "Initialise for DBCM", author, email);
+      await this.gitRepo.addReleaseTag("0.0.1", "Initial release");
+      await this.gitRepo.mergeIntoMaster(branch, author, email);
     } else {
       await this.gitRepo.pullMaster();
-      //state.setCurrentReleaseTag("FIXME");
+      await this.gitRepo.rebaseBranch(branch, "master", author, email);
     }
+    return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise git repository`);
   } 
@@ -221,16 +225,6 @@ Repository.prototype.commit = async function(files, msg, author, email) {
 
   try {
     return await this.gitRepo.addCommit(files, msg, author, email);
-  } catch (err) {
-    throw new VError(err, `${logName}`);
-  }
-};
-
-Repository.prototype.commitAndMerge = async function(branch, msg, author, email) {
-  const logName = `${moduleName}.commitAndMerge`;
-
-  try {
-    await this.gitRepo.commitAndMerge(branch, msg, author, email);
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
