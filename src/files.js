@@ -26,6 +26,25 @@ function createPlanFile(rootPath) {
     });
 }
 
+function createApprovalFile(rootPath) {
+  const logName = `${moduleName}.createApprovalFile`;
+  const content = {
+    name: "Change Approval",
+    version: "1.0.0",
+    approvalType: "none",
+    approvers: []
+  };
+  const approvalFile = path.join(rootPath, "approval.json");
+  
+  return fse.writeFile(approvalFile, JSON.stringify(content, null, " "), "utf-8")
+    .then(() => {
+      console.log("Created approval.json file");
+    })
+    .catch(err => {
+      throw new VError(err, `${logName}`);
+    });
+}
+
 function createChangesDir(rootPath) {
   const logName = `${moduleName}.createChangesDir`;
   const contents =
@@ -110,6 +129,7 @@ async function initialiseRepo(rootPath) {
 
   try {
     await createPlanFile(rootPath);
+    await createApprovalFile(rootPath);
     await createChangesDir(rootPath);
     await createVerifyDir(rootPath);
     await createRollbackDir(rootPath);
