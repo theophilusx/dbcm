@@ -52,6 +52,17 @@ GitRepo.prototype.getReferenceNames = async function() {
   }
 };
 
+GitRepo.prototype.checkoutBranch = async function(branchName) {
+  const logName = `${moduleName}.checkoutBranch`;
+
+  try {
+    assert.ok(this.repoObj, "Repository not initialised");
+    return await this.repoObj.checkoutBranch(branchName);
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to checkout branch ${branchName}`);
+  }
+};
+
 GitRepo.prototype.pullMaster = async function() {
   const logName = `${moduleName}.pullMaster`;
 
@@ -74,17 +85,6 @@ GitRepo.prototype.createBranch = async function(branchName) {
     return await this.repoObj.createBranch(branchName, commit, 0);
   } catch (err) {
     throw new VError(err, `${logName} Failed to create branch ${branchName}`);
-  }
-};
-
-GitRepo.prototype.checkoutBranch = async function(branchName) {
-  const logName = `${moduleName}.checkoutBranch`;
-
-  try {
-    assert.ok(this.repoObj, "Repository not initialised");
-    return await this.repoObj.checkoutBranch(branchName);
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to checkout branch ${branchName}`);
   }
 };
 
@@ -165,6 +165,18 @@ GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
     return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to merge branch into master`);
+  }
+};
+
+GitRepo.prototype.rebaseBranch = async function(to, from, author, email) {
+  const logName = `${moduleName}.rebseBranch`;
+
+  try {
+    assert.ok(this.repoObj, "Repository not initialised");
+    let sig = Git.Signature.now(author, email);
+    return await this.repoObj.rebaseBranches(to, from, null, sig);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
 };
 
