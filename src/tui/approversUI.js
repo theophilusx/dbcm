@@ -3,7 +3,7 @@
 const moduleName = "approversUI";
 
 const VError = require("verror");
-const menu = require("./textMenu");
+const menu = require("./textMenus");
 
 const appTypeQ = [
   {

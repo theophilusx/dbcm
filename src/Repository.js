@@ -210,7 +210,7 @@ Repository.prototype.initGit = async function(branch, author, email) {
       await this.gitRepo.pullMaster();
       await this.gitRepo.rebaseBranch(branch, "master", author, email);
     }
-    return true;
+    return initialised ? "existing" : "new";
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise git repository`);
   } 

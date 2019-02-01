@@ -8,6 +8,7 @@ const menu = require("./textMenus");
 const screen = require("./textScreen");
 const Repository = require("../Repository");
 const path = require("path");
+const approversui = require("./approversUI");
 
 function setupQuestions(state) {
   const logName = `${moduleName}.setup`;
@@ -68,22 +69,27 @@ function repoAction(appState) {
           answers.newURL,
           path.join(appState.home(), answers.newName)
         );
-        appState.setRepository(repo);
+        appState.setRepositoryDef(repo);
         appState.setCurrentRepositoryName(answers.newName);
-        await repo.initGit(branch, appState.username(), appState.emial());
-        let files = await repo.gitRepo.getStatus();
-        await repo.gitRepo.addCommit(
-          files,
-          "Initialise for DBCM",
-          appState.username(),
-          appState.email()
-        );
-        await repo.gitRepo.addReleaseTag("0.0.1", "Initial release");
-        await repo.gitRepo.mergeIntoMaster(
-          branch,
-          appState.username(),
-          appState.email()
-        );
+        let type = await repo.initGit(branch, appState.username(), appState.email());
+        if (type === "new") {
+          // hve initialised a clean repo
+          appState = await approversui.getApprovalConfig(appState);
+          let files = await repo.gitRepo.getStatus();
+          await repo.gitRepo.addCommit(
+            files,
+            "Initialise for DBCM",
+            appState.username(),
+            appState.email()
+          );
+          await repo.gitRepo.addReleaseTag("0.0.1", "Initial release");
+          await repo.gitRepo.mergeIntoMaster(
+            branch,
+            appState.username(),
+            appState.email()
+          );
+        }
+        await repo.gitRepo.checkoutBranch(branch);
       } else {
         appState.setCurrentRepositoryName(answers.choice);
         await appState.currentRepositoryDef().initGit(
