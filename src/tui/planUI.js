@@ -58,9 +58,9 @@ async function createPlan(state) {
       message: "Create this change record:"
     }]);
     if (answers.createPlan) {
-      state.addChangePlan(changePlan);
+      await state.addChangePlan(changePlan);
       state.setCurrentPlanUUID(changePlan.uuid);
-      state.writeChangePlans();
+      await state.writeChangePlans();
     } else {
       screen.infoMsg("Cancelled", "Plan creation cancelled");
     }

@@ -1,5 +1,8 @@
 "use strict";
 
+const moduleName = "ApprovalHistory";
+
+const VError = require("verror");
 const Approval = require("./Approval");
 
 function ApprovalHistory() {
@@ -37,21 +40,45 @@ ApprovalHistory.prototype.resetApproval = function() {
   }
 };
 
-ApprovalHistory.prototype.fromObject = function(appHistory) {
-  this.current.fromObject(appHistory.current);
-  appHistory.history.forEach(app => {
-    let newApp = new Approval();
-    newApp.fromObject(app);
-    this.history.push(newApp);
-  });
-};
-
 ApprovalHistory.prototype.setCurrentReleaseTag = function(tag) {
   return this.current.setReleaseTag(tag);
 };
 
 ApprovalHistory.prototype.currentReleaseTag = function() {
   return this.current.releaseTag;
+};
+
+ApprovalHistory.prototype.fromObject = function(appHistory) {
+  const logName = `${moduleName}.fromObject`;
+
+  try {
+    this.current.fromObject(appHistory.current);
+    appHistory.history.forEach(app => {
+      let newApp = new Approval();
+      newApp.fromObject(app);
+      this.history.push(newApp);
+    });
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+ApprovalHistory.prototype.toObject = function() {
+  const logName = `${moduleName}.toObject`;
+
+  try {
+    let history = [];
+    for (let h of this.history) {
+      history.push(h);
+    }
+    let appHistory = {
+      current: this.current,
+      history: history
+    };
+    return appHistory;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
 };
 
 module.exports = ApprovalHistory;

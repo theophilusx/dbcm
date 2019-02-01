@@ -57,6 +57,7 @@ async function main() {
     await appState.init(rcFile);
     if (!appState.username()) {
       await user.getOptions(appState);
+      await appState.writeUserInit();
     }
     await repo.selectRepository(appState);
     await target.selectTarget(appState);

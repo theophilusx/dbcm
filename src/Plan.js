@@ -28,7 +28,7 @@ function Plan({uuid, name, description, author, email, createdDate, planType}) {
     this.planType = planType ? planType : "Development";
     this.approvals = new ApprovalHistory(),
     this.change = path.join(
-      "change",
+      "changes",
       `${name.replace(/\s+/g, "-")}.sql`
     );
     this.verify = path.join(
@@ -82,26 +82,6 @@ Plan.prototype.resetApproval = function() {
   return this.approvals.resetApproval();
 };
 
-Plan.prototype.fromObject = function(pObj) {
-  const logName = `${moduleName}.fromObject`;
-
-  try {
-    this.uuid = pObj.uuid;
-    this.name = pObj.name;
-    this.description = pObj.description;
-    this.createdDate = pObj.createdDate;
-    this.author = pObj.author;
-    this.authorEmail = pObj.authorEmail;
-    this.planType = pObj.planType;
-    this.approvals.fromObject(pObj.approvals);
-    this.change = pObj.change;
-    this.verify = pObj.verify;
-    this.rollback = pObj.rollback;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to create plan from object`);
-  }
-};
-
 Plan.prototype.textDisplay = function() {
   const logName = `${moduleName}.textDisplay`;
 
@@ -129,11 +109,54 @@ Plan.prototype.summaryLine = function() {
   const logName = `${moduleName}.summaryLine`;
 
   try {
-    let line = `${this.name} : ${this.author} : ${this.cretedDate} : `
-        + `${this.approvals.currentApproval().approved ? "Approved" : "Unapproved"}`;
+    let line = `${this.name} : ${this.author} : ${this.createdDate} : `
+        + `${this.planType} : ${this.approvals.currentApproval().approved ? "Approved" : "Unapproved"}`;
     return line;
   } catch (err) {
     throw new VError(err, `${logName}`);
+  }
+};
+
+Plan.prototype.fromObject = function(pObj) {
+  const logName = `${moduleName}.fromObject`;
+
+  try {
+    this.uuid = pObj.uuid;
+    this.name = pObj.name;
+    this.description = pObj.description;
+    this.createdDate = pObj.createdDate;
+    this.author = pObj.author;
+    this.authorEmail = pObj.authorEmail;
+    this.planType = pObj.planType;
+    this.approvals.fromObject(pObj.approvals);
+    this.change = pObj.change;
+    this.verify = pObj.verify;
+    this.rollback = pObj.rollback;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to create plan from object`);
+  }
+};
+
+Plan.prototype.toObject = function() {
+  const logName = `${moduleName}.toObject`;
+
+  try {
+    let pObj = {
+      uuid: this.uuid,
+      name: this.name,
+      description: this.description,
+      createdDate: this.createdDate,
+      author: this.author,
+      authorEmail: this.authorEmail,
+      planType: this.planType,
+      approvals: this.approvals.toObject(),
+      change: this.change,
+      verify: this.verify,
+      rollback: this.rollback
+    };
+    return pObj;
+  } catch (err) {
+   throw new VError(err, `${logName}`);
   }
 };
 

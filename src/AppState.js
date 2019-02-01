@@ -372,11 +372,10 @@ AppState.prototype.addChangePlan = async function(plan) {
 
   try {
     assert.ok(this.currentRepositoryName(), "Current repository not defined");
-    let branch = plan.name.replace(/\s+/g, "-");
-    await this.currentRepositoryDef().gitRepo.createBranch(branch);
+    let branch = `${process.env.USER}-local`;
     await this.currentRepositoryDef().gitRepo.checkoutBranch(branch);
     let rootPath = path.join(this.home(), this.currentRepositoryName());
-    await this.changePlans.add(rootPath, plan);
+    await this.get("changePlans").add(rootPath, plan);
     return true;
   } catch (err) {
     throw new VError(err, `${logName}`);

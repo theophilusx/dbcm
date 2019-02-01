@@ -89,10 +89,14 @@ PlanMap.prototype.writePlans = async function(filePath) {
   const logName = `${moduleName}.writePlans`;
 
   try {
+    let plans = [];
+    for (let p of this.plans.values()) {
+      plans.push(p.toObject());
+    }
     let plansObj = {
       name: "Change Plans",
       version: "1.0.0",
-      plans: this.toObject()
+      plans: plans
     };
     await fse.writeFile(filePath, JSON.stringify(plansObj, null, " "));
   } catch (err) {

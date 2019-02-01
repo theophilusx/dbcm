@@ -39,13 +39,6 @@ Approval.prototype.setReleaseTag = function(tag) {
   return this.releaseTag = tag;
 };
 
-Approval.prototype.fromObject = function(p) {
-  this.approved = p.approved;
-  this.approvedDate = p.approvedDate;
-  this.approvedSha = p.approvedSha;
-  this.approvers = p.approvers;
-};
-
 Approval.prototype.textDisplay = function() {
   const logName = `${moduleName}.textDisplay`;
 
@@ -67,6 +60,13 @@ Approval.prototype.textDisplay = function() {
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
+};
+
+Approval.prototype.fromObject = function(p) {
+  this.approved = p.approved;
+  this.approvedDate = p.approvedDate;
+  this.approvedSha = p.approvedSha;
+  this.approvers = p.approvers;
 };
 
 module.exports = Approval;
