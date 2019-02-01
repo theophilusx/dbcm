@@ -44,30 +44,25 @@ async function createPlan(state) {
     }];
 
   try {
-    let committedChanges = await gitui.commitChanges(state);
-    if (committedChanges) {
-      let answers = await inquirer.prompt(questions);
-      let changePlan = new Plan({
-        name: answers.name,
-        description: answers.descritpion,
-        author: state.username(),
-        email: state.email()
-      });
-      changePlan.textDisplay();
-      answers = await inquirer.prompt([{
-        type: "confirm",
-        name: "createPlan",
-        message: "Create this change record:"
-      }]);
-      if (answers.createPlan) {
-        state.addChangePlan(changePlan);
-        state.setCurrentPlanUUID(changePlan.uuid);
-        state.writeChangePlans();
-      } else {
-        screen.infoMsg("Cancelled", "Plan creation cancelled");
-      }
+    let answers = await inquirer.prompt(questions);
+    let changePlan = new Plan({
+      name: answers.name,
+      description: answers.description,
+      author: state.username(),
+      email: state.email()
+    });
+    changePlan.textDisplay();
+    answers = await inquirer.prompt([{
+      type: "confirm",
+      name: "createPlan",
+      message: "Create this change record:"
+    }]);
+    if (answers.createPlan) {
+      state.addChangePlan(changePlan);
+      state.setCurrentPlanUUID(changePlan.uuid);
+      state.writeChangePlans();
     } else {
-      commitWarning();
+      screen.infoMsg("Cancelled", "Plan creation cancelled");
     }
     return state;
   } catch (err) {
@@ -118,29 +113,13 @@ async function selectPlan(state, type) {
       "Select Plan:",
       planChoices
     );
-    if (!menu.doExit(choice)) {
-      if (choice === state.currentPlanUUID()) {
-        // same plan - no change
-        return [state, choice];
-      }
-      // different plan - need to commit changes and set branch
-      let allCommitted = await gitui.commitChanges(state);
-      if (allCommitted) {
-        // we have committed changes and can now switch to new plan
-        let plan = state.planDef(choice);
-        state.setCurrentPlanUUID(choice);
-        if (plan.planType === "Development") {
-          let branchName = `${plan.name.replace(/\s+/g, "-")}`;
-          await state.currentRepositoryDef().checkoutBranch(branchName);
-        } else {
-          await state.currentRepositoryDef().checkoutBranch("master");
-        }
-        return [state, choice];
-      }
-      commitWarning();
-      return [state, undefined];
+    if (menu.doExit(choice)) {
+      return [state. undefined];
     }
-    return [state, undefined];
+    if (choice !== state.currentPlanUUID()) {
+      state.setCurrentPlanUUID(choice);
+    }
+    return [state, choice];
   } catch (err) {
     throw new VError(err, `${logName} Error selecting change set`);
   }
@@ -223,7 +202,7 @@ async function submitPlanForApproval(state) {
       "Moving Plan to Pending",
       `Moving ${pName} plan to pending group for approval`
     );
-    let branch = pName.replace(/\s+/g, "-");
+    let branch = `${process.env.USER}-local`;
     state.setCurrentPlanType("Pending");
     state.writeChangePlans();
     state.currentRepositoryDef().commitAndMerge(
