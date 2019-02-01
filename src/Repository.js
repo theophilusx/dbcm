@@ -208,7 +208,11 @@ Repository.prototype.initGit = async function(branch, author, email) {
       await files.initialiseRepo(this.path);
     } else {
       await this.gitRepo.pullMaster();
-      await this.gitRepo.rebaseBranch(branch, "master", author, email);
+      if (!await this.gitRepo.branchExists(branch)) {
+        await this.gitRepo.createBranch(branch);
+      } else {
+        await this.gitRepo.rebaseBranch(branch, "master", author, email);        
+      }
     }
     return initialised ? "existing" : "new";
   } catch (err) {

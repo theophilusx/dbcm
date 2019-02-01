@@ -89,7 +89,6 @@ function repoAction(appState) {
             appState.email()
           );
         }
-        await repo.gitRepo.checkoutBranch(branch);
       } else {
         appState.setCurrentRepositoryName(answers.choice);
         await appState.currentRepositoryDef().initGit(
@@ -98,6 +97,7 @@ function repoAction(appState) {
           appState.email()
         );
       }
+      await appState.currentRepositoryDef().gitRepo.checkoutBranch(branch);
       await appState.currentRepositoryDef().readApprovers();
       await appState.readChangePlans();
       await appState.writeUserInit();

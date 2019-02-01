@@ -4,7 +4,6 @@ const moduleName = "GitRepo";
 
 const assert = require("assert");
 const VError = require("verror");
-const path = require("path");
 const Git = require("nodegit");
 
 const cloneOptions = {
@@ -48,6 +47,21 @@ GitRepo.prototype.getReferenceNames = async function() {
     assert.ok(this.repoObj, "Repository not initialised");
     return await this.repoObj.getReferenceNames(Git.Reference.TYPE.LISTALL);
   } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+GitRepo.prototype.branchExists = async function(branchName) {
+  const logName = `${moduleName}.branchExists`;
+
+  try {
+    assert.ok(this.repoObj, "Repository not initialised");
+    let ref = await Git.Branch.lookup(this.repoObj, branchName, Git.Branch.BRANCH.LOCAL);
+    return ref;
+  } catch (err) {
+    if (err.message.match(/cannot locate local branch/)) {
+      return false;
+    }
     throw new VError(err, `${logName}`);
   }
 };
