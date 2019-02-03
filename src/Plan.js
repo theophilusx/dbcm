@@ -56,7 +56,7 @@ Plan.prototype.setType = function(type) {
   try {
     if (type === "Development" || type === "Pending"
         || type === "Approved" || type === "Rejected") {
-      this.planType = type;
+      return this.planType = type;
     }
     throw new Error(`Unknown plan type ${type}`);
   } catch (err) {
