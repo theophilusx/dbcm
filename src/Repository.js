@@ -23,7 +23,7 @@ function Repository(name, url, repoPath) {
     this.approvalType = "none";
     this.approvers = new Map();
     this.targets = new TargetMap();
-    this.releaseTag = undefined;
+    this.releaseTag = "Unknown";
     this.gitRepo = new GitRepo(name, url, repoPath);
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise change repository object`);
