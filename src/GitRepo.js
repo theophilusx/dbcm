@@ -234,7 +234,7 @@ GitRepo.prototype.fileHistory = async function(fileName) {
   const logName = `${moduleName}.fileHistory`;
   
   async function compileHistory(repo, newCommits, commitHistory, file, depth) {
-    const logName = `${moduleName}.compileHistory`;
+    const logName = `${moduleName}.fileHistory.compileHistory`;
 
     try {
       let lastSha;
@@ -251,7 +251,7 @@ GitRepo.prototype.fileHistory = async function(fileName) {
         commitHistory.push(entry);
       });
       lastSha = commitHistory[commitHistory.length - 1].commit.sha();
-      let walker = this.repo.createRevWalk();
+      let walker = repo.createRevWalk();
       walker.push(lastSha);
       walker.sorting(Git.Revwalk.SORT.TIME);
       newCommits = await walker.fileHistoryWalk(file, depth);
