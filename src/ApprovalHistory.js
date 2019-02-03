@@ -30,6 +30,14 @@ ApprovalHistory.prototype.setCurrentApprovalState = function(state, sha, appDate
   return this.current.setApprovalState(state, sha, appDate);
 };
 
+ApprovalHistory.prototype.currentApprovalSHA = function() {
+  return this.current.approvedSha;
+};
+
+ApprovalHistory.prototype.setCurrentApprovalSHA = function(sha) {
+  return this.current.approvedSha = sha;
+};
+
 ApprovalHistory.prototype.resetApproval = function() {
   if (this.current.approvalCount() > 0) {
     this.history.push(this.current);
