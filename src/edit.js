@@ -26,9 +26,9 @@ async function viewFiles(files) {
   try {
     let data = "";
     for (let f of files) {
-      data += `\n-- ${f}\n`;
+      data += `\n-- *** start of ${f}\n\n`;
       data += await fse.readFile(f, "utf-8");
-      data += `\n-- end of file ${f}`;
+      data += `\n-- *** end of ${f}\n`;
     }
     let editor = new ExternalEditor(data);
     editor.run();
