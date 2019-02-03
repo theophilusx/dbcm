@@ -222,8 +222,10 @@ GitRepo.prototype.getChangeFileSHA = async function(plan) {
     let entry = await commit.getEntry(plan.change);
     return entry.sha();
   } catch (err) {
-    throw new VError(err, `${logName} Failed to get SHA for changes file `
-                     + `${plan.change} in repository`);
+    if (err.message.match(/the path .* does not exist in the given tree/)) {
+      return "Unknown";      
+    }
+    throw new VError(err, `${logName}`);
   }
 };
 
