@@ -123,5 +123,22 @@ PlanMap.prototype.plansUIList = function(type) {
   }
 };
 
+PlanMap.prototype.planGroupMap = function(type) {
+  const logName = `${moduleName}.planGroup`;
+
+  try {
+    let planMap = new Map();
+    for (let p of this.plans.values()) {
+      if (p.planType === type) {
+        planMap.set(p.uuid, p);
+      }
+    }
+    return planMap;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+
+  }
+};
+
 module.exports = PlanMap;
 
