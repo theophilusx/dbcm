@@ -93,7 +93,7 @@ async function applyCurrentPlan(state) {
       state.currentRepositoryName(),
       plan.change
     );
-    let sha = await state.currentRepositoryDef().gitRepo.getChangesSha(plan);
+    let sha = await state.currentRepositoryDef().gitRepo.getChangeFileSHA(plan);
     let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, changeFile);
     if (errors) {

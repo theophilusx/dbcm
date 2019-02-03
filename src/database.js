@@ -13,10 +13,7 @@ async function getTargetState(state) {
   
   try {
     let target = state.currentTargetDef();
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql);
-    client.end();
+    let rslt = await db.execSQL(target.params(), sql);
     if (rslt.rowCount) {
       return rslt.rows;
     }
@@ -33,9 +30,7 @@ async function getRollbackCandidates(target) {
         + "ORDER BY applied_dt DESC";
   
   try {
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql);
+    let rslt = await db.execSQL(target.params(), sql);
     let planList = [];
     let sequence = 0;
     for (let r of rslt.rows) {
@@ -45,7 +40,6 @@ async function getRollbackCandidates(target) {
       ]);
       sequence += 1;
     }
-    await client.end();
     return planList;
   } catch (err) {
     throw new VError(err, `${logName} Failed to build up plan candidate list`);
@@ -60,9 +54,7 @@ async function getRollbackSets(target, pId) {
         + "ORDER BY applied_dt DESC";
   
   try {
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql, [pId]);
+    let rslt = await db.execSQL(target.params(), sql, [pId]);
     let result = [];
     for (let r of rslt.rows) {
       result.push([
@@ -70,7 +62,6 @@ async function getRollbackSets(target, pId) {
         r.change_sha
       ]);
     }
-    await client.end();
     return result;
   } catch (err) {
     throw new VError(err, `${logName} Failed to get rollback sets`);
@@ -84,9 +75,7 @@ async function getAppliedPlans(target) {
         + "ORDER BY applied_dt DESC";
   
   try {
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql);
+    let rslt = await db.execSQL(target.params, sql);
     let result = [];
     for (let r of rslt.rows) {
       result.push([
@@ -94,7 +83,6 @@ async function getAppliedPlans(target) {
         r.change_sha
       ]);
     }
-    await client.end();
     return result;
   } catch (err) {
     console.log(err.message);
@@ -109,10 +97,7 @@ async function planExists(state, planId) {
 
   try {
     let target = state.currentTargetDef();
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql, [planId]);
-    client.end();
+    let rslt = await db.execSQL(target.params(), sql, [planId]);
     if (rslt.rowCount) {
       return true;
     }
@@ -138,12 +123,10 @@ async function updateAppliedPlanStatus(state, plan, status, sha) {
 
   try {
     let target = state.currentTargetDef();
-    let client = db.getClient(target);
-    await client.connect();
     let planKnown = await planExists(state, plan.uuid);
     let rowCount = 0;
     if (planKnown) {
-      let rslt = await db.execSQL(client, updateSQL, [
+      let rslt = await db.execSQL(target.params(), updateSQL, [
         state.email(),
         status,
         plan.planType,
@@ -153,7 +136,7 @@ async function updateAppliedPlanStatus(state, plan, status, sha) {
       ]);
       rowCount = rslt.rowCount;
     } else {
-      let rslt = await db.execSQL(client, insertSQL, [
+      let rslt = await db.execSQL(target.params(), insertSQL, [
         plan.uuid,
         state.email(),
         plan.name,
@@ -165,7 +148,6 @@ async function updateAppliedPlanStatus(state, plan, status, sha) {
       ]);
       rowCount = rslt.rowCount;
     }
-    await client.end();
     return rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed to record plan application state`);
@@ -186,15 +168,12 @@ async function updateVerifiedPlanStatus(state, plan, status) {
       throw new Error(`Plan ${plan.name} not known`);
     }
     let target = state.currentTargetDef();
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql, [
+    let rslt = await db.execSQL(target.params(), sql, [
       moment().format("YYYY-MM-DD HH:mm:ss"),
       state.email(),
       status,
       plan.uuid
     ]);
-    await client.end();
     return rslt.rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed to update verified status`);
@@ -215,15 +194,12 @@ async function updateRollbackPlanStatus(state, plan, status) {
       throw new Error(`Plan ${plan.name} not known`);
     }
     let target = state.currentTargetDef();
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql, [
+    let rslt = await db.execSQL(target.params(), sql, [
       moment().format("YYYY-MM-DD HH:mm:ss"),
       state.email(),
       status,
       plan.uuid
     ]);
-    await client.end();
     return rslt.rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed updating rollback status`);
@@ -237,15 +213,12 @@ async function addLogRecord(target, plan, msg) {
         + "VALUES ($1, $2, $3, $4)";
 
   try {
-    let client = db.getClient(target);
-    await client.connect();
-    let rslt = await db.execSQL(client, sql, [
+    let rslt = await db.execSQL(target.params(), sql, [
       moment().format("YYYY-MM-DD HH:mm:ss"),
       plan.uuid,
       plan.name,
       msg
     ]);
-    await client.end();
     return rslt.rowCount;
   } catch (err) {
     throw new VError(err, `${logName} Failed to add log record`);
