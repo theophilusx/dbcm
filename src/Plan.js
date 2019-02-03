@@ -111,6 +111,10 @@ Plan.prototype.textDisplay = function() {
   }
 };
 
+Plan.prototype.approvalSHA = function() {
+  return this.approvals.currentApprovalSHA;
+};
+
 Plan.prototype.summaryLine = function() {
   const logName = `${moduleName}.summaryLine`;
 
