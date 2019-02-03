@@ -7,11 +7,12 @@ const VError = require("verror");
 const Table = require("cli-table3");
 const chalk = require("chalk");
 
-function Approval() {
-  this.approved = false;
-  this.approvedDate = moment().format("YYYY-MM-DD HH:mm:ss");
-  this.approvedSha = "",
-  this.releaseTag = "0.0.0", 
+function Approval(params) {
+  this.approved = params.approved ? params.approved : false;
+  this.approvedDate = params.approvedDate ?
+    params.approvedDate : moment().format("YYYY-MM-DD HH:mm:ss");
+  this.approvedSha = params.approvedSha ? params.approvedSha : "",
+  this.releaseTag = params.releaseTag ? params.releaseTag : "0.0.0", 
   this.approvers = [];
 }
 

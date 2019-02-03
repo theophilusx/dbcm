@@ -7,7 +7,6 @@ const inquirer = require("inquirer");
 const screen = require("./textScreen");
 const menu = require("./textMenus");
 const Plan = require("../Plan");
-const gitui = require("./gitUI");
 const psql = require("../psql");
 const path = require("path");
 const edit = require("../edit");
@@ -22,10 +21,10 @@ a new plan or switch to an alternative plan
   screen.warningMsg(title, msg);
 }
 
-function emptyGroupWarning() {
+function emptyGroupWarning(type) {
   screen.infoMsg(
     "Empty Plan Group",
-    "There are currently no plans defined in this repository"
+    `There are currently no plans defined in the ${type} group for this repository`
   );
 }
 
@@ -75,7 +74,7 @@ async function listPlans(state, type) {
 
   try {
     if (state.changePlans().count(type) === 0) {
-      emptyGroupWarning();
+      emptyGroupWarning(type);
       return state;
     }
     let planChoices = menu.buildChoices(state.changePlans().plansUIList(type));
@@ -103,7 +102,7 @@ async function selectPlan(state, type) {
 
   try {
     if (state.changePlans().count(type) === 0) {
-      emptyGroupWarning();
+      emptyGroupWarning(type);
       return [state, undefined];
     }
     let planChoices = menu.buildChoices(state.changePlans().plansUIList(type));

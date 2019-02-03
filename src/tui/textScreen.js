@@ -41,21 +41,33 @@ function status(state) {
 
 function errorMsg(title, msg) {
   let width = cliWidth({defaultWidth: 80}) - 1;
-  let txt = wrapAnsi(msg.replace(/\t+/g, ""), width - 6, {hard: true});
+  let txt = wrapAnsi(
+    msg.replace(/\n+/g, " ").replace(/\t+/g, ""),
+    width - 6,
+    {hard: true}
+  );
   
   console.log(boxen(chalk`{red ${title.trim()}}\n\n${txt}`, boxOptions));
 }
 
 function warningMsg(title, msg) {
   let width = cliWidth({defaultWidth: 80}) - 1;
-  let txt = wrapAnsi(msg.replace(/\t+/g, ""), width - 6, {hard: true});
+  let txt = wrapAnsi(
+    msg.replace(/\n+/g, " ").replace(/\t+/g, ""),
+    width - 6,
+    {hard: true}
+  );
   
   console.log(boxen(chalk`{yellowBright ${title.trim()}}\n\n${txt}`, boxOptions));
 }
 
 function infoMsg(title, msg) {
   let width = cliWidth({defaultWidth: 80}) - 1;
-  let txt = wrapAnsi(msg.replace(/\t+/g, ""), width - 6, {hard: true});
+  let txt = wrapAnsi(
+    msg.replace(/\n+/g, " ").replace(/\t+/g, ""),
+    width - 6,
+    {hard: true}
+  );
 
   console.log(boxen(chalk`{cyan ${title.trim()}}\n\n${txt}`, boxOptions));
 }

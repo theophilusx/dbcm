@@ -5,9 +5,9 @@ const moduleName = "ApprovalHistory";
 const VError = require("verror");
 const Approval = require("./Approval");
 
-function ApprovalHistory() {
-  this.current = new Approval();
-  this.history = [];
+function ApprovalHistory({current, history}) {
+  this.current = new Approval(current);
+  this.history = history ? history : [];
 }
 
 ApprovalHistory.prototype.currentApproval = function() {

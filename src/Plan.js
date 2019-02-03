@@ -11,36 +11,42 @@ const chalk = require("chalk");
 const ApprovalHistory = require("./ApprovalHistory");
 const assert = require("assert");
 
-function Plan({uuid, name, description, author, email, createdDate, planType}) {
+function Plan(params) {
   const logName = `${moduleName}.Plan`;
 
   try {
-    assert.ok(name, "Missing plan name argument");
-    assert.ok(description, "Missing pln description argument");
-    assert.ok(author, "Missing author argument");
-    assert.ok(email, "Missing email argument");
-    this.uuid = uuid ? uuid : short().new();
-    this.name = name;
-    this.description = description;
-    this.createdDate = createdDate ? createdDate : moment().format("YYYY-MM-DD HH:mm:ss");
-    this.author = author;
-    this.authorEmail = email;
-    this.planType = planType ? planType : "Development";
-    this.approvals = new ApprovalHistory(),
-    this.change = path.join(
-      "changes",
-      `${name.replace(/\s+/g, "-")}.sql`
-    );
-    this.verify = path.join(
-      "verify",
-      `${name.replace(/\s+/g, "-")}.sql`
-    );
-    this.rollback = path.join(
-      "rollback",
-      `${name.replace(/\s+/g, "-")}.sql`
-    );
+    assert.ok(params, "Missing parameter object for Plan constructor");
+    assert.ok(params.name, "Missing plan name argument");
+    assert.ok(params.description, "Missing pln description argument");
+    assert.ok(params.author, "Missing author argument");
+    assert.ok(params.authorEmail, "Missing authorEmail argument");
+    this.uuid = params.uuid ? params.uuid : short().new();
+    this.name = params.name;
+    this.description = params.description;
+    this.createdDate = params.createdDate ?
+      params.createdDate : moment().format("YYYY-MM-DD HH:mm:ss");
+    this.author = params.author;
+    this.authorEmail = params.authorEmail;
+    this.planType = params.planType ? params.planType : "Development";
+    this.approvals = new ApprovalHistory(params.approvals),
+    this.change = params.change ?
+      params.change : path.join(
+        "changes",
+        `${params.name.replace(/\s+/g, "-")}.sql`
+      );
+    this.verify = params.verify ?
+      params.verify : path.join(
+        "verify",
+        `${params.name.replace(/\s+/g, "-")}.sql`
+      );
+    this.rollback = params.rollback ?
+      params.rollback : path.join(
+        "rollback",
+        `${params.name.replace(/\s+/g, "-")}.sql`
+      );
   } catch (err) {
-    throw new VError(err, `${logName}`);
+    console.dir(params);
+    throw new VError(err, `${logName} Params:`);
   }
 }
 
