@@ -7,13 +7,6 @@ const inquirer = require("inquirer");
 const Target = require("../Target");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
-const dumper = require("../dumper");
-
-//const queries = require("./database");
-//const plans = require("./plans");
-//const psql = require("./psql");
-//const planui = require("./planUI");
-//const git = require("./git");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `

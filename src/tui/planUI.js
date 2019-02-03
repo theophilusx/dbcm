@@ -203,8 +203,8 @@ async function submitPlanForApproval(state) {
     );
     let branch = `${process.env.USER}-local`;
     state.setCurrentPlanType("Pending");
-    state.writeChangePlans();
-    state.currentRepositoryDef().commitAndMerge(
+    await state.writeChangePlans();
+    await state.currentRepositoryDef().commitAndMerge(
       branch,
       `Submitting plan ${pName} for approval`,
       state.username(),

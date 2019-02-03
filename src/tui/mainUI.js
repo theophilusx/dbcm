@@ -7,6 +7,7 @@ const menu = require("./textMenus");
 const screen = require("./textScreen");
 const planui = require("./planUI");
 const targetui = require("./targetUI");
+const targetStateui = require("./targetStateUI");
 const repoui = require("./repoUI");
 const approvalsui = require("./approvalsUI");
 
@@ -237,10 +238,10 @@ function targetAction(state) {
       } else {
         switch (answer.choice) {
         case "listTargetState":
-          state = await targetui.listTargetState(state);
+          state = await targetStateui.listTargetState(state);
           break;
         case "listUnappliedChanges":
-          state = await targetui.listUnappliedPlans(state);
+          state = await targetStateui.listUnappliedPlans(state);
           break;
         case "applyNextChange":
           state = await targetui.applyNextChange(state);
