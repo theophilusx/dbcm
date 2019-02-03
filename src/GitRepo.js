@@ -176,6 +176,7 @@ GitRepo.prototype.mergeIntoMaster = async function(branch, author, email) {
       ["refs/heads/master:refs/heads/master"],
       cloneOptions.fetchOpts
     );
+    await this.checkoutBranch(branch);
     return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to merge branch into master`);
