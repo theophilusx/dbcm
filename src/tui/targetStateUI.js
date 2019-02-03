@@ -2,24 +2,25 @@
 
 const moduleName = "targetStateUI";
 
+const VError = require("verror");
 const moment = require("moment");
-const vsprintf = require("sprintf-js").vsprintf;
+const screen = require("./textScreen");
 const Table = require("cli-table3");
 const cliWidth = require("cli-width");
+const queries = require("../database");
 
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
   const width = cliWidth({defaultWidth: 80}) - 6;
   const fmt = "YYYY-MM-DD HH:mm";
   
-  
-  
   try {
     let fixedWidth = 18 + 10 + 12 + 30 + 10;
     let extraSpace = Math.floor((width - fixedWidth) / 2);
     let nameSize = parseInt(30 + extraSpace);
     let bySize = parseInt(10 + extraSpace);
-    console.log(`width: ${width} Fixed: ${fixedWidth} extra: ${extraSpace} Name: ${nameSize} By: ${bySize}`);
+    console.log(`width: ${width} Fixed: ${fixedWidth} extra: `
+                + `${extraSpace} Name: ${nameSize} By: ${bySize}`);
     const table = new Table({
       head: ["Applied Date", "Plan Name", "Version", "Status", "Applied By"],
       colWidths: [18, nameSize, 10, 12, bySize]
@@ -56,24 +57,25 @@ async function listUnappliedPlans(state) {
   });
 
   try {
-    let approvedPlans = new Map(state.approvedPlans());
+    let approvedPlans = state.changePlans().planGroupMap("Approved");
     let target = state.currentTargetDef();
     let appliedList = await queries.getAppliedPlans(target);
     for (let [pId, sha] of appliedList) {
-      let plan = plans.findPlan(state, pId)[1];
-      let currentSha = await git.getChangesSha(state, plan);
-      if (sha === currentSha) {
-        approvedPlans.delete(pId);
-      } else {
-        console.log(`${plan.name} has changed and needs to be re-applied`);
+      if (approvedPlans.has(pId)) {
+        let plan = approvedPlans.get(pId);
+        let currentSHA = await state.currentRepositoryDef().getChangeFileSHA(plan);
+        if (sha === currentSHA) {
+          approvedPlans.delete(pId);
+        } else {
+          console.log(`${plan.name} has changed and needs to be re-applied`);
+        }
       }
     }
     if (approvedPlans.size) {
-      for (let p of approvedPlans.keys()) {
-        let plan = approvedPlans.get(p);
+      for (let plan of approvedPlans.values()) {
         table.push([
           plan.name,
-          state.currentReleaseTag(),
+          plan.approvalSHA(),
           plan.description,
           plan.author
         ]);
@@ -90,3 +92,8 @@ async function listUnappliedPlans(state) {
     throw new VError(err, `${logName} Failed to display unapplied plans`);
   }
 }
+
+module.exports = {
+  listTargetState,
+  listUnappliedPlans 
+};
