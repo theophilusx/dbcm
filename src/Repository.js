@@ -230,5 +230,18 @@ Repository.prototype.commit = async function(files, msg, author, email) {
   }
 };
 
+Repository.prototype.commitAndMerge = async function(branch, msg, author, email) {
+  const logName = `${moduleName}.commitAndMerge`;
+
+  try {
+    await this.gitRepo.checkoutBranch(branch);
+    let files = await this.gitRepo.getStatus();
+    await this.gitRepo.addCommit(files, msg, author, email);
+    await this.gitRepo.mergeIntoMaster(branch, author, email);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 module.exports = Repository;
 
