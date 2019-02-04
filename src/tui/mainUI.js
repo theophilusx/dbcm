@@ -10,6 +10,7 @@ const targetui = require("./targetUI");
 const targetStateui = require("./targetStateUI");
 const repoui = require("./repoUI");
 const approvalsui = require("./approvalsUI");
+const gitui = require("./gitUI");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -171,6 +172,15 @@ function approvedPlanActions(state) {
             "Not Yet Implemented",
             "This feature has not yet been implemented"
           );
+          break;
+        case "viewHistory":
+          let planId;
+          [state, planId] = await planui.selectPlan(state, "Pending");
+          if (menu.doExit(planId)) {
+            return state;
+          }
+          await gitui.commitHistory(state);
+          await gitui.displayDiff(state);
           break;
         case "reworkApprovedPlan":
           screen.warningMsg(

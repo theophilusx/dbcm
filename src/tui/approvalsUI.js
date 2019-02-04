@@ -49,14 +49,8 @@ function approvalActions(state) {
         if (menu.doExit(planId)) {
           return state;
         }
-        let planDef = state.currentPlanDef();
-        let history =
-            await state.currentRepositoryDef().gitRepo.fileHistory(planDef.change);
-        gitui.displayCommitHistory(history);
-        let diffList = await state.currentRepositoryDef().gitRepo.fileDiff(
-          history[0].commit.sha()
-        );
-        await gitui.displayDiff(diffList);
+        await gitui.commitHistory(state);
+        await gitui.displayDiff(state);
         break;
       }
       case "approvePlan": {
