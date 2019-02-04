@@ -16,10 +16,9 @@ function Approval(params) {
   this.approvers = [];
 }
 
-Approval.prototype.addApprover = function(author, email, sha, appDate) {
+Approval.prototype.addApprover = function(author, email, sha) {
   this.approvers.push({
-    approvedDate: appDate === undefined ?
-      moment().format("YYYY-MM-DD HH:mm:ss") : appDate,
+    approvedDate: moment().format("YYYY-MM-DD HH:mm:ss"),
     author: author,
     email: email,
     versionSha: sha
