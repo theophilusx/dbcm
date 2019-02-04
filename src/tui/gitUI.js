@@ -101,6 +101,9 @@ async function displayDiff(diffList) {
     for (let diff of diffList) {
       let patches = await diff.patches();
       for (let patch of patches) {
+        if (patch.oldFile().path().match(/change-plans.json/)) {
+          continue;
+        }
         let hunks = await patch.hunks();
         for (let hunk of hunks) {
           let title = `DIFF: ${patch.oldFile().path()} ${patch.newFile().path()}`;
@@ -115,7 +118,9 @@ async function displayDiff(diffList) {
               data += chalk.white(`= ${line.content().trim()}\n`);
             }
           }
-          screen.infoMsg(title, data);
+          console.log(title);
+          console.log(data);
+          // screen.infoMsg(title, data);
         }
       }
     }
