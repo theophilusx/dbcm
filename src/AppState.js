@@ -117,6 +117,14 @@ AppState.prototype.home = function() {
   return this.get("home");
 };
 
+AppState.prototype.psqlPath = function() {
+  return this.get("psqlPath");
+};
+
+AppState.prototype.setPsqlPath = function(psql) {
+  return this.set("psqlPath", psql);
+};
+
 AppState.prototype.repositoryMap = function() {
   return this.get("repositories");
 };
@@ -263,14 +271,6 @@ AppState.prototype.currentTargetDef = function() {
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
-};
-
-AppState.prototype.psqlPath = function() {
-  return this.get("psqlPath");
-};
-
-AppState.prototype.setPsqlPath = function(psql) {
-  return this.set("psqlPath", psql);
 };
 
 AppState.prototype.currentApprovalType = function() {
