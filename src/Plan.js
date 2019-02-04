@@ -81,7 +81,7 @@ Plan.prototype.currentApprovalCount = function() {
 };
 
 Plan.prototype.addApproval = function(author, email, sha) {
-  return this.approvals.addApproval(author, email, sha);
+  return this.approvals.addCurrentApproval(author, email, sha);
 };
 
 Plan.prototype.resetApproval = function() {
