@@ -71,7 +71,7 @@ async function getRollbackSets(target, pId) {
 async function getAppliedPlans(target) {
   const logName = `${moduleName}.getAppliedPlans`;
   const sql = "SELECT plan_id, change_sha, applied_dt FROM dbcm.change_plans "
-        + "WHERE status IN ('Applied', 'Verified', 'Failed') "
+        + "WHERE status IN ('Applied', 'Verified') "
         + "ORDER BY applied_dt DESC";
   
   try {
