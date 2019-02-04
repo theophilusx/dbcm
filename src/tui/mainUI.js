@@ -255,7 +255,7 @@ function targetAction(state) {
           state = await targetStateui.listUnappliedPlans(state);
           break;
         case "applyNextChange":
-          state = await targetui.applyNextChange(state);
+          state = await targetStateui.applyNextChange(state);
           break;
         case "applyAllChanges":
           screen.warningMsg(

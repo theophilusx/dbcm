@@ -146,47 +146,6 @@ function selectTarget(state) {
     });
 }
 
-// async function applyNextChange(state) {
-//   const logName = `${moduleName}.applyNextChange`;
-
-//   try {
-//     let approvedPlans = new Map(state.approvedPlans());
-//     let target = state.currentTargetDef();
-//     let appliedList = await queries.getAppliedPlans(target);
-//     for (let [pId, sha] of appliedList) {
-//       let plan = plans.findPlan(state, pId)[1];
-//       let currentSha = await git.getChangesSha(state, plan);
-//       if (sha === currentSha) {
-//         approvedPlans.delete(pId);
-//       }
-//     }
-//     if (approvedPlans.size) {
-//       let plan = approvedPlans.values().next().value;
-//       planui.displayPlanRecord(plan);
-//       let choice = await menu.confirmMenu(
-//         "Apply Change Record",
-//         "Apply this change record:");
-//       if (choice) {
-//         state.setCurrentPlanType("approvedPlans");
-//         state.setCurrentPlan(plan.uuid);
-//         let applyStatus = await psql.applyCurrentPlan(state);
-//         if (applyStatus) {
-//           await psql.verifyCurrentPlan(state);
-//         } else {
-//           await psql.rollbackPlan(state, plan);
-//         }
-//       }
-//     } else {
-//       screen.infoMsg(
-//         "No Unapplied Plans",
-//         "There are no outstanding plans needing to be applied to this target"
-//       );
-//     }
-//     return state;
-//   } catch (err) {
-//     throw new VError(err, `${logName} Failed to apply next change plan`);
-//   }
-// }
 
 // function rollbackActions(state) {
 //   const logName = `${moduleName}.rollbackActions`;
@@ -259,8 +218,7 @@ function selectTarget(state) {
 // }
 
 module.exports = {
-  selectTarget
-  //applyNextChange,
+  selectTarget,
   //performPlanRollback
 };
 

@@ -8,6 +8,8 @@ const screen = require("./textScreen");
 const Table = require("cli-table3");
 const cliWidth = require("cli-width");
 const queries = require("../database");
+const psql = require("../psql");
+const menu = require("./textMenus");
 
 async function listTargetState(state) {
   const logName = `${moduleName}.listTargetState`;
@@ -49,6 +51,29 @@ async function listTargetState(state) {
   }
 }
 
+async function getUnappliedPlans(state, type) {
+  const logName = `${moduleName}.getUnappliedPlans`;
+
+  try {
+    let repo = state.currentRepositoryDef();
+    let planMap = state.changePlans().planGroupMap(type);
+    let target = state.currentTargetDef();
+    let appliedList = await queries.getAppliedPlans(target);
+    for (let [pId, sha] of appliedList) {
+      if (planMap.has(pId)) {
+        let plan = planMap.get(pId);
+        let currentSHA = await repo.gitRepo.getChangeFileSHA(plan);
+        if (sha === currentSHA) {
+          planMap.delete(pId);
+        }
+      }
+    }
+    return planMap;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+}
+
 async function listUnappliedPlans(state) {
   const logName = `${moduleName}.listUnappliedPlans`;
   const table = new Table({
@@ -57,20 +82,7 @@ async function listUnappliedPlans(state) {
   });
 
   try {
-    let approvedPlans = state.changePlans().planGroupMap("Approved");
-    let target = state.currentTargetDef();
-    let appliedList = await queries.getAppliedPlans(target);
-    for (let [pId, sha] of appliedList) {
-      if (approvedPlans.has(pId)) {
-        let plan = approvedPlans.get(pId);
-        let currentSHA = await state.currentRepositoryDef().getChangeFileSHA(plan);
-        if (sha === currentSHA) {
-          approvedPlans.delete(pId);
-        } else {
-          console.log(`${plan.name} has changed and needs to be re-applied`);
-        }
-      }
-    }
+    let approvedPlans = await getUnappliedPlans(state, "Approved");
     if (approvedPlans.size) {
       for (let plan of approvedPlans.values()) {
         table.push([
@@ -93,7 +105,40 @@ async function listUnappliedPlans(state) {
   }
 }
 
+async function applyNextChange(state) {
+  const logName = `${moduleName}.applyNextChange`;
+
+  try {
+    let approvedPlans = await getUnappliedPlans(state, "Approved");
+    if (approvedPlans.size) {
+      let plan = approvedPlans.values().next().value;
+      plan.textDisplay();
+      let choice = await menu.confirmMenu(
+        "Apply Change Record",
+        "Apply this change record:");
+      if (choice) {
+        state.setCurrentPlanUUID(plan.uuid);
+        let applyStatus = await psql.applyCurrentPlan(state);
+        if (applyStatus) {
+          await psql.verifyCurrentPlan(state);
+        } else {
+          await psql.rollbackPlan(state, plan);
+        }
+      }
+    } else {
+      screen.infoMsg(
+        "No Unapplied Plans",
+        "There are no outstanding plans needing to be applied to this target"
+      );
+    }
+    return state;
+  } catch (err) {
+    throw new VError(err, `${logName} Failed to apply next change plan`);
+  }
+}
+
 module.exports = {
   listTargetState,
-  listUnappliedPlans 
+  listUnappliedPlans,
+  applyNextChange
 };
