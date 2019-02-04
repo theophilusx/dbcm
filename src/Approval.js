@@ -47,7 +47,7 @@ Approval.prototype.textDisplay = function() {
     table.push({"Approved": this.approved ? chalk.green("Yes") : chalk.red("No")});
     if (this.approved) {
       table.push(
-        {"Approval Date": chalk.green(this.approvalDate)},
+        {"Approved Date": chalk.green(this.approvedDate)},
         {"Approved SHA": chalk.green(this.approvedSha)},
         {"Release Tag": chalk.green(this.releaseTag)}
       );
