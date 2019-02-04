@@ -50,21 +50,25 @@ function approvalActions(state) {
           return state;
         }
         let planDef = state.currentPlanDef();
-        let repo = state.currentRepositoryDef();
-        let history = await repo.gitRepo.fileHistory(planDef.change);
+        let history =
+            await state.currentRepositoryDef().gitRepo.fileHistory(planDef.change);
         gitui.displayCommitHistory(history);
-        let diffList = await repo.gitRepo.fileDiff(history[0].commit.sha());
+        let diffList = await state.currentRepositoryDef().gitRepo.fileDiff(
+          history[0].commit.sha()
+        );
         await gitui.displayDiff(diffList);
         break;
       }
       case "approvePlan": {
+        let repo = state.currentRepositoryDef();
+        let branch = `${process.env.USER}-local`;
+        await repo.gitRepo.checkoutBranch(branch);
         let choice;
         [state, choice] = await planui.selectPlan(state, "Pending");
         if (menu.doExit(choice)) {
           return state;
         }
-        let repoDef = state.currentRepositoryDef();
-        if (!repoDef.isApprover(state.email())) {
+        if (!repo.isApprover(state.email())) {
           screen.errorMsg(
             "Not Approved",
             "You are not one of the registered approvers "
@@ -72,20 +76,18 @@ function approvalActions(state) {
           );
           return state;
         }
-        repoDef.gitRepo.createBranch("approval");
-        repoDef.gitRepo.checkout("approval");
         let planDef = state.currentPlanDef();
-        let sha = repoDef.gitRepo.getChangesSha(planDef);
-        planDef.addApproval(state.username(), state.email(), sha);
-        if (repoDef.approvalType === "any"
-            || (repoDef.approvalType === "all"
-                && repoDef.approvers.size === planDef.currentApprovalCount())) {
-          planDef.setCurrentApprovalState(true, sha);
+        let SHA = await repo.gitRepo.getChangeFileSHA(planDef);
+        planDef.addApproval(state.username(), state.email(), SHA);
+        if (repo.approvalType === "any"
+            || (repo.approvalType === "all"
+                && repo.approvers.size === planDef.currentApprovalCount())) {
+          planDef.setCurrentApprovalState(true, SHA);
           planDef.setType("Approved");
         }
         await state.writeChangePlans();
-        await repoDef.commitAndMerge(
-          "approval",
+        await repo.commitAndMerge(
+          branch,
           `Approval of plan ${planDef.name}`,
           state.username(),
           state.email()
