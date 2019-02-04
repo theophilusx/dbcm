@@ -173,15 +173,16 @@ function approvedPlanActions(state) {
             "This feature has not yet been implemented"
           );
           break;
-        case "viewHistory":
+        case "viewHistory": {
           let planId;
-          [state, planId] = await planui.selectPlan(state, "Pending");
+          [state, planId] = await planui.selectPlan(state, "Approved");
           if (menu.doExit(planId)) {
             return state;
           }
           await gitui.commitHistory(state);
-          await gitui.displayDiff(state);
+          await gitui.diffListing(state);
           break;
+        }
         case "reworkApprovedPlan":
           screen.warningMsg(
             "Not Yet Implemented",

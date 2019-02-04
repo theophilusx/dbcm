@@ -38,31 +38,28 @@ describe("Test Approval object", function() {
 
   describe("Test object methods", function() {
     let testApproval;
-    let author1, email1, sha1, date1;
-    let author2, email2, sha2, date2;
+    let author1, email1, sha1;
+    let author2, email2, sha2;
     
     before("method test data setup", function() {
       author1 = "Tav Falco";
       email1 = "tav@example.com";
       sha1 = "version1sha";
-      date1 = "2019-01-02 03:04:05";
       author2 = "Alex Chilton";
       email2 = "alex@example.com";
       sha2 = "version2sha";
-      date2 = "2019-02-03 04:05:06";
       testApproval = new Approval();
     });
 
     it("Add approver adds an approver", function() {
-      testApproval.addApprover(author1, email1, sha1, date1);
+      testApproval.addApprover(author1, email1, sha1);
       expect(testApproval.approvers[0].author).to.equal(author1);
       expect(testApproval.approvers[0].email).to.equal(email1);
       expect(testApproval.approvers[0].versionSha).to.equal(sha1);
-      expect(testApproval.approvers[0].approvedDate).to.equal(date1);
     });
 
     it("Approver count gives correct count", function() {
-      testApproval.addApprover(author2, email2, sha2, date2);
+      testApproval.addApprover(author2, email2, sha2);
       expect(testApproval.approvalCount()).to.equal(2);
     });
 

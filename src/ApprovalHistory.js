@@ -6,8 +6,14 @@ const VError = require("verror");
 const Approval = require("./Approval");
 
 function ApprovalHistory({current, history}) {
-  this.current = new Approval(current);
-  this.history = history ? history : [];
+  const logName = `${moduleName}.ApprovalHistory`;
+
+  try {
+    this.current = new Approval(current);
+    this.history = history ? history : [];
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
 }
 
 ApprovalHistory.prototype.currentApproval = function() {

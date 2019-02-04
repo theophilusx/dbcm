@@ -45,7 +45,6 @@ function Plan(params) {
         `${params.name.replace(/\s+/g, "-")}.sql`
       );
   } catch (err) {
-    console.dir(params);
     throw new VError(err, `${logName} Params:`);
   }
 }

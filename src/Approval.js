@@ -8,12 +8,26 @@ const Table = require("cli-table3");
 const chalk = require("chalk");
 
 function Approval(params) {
-  this.approved = params.approved ? params.approved : false;
-  this.approvedDate = params.approvedDate ?
-    params.approvedDate : moment().format("YYYY-MM-DD HH:mm:ss");
-  this.approvedSha = params.approvedSha ? params.approvedSha : "",
-  this.releaseTag = params.releaseTag ? params.releaseTag : "0.0.0", 
-  this.approvers = [];
+  const logName = `${moduleName}.Approval`;
+
+  try {
+    if (params === undefined) {
+      params = {
+        approved: false,
+        approvedDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+        releaseTag: "0.0.0",
+        approvers: []
+      };
+    }
+    this.approved = params.approved ? params.approved : false;
+    this.approvedDate = params.approvedDate ?
+      params.approvedDate : moment().format("YYYY-MM-DD HH:mm:ss");
+    this.approvedSha = params.approvedSha ? params.approvedSha : "",
+    this.releaseTag = params.releaseTag ? params.releaseTag : "0.0.0", 
+    this.approvers = params.approvers ? params.approvers : [];
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
 }
 
 Approval.prototype.addApprover = function(author, email, sha) {
