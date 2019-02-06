@@ -217,6 +217,12 @@ function rejectedPlanActions(state) {
         case "listRejectedPlans":
           state = await planui.listPlans(state, "Rejected");
           break;
+        case "viewRejectNotice":
+          screen.warningMsg(
+            "Not Implemented",
+            "This feature has not yet been implemented"
+          );
+          break;
         case "reworkRejectedPlan":
           screen.warningMsg(
             "Not Implemented",
