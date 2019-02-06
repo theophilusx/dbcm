@@ -5,12 +5,12 @@ const moduleName = "ApprovalHistory";
 const VError = require("verror");
 const Approval = require("./Approval");
 
-function ApprovalHistory({current, history}) {
+function ApprovalHistory(current=undefined, history=[]) {
   const logName = `${moduleName}.ApprovalHistory`;
 
   try {
-    this.current = new Approval(current);
-    this.history = history ? history : [];
+    this.current = current ? new Approval(current) : new Approval(); 
+    this.history = history;
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
