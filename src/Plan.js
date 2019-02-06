@@ -28,7 +28,14 @@ function Plan(params) {
     this.author = params.author;
     this.authorEmail = params.authorEmail;
     this.planType = params.planType ? params.planType : "Development";
-    this.approvals = new ApprovalHistory(params.approvals),
+    if (params.approvals) {
+      this.approvals = new ApprovalHistory(
+        params.approvals.current,
+        params.approvals.history
+      );
+    } else {
+      this.approvals = new ApprovalHistory();
+    }
     this.change = params.change ?
       params.change : path.join(
         "changes",
