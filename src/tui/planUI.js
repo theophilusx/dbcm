@@ -48,7 +48,7 @@ async function createPlan(state) {
       name: answers.name,
       description: answers.description,
       author: state.username(),
-      email: state.email()
+      authorEmail: state.email()
     });
     changePlan.textDisplay();
     answers = await inquirer.prompt([{
