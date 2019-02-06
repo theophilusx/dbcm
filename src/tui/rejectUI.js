@@ -16,7 +16,7 @@ async function rejectPlan(state) {
 
   try {
     let planId;
-    [state, planId] = await planui.selectPlan(state, "pendingPlans");
+    [state, planId] = await planui.selectPlan(state, "Pending");
     if (menu.doExit(planId)) {
       return state;
     }
@@ -31,19 +31,17 @@ async function rejectPlan(state) {
         + `\n--\n-- ${answer.rejectMsg.split("\n").join("\n-- ")}`;
     let planDef = state.currentPlanDef();
     planDef.textDisplay();
-    screen.infoMsg(
-      "Rejection Notice",
-      rejectMsg
-    );
+    screen.heading("Rejection Notice");
+    console.log(rejectMsg);
     answer = await inquirer.prompt([{
       type: "confirm",
       name: "doReject",
       message: "Reject this plan with this rejection notice:"
     }]);
     if (answer.doReject) {
-      let repoDef = state.currentRepositoryDef();
-      repoDef.gitRepo.createBranch("reject");
-      repoDef.gitRepo.checkout("reject");
+      let branch = `${process.env.USER}-local`;
+      let repo = state.currentRepositoryDef();
+      await repo.gitRepo.checkoutBranch(branch);
       let changeFile = path.join(
         state.home(),
         state.currentRepositoryName(),
@@ -52,12 +50,13 @@ async function rejectPlan(state) {
       await fse.appendFile(changeFile, rejectMsg, {encoding: "utf-8"});
       planDef.setType("Rejected");
       await state.writeChangePlans();
-      await repoDef.commitAndMerge(
-        "reject",
+      await repo.commitAndMerge(
+        branch,
         `Rejection of plan ${planDef.name}`,
         state.username(),
         state.email()
       );
+      await repo.gitRepo.checkoutBranch(branch);
     }
     return state;
   } catch (err) {
