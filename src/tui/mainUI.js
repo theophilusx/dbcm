@@ -19,6 +19,7 @@ const submitPlan = require("./submitPlan");
 const commitHistory = require("./commitHistory");
 const planDiff = require("./planDiff");
 const reworkPlan = require("./reworkPlan");
+const targetState = require("./targetState");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -248,7 +249,7 @@ function targetAction(state) {
       } else {
         switch (answer.choice) {
         case "listTargetState":
-          state = await targetStateui.listTargetState(state);
+          state = await targetState(state);
           break;
         case "listUnappliedChanges":
           state = await targetStateui.listUnappliedPlans(state);
