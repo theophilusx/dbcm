@@ -83,18 +83,16 @@ function psqlExec(state, script) {
   });
 }
 
-async function applyCurrentPlan(state) {
-  const logName = `${moduleName}.applyCurrentPlan`;
+async function applyPlan(state, plan, target) {
+  const logName = `${moduleName}.applyPlan`;
 
   try {
-    let plan = state.currentPlanDef();
     let changeFile = path.join(
       state.home(),
       state.currentRepositoryName(),
       plan.change
     );
     let sha = await state.currentRepositoryDef().gitRepo.getChangeFileSHA(plan);
-    let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, changeFile);
     if (errors) {
       let filteredErrors = extractErrors(errors);
@@ -117,17 +115,15 @@ async function applyCurrentPlan(state) {
   }
 }
 
-async function verifyCurrentPlan(state) {
-  const logName = `${moduleName}.verifyCurrentPlan`;
+async function verifyPlan(state, plan, target) {
+  const logName = `${moduleName}.verifyPlan`;
 
   try {
-    let plan = state.currentPlanDef();
     let verifyFile = path.join(
       state.home(),
       state.currentRepositoryName(),
       plan.verify
     );
-    let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, verifyFile);
     if (errors) {
       let filteredErrors = extractErrors(errors);
@@ -150,7 +146,7 @@ async function verifyCurrentPlan(state) {
   }
 }
 
-async function rollbackPlan(state, plan) {
+async function rollbackPlan(state, plan, target) {
   const logName = `${moduleName}.rollbackCurrentPlan`;
 
   try {
@@ -159,7 +155,6 @@ async function rollbackPlan(state, plan) {
       state.currentRepositoryName(),
       plan.rollback
     );
-    let target = state.currentTargetDef();
     let [output, errors] = await psqlExec(state, rollbackFile);
     if (errors) {
       let filteredErrors = extractErrors(errors);
@@ -192,7 +187,7 @@ async function rollbackPlan(state, plan) {
 
 module.exports = {
   psqlExec,
-  applyCurrentPlan,
-  verifyCurrentPlan,
+  applyPlan,
+  verifyPlan,
   rollbackPlan
 };

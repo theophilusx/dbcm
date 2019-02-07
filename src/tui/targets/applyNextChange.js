@@ -1,49 +1,12 @@
 "use strict";
 
-const moduleName = "targetStateUI";
-
 const VError = require("verror");
 const screen = require("../utils/textScreen");
-const Table = require("cli-table3");
 const psql = require("../../psql");
 const menu = require("../utils/textMenus");
 
-async function listUnappliedPlans(state) {
-  const logName = `${moduleName}.listUnappliedPlans`;
-  const table = new Table({
-    head: ["Plan Name", "Version", "Description", "Author"],
-    wordWrap: true
-  });
-
-  try {
-    let repo = state.currentRepositoryDef();
-    let target = state.currentTargetDef();
-    let approvedPlans = state.changePlans().planGroupMap("Approved");
-    let unappliedPlans = await target.unappliedPlans(repo, approvedPlans);
-    if (unappliedPlans.size) {
-      for (let plan of unappliedPlans.values()) {
-        table.push([
-          plan.name,
-          plan.approvalSHA(),
-          plan.description,
-          plan.author
-        ]);
-      }
-      console.log(table.toString());
-    } else {
-      screen.infoMsg(
-        "No Outstanding Changes",
-        "There are no approved change plans needing to be applied to this target"
-      );
-    }
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to display unapplied plans`);
-  }
-}
-
 async function applyNextChange(state) {
-  const logName = `${moduleName}.applyNextChange`;
+  const logName = "applyNextchange";
 
   try {
     let repo = state.currentRepositoryDef();
@@ -77,7 +40,5 @@ async function applyNextChange(state) {
   }
 }
 
-module.exports = {
-  listUnappliedPlans,
-  applyNextChange
-};
+module.exports = applyNextChange;
+

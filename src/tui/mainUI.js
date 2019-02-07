@@ -6,7 +6,6 @@ const VError = require("verror");
 const menu = require("./utils/textMenus");
 const screen = require("./utils/textScreen");
 const targetui = require("./targets/targetUI");
-const targetStateui = require("./targets/targetStateUI");
 const repoui = require("./repo/repoUI");
 const approvalsui = require("./plans/approvalsUI");
 const viewPlan = require("./plans/viewPlan");
@@ -20,6 +19,8 @@ const commitHistory = require("./repo/commitHistory");
 const planDiff = require("./repo/planDiff");
 const reworkPlan = require("./plans/reworkPlan");
 const targetState = require("./targets/targetState");
+const unappliedPlans = require("./targets/unappliedPlans");
+const applyNextChange = require("./targets/applyNextChange");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -252,10 +253,10 @@ function targetAction(state) {
           state = await targetState(state);
           break;
         case "listUnappliedChanges":
-          state = await targetStateui.listUnappliedPlans(state);
+          state = await unappliedPlans(state);
           break;
         case "applyNextChange":
-          state = await targetStateui.applyNextChange(state);
+          state = await applyNextChange(state);
           break;
         case "applyAllChanges":
           screen.warningMsg(

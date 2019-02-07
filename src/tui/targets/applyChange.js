@@ -11,15 +11,23 @@ async function applyChange(state, group) {
   try {
     [state, choice] = await selectPlan(state, group);
     if (choice) {
-      if (choice !== state.currentPlanUUID()) {
-        state.setCurrentPlanUUID(choice);
-      }
-      let applied = await psql.applyCurrentPlan(state);
+      let applied = await psql.applyPlan(
+        state,
+        state.planDef(choice),
+        state.currentTargetDef()
+      );
       if (applied) {
-        await psql.verifyCurrentPlan(state);
+        await psql.verifyPlan(
+          state,
+          state.planDef(choice),
+          state.currentTargetDef()
+        );
       } else {                    // change plan applied with errors
-        let changePlan = state.currentPlanDef();
-        await psql.rollbackPlan(state, changePlan);
+        await psql.rollbackPlan(
+          state,
+          state.planDef(choice),
+          state.currentTargetDef()
+        );
       }
     }
     return state;

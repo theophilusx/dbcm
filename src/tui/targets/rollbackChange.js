@@ -11,11 +11,11 @@ async function rollbackChange(state, group) {
   try {
     [state, choice] = await selectPlan(state, group);
     if (choice) {
-      if (choice !== state.currentPlanUUID()) {
-        state.setCurrentPlanUUID(choice);
-      }
-      let plan = state.currentPlanDef();
-      await psql.rollbackPlan(state, plan);
+      await psql.rollbackPlan(
+        state,
+        state.planDef(choice),
+        state.currentTargetDef()
+      );
     }
     return state;    
   } catch (err) {
