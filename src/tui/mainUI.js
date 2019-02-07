@@ -9,8 +9,6 @@ const targetui = require("./targetUI");
 const targetStateui = require("./targetStateUI");
 const repoui = require("./repoUI");
 const approvalsui = require("./approvalsUI");
-const gitui = require("./gitUI");
-const selectPlan = require("./selectPlan");
 const viewPlan = require("./viewPlan");
 const viewSource = require("./viewSource");
 const createPlan = require("./createPlan");
@@ -18,6 +16,8 @@ const editPlan = require("./editPlan");
 const applyChange = require("./applyChange");
 const rollbackChange = require("./rollbackChange");
 const submitPlan = require("./submitPlan");
+const commitHistory = require("./commitHistory");
+const planDiff = require("./planDiff");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -51,6 +51,7 @@ const approvedPlanChoices = menu.buildChoices([
   ["List Approved Change Plans", "listApprovedPlans"],
   ["View Change Sources", "viewSource"],
   ["View Change History", "viewHistory"],
+  ["View Plan Diff", "viewDiff"],
   ["Rweork Approved Change Plan", "reworkApprovedPlan"]
 ]);
 
@@ -177,16 +178,12 @@ function approvedPlanActions(state) {
         case "viewSource":
           state = await viewSource(state, "Approved");
           break;
-        case "viewHistory": {
-          let planId;
-          [state, planId] = await selectPlan(state, "Approved");
-          if (menu.doExit(planId)) {
-            return state;
-          }
-          await gitui.commitHistory(state);
-          await gitui.diffListing(state);
+        case "viewHistory":
+          state = await commitHistory(state, "Approved");
           break;
-        }
+        case "viewDiff":
+          state = await planDiff(state, "Approved");
+          break;
         case "reworkApprovedPlan":
           screen.warningMsg(
             "Not Yet Implemented",

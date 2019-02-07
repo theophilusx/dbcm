@@ -11,7 +11,7 @@ async function viewPlan(state, group) {
     do {
       [state, choice] = await selectPlan(state, group);
       if (choice) {
-        state.planDef().textDisplay();      
+        state.planDef(choice).textDisplay();      
       }
     } while (choice);
     state.setMenuChoice("");

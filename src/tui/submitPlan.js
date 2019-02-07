@@ -12,6 +12,9 @@ async function submitPlan(state) {
   try {
     [state, choice] = await selectPlan(state, "Development");
     if (choice) {
+      if (choice !== state.currentPlanUUID()) {
+        state.setCurrentPlanUUID(choice);
+      }
       let branch = `${process.env.USER}-local`;
       let repo = state.currentRepositoryDef();
       await repo.gitRepo.checkoutBranch(branch);

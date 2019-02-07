@@ -4,6 +4,7 @@ const VError = require("verror");
 const inquirer = require("inquirer");
 const Plan = require("../Plan");
 const screen = require("./textScreen");
+const menu = require("./textMenus");
 
 async function createPlan(state) {
   const logName = "createPlan";
@@ -28,12 +29,8 @@ async function createPlan(state) {
       authorEmail: state.email()
     });
     changePlan.textDisplay();
-    answers = await inquirer.prompt([{
-      type: "confirm",
-      name: "createPlan",
-      message: "Create this change record:"
-    }]);
-    if (answers.createPlan) {
+    let doCreate = menu.confirmMenu("Create Plan", "Create this change plan");
+    if (doCreate) {
       await state.addChangePlan(changePlan);
       state.setCurrentPlanUUID(changePlan.uuid);
       await state.writeChangePlans();

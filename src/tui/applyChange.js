@@ -11,6 +11,9 @@ async function applyChange(state, group) {
   try {
     [state, choice] = await selectPlan(state, group);
     if (choice) {
+      if (choice !== state.currentPlanUUID()) {
+        state.setCurrentPlanUUID(choice);
+      }
       let applied = await psql.applyCurrentPlan(state);
       if (applied) {
         await psql.verifyCurrentPlan(state);

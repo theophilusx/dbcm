@@ -130,38 +130,8 @@ async function displayDiff(diffList) {
   }
 }
 
-async function commitHistory(state) {
-  const logName = `${moduleName}.commitHistory`;
-
-  try {
-    let changeFile = state.currentPlanDef().change;
-    let hist = await state.currentRepositoryDef().gitRepo.fileHistory(changeFile);
-    displayCommitHistory(hist);
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName}`);
-  }
-}
-
-async function diffListing(state) {
-  const logName = `${moduleName}.diffListing`;
-
-  try {
-    let repo = state.currentRepositoryDef();
-    let changeFile = state.currentPlanDef().change;
-    let hist = await repo.gitRepo.fileHistory(changeFile);
-    let diffList = await repo.gitRepo.fileDiff(hist[0].commit.sha());
-    await displayDiff(diffList);
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName}`);
-  }
-}
-
 module.exports = {
   commitChanges,
   displayCommitHistory,
-  displayDiff,
-  commitHistory,
-  diffListing  
+  displayDiff
 };

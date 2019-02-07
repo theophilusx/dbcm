@@ -29,9 +29,6 @@ async function selectPlan(state, group) {
     if (menu.doExit(choice)) {
       return [state. undefined];
     }
-    if (choice !== state.currentPlanUUID()) {
-      state.setCurrentPlanUUID(choice);
-    }
     return [state, choice];
   } catch (err) {
     throw new VError(err, `${logName}`);

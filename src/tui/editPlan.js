@@ -12,6 +12,9 @@ async function editPlan(state) {
   try {
     [state, choice] = await selectPlan(state, "Development");
     if (choice) {
+      if (choice !== state.currentPlanUUID()) {
+        state.setCurrentPlanUUID(choice);
+      }
       let plan = state.currentPlanDef();
       let files = [
         path.join(state.home(), state.currentRepositoryName(), plan.change),
