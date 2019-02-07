@@ -5,7 +5,6 @@ const moduleName = "mainUI";
 const VError = require("verror");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
-const planui = require("./planUI");
 const targetui = require("./targetUI");
 const targetStateui = require("./targetStateUI");
 const repoui = require("./repoUI");
@@ -16,6 +15,9 @@ const viewPlan = require("./viewPlan");
 const viewSource = require("./viewSource");
 const createPlan = require("./createPlan");
 const editPlan = require("./editPlan");
+const applyChange = require("./applyChange");
+const rollbackChange = require("./rollbackChange");
+const submitPlan = require("./submitPlan");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -92,13 +94,13 @@ function developmentPlanActions(state) {
           state = await editPlan(state, "Development");
           break;
         case "testDevPlan":
-          state = await planui.applyChangePlan(state, "Development");
+          state = await applyChange(state, "Development");
           break;
         case "rollbackDevPlan":
-          state = await planui.rollbackChangePlan(state, "Development");
+          state = await rollbackChange(state, "Development");
           break;
         case "commitPlan":
-          state = await planui.submitPlanForApproval(state);
+          state = await submitPlan(state);
           break;
         case "listDevPlans":
           state = await viewPlan(state, "Development");
