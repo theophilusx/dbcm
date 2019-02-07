@@ -70,7 +70,7 @@ async function getRollbackSets(target, pId) {
 
 async function getAppliedPlans(target) {
   const logName = `${moduleName}.getAppliedPlans`;
-  const sql = "SELECT plan_id, change_sha, applied_dt FROM dbcm.change_plans "
+  const sql = "SELECT plan_id, status, change_sha, applied_dt FROM dbcm.change_plans "
         + "WHERE status IN ('Applied', 'Verified') "
         + "ORDER BY applied_dt DESC";
   
@@ -78,10 +78,12 @@ async function getAppliedPlans(target) {
     let rslt = await db.execSQL(target.params, sql);
     let result = [];
     for (let r of rslt.rows) {
-      result.push([
-        r.plan_id,
-        r.change_sha
-      ]);
+      result.push({
+        uuid: r.plan_id,
+        status: r.status,
+        changeSHA: r.change_sha,
+        appliedDate: moment(r.applied_dt).format("YYYY-MM-DD HH:mm:ss") 
+      });
     }
     return result;
   } catch (err) {
