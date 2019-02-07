@@ -27,7 +27,7 @@ async function selectPlan(state, group) {
       planChoices
     );
     if (menu.doExit(choice)) {
-      return [state. undefined];
+      return [state, undefined];
     }
     return [state, choice];
   } catch (err) {
