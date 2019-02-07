@@ -3,10 +3,10 @@
 const moduleName = "targetStateUI";
 
 const VError = require("verror");
-const screen = require("./textScreen");
+const screen = require("../utils/textScreen");
 const Table = require("cli-table3");
-const psql = require("../psql");
-const menu = require("./textMenus");
+const psql = require("../../psql");
+const menu = require("../utils/textMenus");
 
 async function listUnappliedPlans(state) {
   const logName = `${moduleName}.listUnappliedPlans`;

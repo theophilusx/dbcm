@@ -1,14 +1,12 @@
 "use strict";
 
-const moduleName = "userUI";
-
 const VError = require("verror");
 const path = require("path");
 const utils = require("../utils");
 const inquirer = require("inquirer");
 
 function setupQuestions(state) {
-  const logName = `${moduleName}.setupQuestions`;
+  const logName = "setupQuestions";
   
   try {
     let questions = [
@@ -50,8 +48,8 @@ function setupQuestions(state) {
   }
 }
 
-async function getOptions(state) {
-  const logName = `${moduleName}.getUserOptions`;
+async function userOptions(state) {
+  const logName = "userOptions";
   const questions = setupQuestions(state);
 
   try {
@@ -65,7 +63,5 @@ async function getOptions(state) {
   }
 }
 
-module.exports = {
-  setupQuestions,
-  getOptions
-};
+module.exports = userOptions;
+

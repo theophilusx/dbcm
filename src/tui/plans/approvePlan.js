@@ -2,7 +2,7 @@
 
 const VError = require("verror");
 const selectPlan = require("./selectPlan");
-const screen = require("./textScreen");
+const screen = require("../utils/textScreen");
 
 async function approvePlan(state) {
   const logName = "approvePlan";

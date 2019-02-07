@@ -4,9 +4,9 @@ const moduleName = "targetUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const Target = require("../Target");
-const menu = require("./textMenus");
-const screen = require("./textScreen");
+const Target = require("../../Target");
+const menu = require("../utils/textMenus");
+const screen = require("../utils/textScreen");
 
 function initWarning(state) {
   screen.warningMsg("Warning!", `

@@ -4,7 +4,7 @@ const moduleName = "gitUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const screen = require("./textScreen");
+const screen = require("../utils/textScreen");
 const Table = require("cli-table3");
 const chalk = require("chalk");
 

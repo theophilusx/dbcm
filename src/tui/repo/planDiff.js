@@ -1,11 +1,11 @@
 "use strict";
 
 const VError = require("verror");
-const selectPlan = require("./selectPlan");
+const selectPlan = require("../plans/selectPlan");
 const gitui = require("./gitUI");
 
-async function commitHistory(state, group) {
-  const logName = "commitHistory";
+async function planDiff(state, group) {
+  const logName = "planDiff";
   let choice;
   
   try {
@@ -14,7 +14,8 @@ async function commitHistory(state, group) {
       let repo = state.currentRepositoryDef();
       let plan = state.planDef(choice);
       let hist = await repo.gitRepo.fileHistory(plan.change);
-      gitui.displayCommitHistory(hist);
+      let diffList = await repo.gitRepo.fileDiff(hist[0].commit.sha());
+      await gitui.displayDiff(diffList);
     }
     return state;
   } catch (err) {
@@ -22,4 +23,4 @@ async function commitHistory(state, group) {
   }
 }
 
-module.exports = commitHistory;
+module.exports = planDiff;

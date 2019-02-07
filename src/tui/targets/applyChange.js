@@ -1,8 +1,8 @@
 "use strict";
 
 const VError = require("verror");
-const selectPlan = require("./selectPlan");
-const psql = require("../psql");
+const selectPlan = require("../plans/selectPlan");
+const psql = require("../../psql");
 
 async function applyChange(state, group) {
   const logName = "applyChange";

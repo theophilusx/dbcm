@@ -2,9 +2,9 @@
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const Plan = require("../Plan");
-const screen = require("./textScreen");
-const menu = require("./textMenus");
+const Plan = require("../../Plan");
+const screen = require("../utils/textScreen");
+const menu = require("../utils/textMenus");
 
 async function createPlan(state) {
   const logName = "createPlan";

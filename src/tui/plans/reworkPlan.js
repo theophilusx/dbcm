@@ -5,8 +5,8 @@ const moment = require("moment");
 const path = require("path");
 const fse = require("fse");
 const selectPlan = require("./selectPlan");
-const menu = require("./textMenus");
-const screen = require("./textScreen");
+const menu = require("../utils/textMenus");
+const screen = require("../utils/textScreen");
 
 async function reworkPlan(state, group) {
   const logName = "reworkPlan";

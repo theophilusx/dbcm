@@ -3,9 +3,9 @@
 const moduleName = "rejectUI";
 
 const VError = require("verror");
-const menu = require("./textMenus");
+const menu = require("../utils/textMenus");
 const inquirer = require("inquirer");
-const screen = require("./textScreen");
+const screen = require("../utils/textScreen");
 const moment = require("moment");
 const fse = require("fse");
 const path = require("path");

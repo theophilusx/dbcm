@@ -4,8 +4,8 @@ const VError = require("verror");
 const cliWidth = require("cli-width");
 const Table = require("cli-table3");
 const moment = require("moment");
-const queries = require("../database");
-const screen = require("./textScreen");
+const queries = require("../../database");
+const screen = require("../utils/textScreen");
 
 async function targetState(state) {
   const logName = "targetState";

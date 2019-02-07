@@ -1,9 +1,8 @@
 "use strict";
 
 const VError = require("verror");
-const menu = require("./textMenus");
 const path = require("path");
-const edit = require("../edit");
+const edit = require("../../edit");
 const selectPlan = require("./selectPlan");
 
 async function viewSource(state, group) {

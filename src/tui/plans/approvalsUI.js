@@ -3,12 +3,12 @@
 const moduleName = "approvalsUI";
 
 const VError = require("verror");
-const menu = require("./textMenus");
-const screen = require("./textScreen");
+const menu = require("../utils/textMenus");
+const screen = require("../utils/textScreen");
 const rejectui = require("./rejectUI");
 const viewSource = require("./viewSource");
-const commitHistory = require("./commitHistory");
-const planDiff = require("./planDiff");
+const commitHistory = require("../repo/commitHistory");
+const planDiff = require("../repo/planDiff");
 const approvePlan = require("./approvePlan");
 
 const actionChoices = menu.buildChoices([

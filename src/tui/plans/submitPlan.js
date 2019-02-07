@@ -1,8 +1,8 @@
 "use strict";
 
 const VError = require("verror");
-const screen = require("./textScreen");
-const menu = require("./textMenus");
+const screen = require("../utils/textScreen");
+const menu = require("../utils/textMenus");
 const selectPlan = require("./selectPlan");
 
 async function submitPlan(state) {

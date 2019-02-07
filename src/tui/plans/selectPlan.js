@@ -1,8 +1,8 @@
 "use strict";
 
 const VError = require("verror");
-const menu = require("./textMenus");
-const screen = require("./textScreen");
+const menu = require("../utils/textMenus");
+const screen = require("../utils/textScreen");
 
 function emptyGroupWarning(type) {
   screen.infoMsg(

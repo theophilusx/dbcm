@@ -5,7 +5,7 @@ const moduleName = "psql";
 const VError = require("verror");
 const { execFile } = require("child_process");
 const path = require("path");
-const screen = require("./tui/textScreen");
+const screen = require("./tui/utils/textScreen");
 const query = require("./database");
 
 function filterUninterestingContent(str) {

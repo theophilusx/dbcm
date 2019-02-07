@@ -3,7 +3,7 @@
 const VError = require("verror");
 const path = require("path");
 const selectPlan = require("./selectPlan");
-const edit = require("../edit");
+const edit = require("../../edit");
 
 async function editPlan(state) {
   const logName = "editPlan";

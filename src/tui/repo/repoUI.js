@@ -4,11 +4,11 @@ const moduleName = "repoUI";
 
 const VError = require("verror");
 const inquirer = require("inquirer");
-const menu = require("./textMenus");
-const screen = require("./textScreen");
-const Repository = require("../Repository");
+const menu = require("../utils/textMenus");
+const screen = require("../utils/textScreen");
+const Repository = require("../../Repository");
 const path = require("path");
-const approversui = require("./approversUI");
+const approversui = require("../approversUI");
 
 function setupQuestions(state) {
   const logName = `${moduleName}.setup`;

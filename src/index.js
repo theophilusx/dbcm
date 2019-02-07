@@ -2,11 +2,11 @@
 
 const VError = require("verror");
 const AppState = require("./AppState");
-const user = require("./tui/userUI");
-const repo = require("./tui/repoUI.js");
+const userOptions = require("./tui/userOptions");
+const repo = require("./tui/repo/repoUI.js");
 const dumper = require("./dumper");
 const path = require("path");
-const target = require("./tui/targetUI");
+const target = require("./tui/targets/targetUI");
 const mainui = require("./tui/mainUI");
 
 // const repoui = require("./repoUI");
@@ -56,7 +56,7 @@ async function main() {
   try {
     await appState.init(rcFile);
     if (!appState.username()) {
-      await user.getOptions(appState);
+      await userOptions(appState);
       await appState.writeUserInit();
     }
     await repo.selectRepository(appState);
