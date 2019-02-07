@@ -1,7 +1,5 @@
 "use strict";
 
-const moduleName = "selectPlan";
-
 const VError = require("verror");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
@@ -14,7 +12,7 @@ function emptyGroupWarning(type) {
 }
 
 async function selectPlan(state, group) {
-  const logName = `${moduleName}.selectPlan`;
+  const logName = "selectPlan";
 
   try {
     if (state.changePlans().count(group) === 0) {
