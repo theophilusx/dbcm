@@ -1,12 +1,10 @@
 "use strict";
 
-const moduleName = "viewPlan";
-
 const VError = require("verror");
 const selectPlan = require("./selectPlan");
 
 async function viewPlan(state, group) {
-  const logName = `${moduleName}.viewPlan`;
+  const logName = "viewPlan";
 
   try {
     let choice;
