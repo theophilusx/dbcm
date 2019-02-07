@@ -57,7 +57,7 @@ Target.prototype.appliedPlans = async function() {
   const logName = `${moduleName}.appliedPlans`;
 
   try {
-    let appliedList = await queries.getAppliedPlans(this.params());
+    let appliedList = await queries.getAppliedPlans(this);
     return appliedList;
   } catch (err) {
     throw new VError(err, `${logName}`);
@@ -68,13 +68,13 @@ Target.prototype.unappliedPlans = async function(repo, plans) {
   const logName = `${moduleName}.unappliedPlans`;
 
   try {
-    let appliedList = this.appliedPlans();
-    for (let plan in appliedList) {
-      if (plans.has(plan.uuid)) {
-        let definedPlan = plans.get(plan.uuid);
-        let currentSHA = await repo.gitRepo.getChangeFileSHA(definedPlan);
-        if (plan.changeSHA === currentSHA) {
-          plans.delete(plan.uuid);
+    let appliedList = await this.appliedPlans();
+    for (let p of appliedList) {
+      if (plans.has(p.uuid)) {
+        let plan = plans.get(p.uuid);
+        let currentSHA = await repo.gitRepo.getChangeFileSHA(plan);
+        if (p.changeSHA === currentSHA) {
+          plans.delete(p.uuid);
         }
       }
     }

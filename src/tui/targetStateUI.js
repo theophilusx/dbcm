@@ -5,7 +5,6 @@ const moduleName = "targetStateUI";
 const VError = require("verror");
 const screen = require("./textScreen");
 const Table = require("cli-table3");
-const queries = require("../database");
 const psql = require("../psql");
 const menu = require("./textMenus");
 
@@ -20,7 +19,7 @@ async function listUnappliedPlans(state) {
     let repo = state.currentRepositoryDef();
     let target = state.currentTargetDef();
     let approvedPlans = state.changePlans().planGroupMap("Approved");
-    let unappliedPlans = target.unappliedPlans(repo, approvedPlans);
+    let unappliedPlans = await target.unappliedPlans(repo, approvedPlans);
     if (unappliedPlans.size) {
       for (let plan of unappliedPlans.values()) {
         table.push([
@@ -50,7 +49,7 @@ async function applyNextChange(state) {
     let repo = state.currentRepositoryDef();
     let target = state.currentTargetDef();
     let approvedPlans = state.changePlans().planGroupMap("Approved");
-    let unappliedPlans = target.unappliedPlans(repo, approvedPlans);
+    let unappliedPlans = await target.unappliedPlans(repo, approvedPlans);
     if (unappliedPlans.size) {
       let plan = approvedPlans.values().next().value;
       plan.textDisplay();
