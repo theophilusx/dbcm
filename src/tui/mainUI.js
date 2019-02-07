@@ -11,6 +11,8 @@ const targetStateui = require("./targetStateUI");
 const repoui = require("./repoUI");
 const approvalsui = require("./approvalsUI");
 const gitui = require("./gitUI");
+const selectPlan = require("./selectPlan");
+const viewPlan = require("./viewPlan");
 const viewSource = require("./viewSource");
 
 const mainChoices = menu.buildChoices([
@@ -97,7 +99,7 @@ function developmentPlanActions(state) {
           state = await planui.submitPlanForApproval(state);
           break;
         case "listDevPlans":
-          state = await planui.listPlans(state, "Development");
+          state = await viewPlan(state, "Development");
           break;
         default:
           screen.errorMsg(
@@ -125,7 +127,7 @@ function pendingPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listPendingPlans":
-          state = await planui.listPlans(state, "Pending");
+          state = await viewPlan(state, "Pending");
           break;
         case "approvalRequests":
           if (!state.currentRepositoryDef().isApprover(state.email())) {
@@ -134,7 +136,7 @@ function pendingPlanActions(state) {
               "You are not a registered approver for this repository"
             );
           } else {
-            state = await planui.listPlans(state, "Pending");
+            state = await viewPlan(state, "Pending");
           }
           break;
         case "approveActions":
@@ -166,14 +168,14 @@ function approvedPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listApprovedPlans":
-          state = await planui.listPlans(state, "Approved");
+          state = await viewPlan(state, "Approved");
           break;
         case "viewSource":
           state = await viewSource(state, "Approved");
           break;
         case "viewHistory": {
           let planId;
-          [state, planId] = await planui.selectPlan(state, "Approved");
+          [state, planId] = await selectPlan(state, "Approved");
           if (menu.doExit(planId)) {
             return state;
           }
@@ -213,7 +215,7 @@ function rejectedPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "listRejectedPlans":
-          state = await planui.listPlans(state, "Rejected");
+          state = await viewPlan(state, "Rejected");
           break;
         case "viewRejected":
           state = await viewSource(state, "Rejected");

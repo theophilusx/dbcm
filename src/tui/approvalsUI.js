@@ -5,9 +5,9 @@ const moduleName = "approvalsUI";
 const VError = require("verror");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
-const planui = require("./planUI");
 const gitui = require("./gitUI");
 const rejectui = require("./rejectUI");
+const selectPlan = require("./selectPlan");
 const viewSource = require("./viewSource");
 
 const actionChoices = menu.buildChoices([
@@ -33,7 +33,7 @@ function approvalActions(state) {
       }
       case "comparePlan": {
         let planId;
-        [state, planId] = await planui.selectPlan(state, "Pending");
+        [state, planId] = await selectPlan(state, "Pending");
         if (menu.doExit(planId)) {
           return state;
         }
@@ -46,7 +46,7 @@ function approvalActions(state) {
         let branch = `${process.env.USER}-local`;
         await repo.gitRepo.checkoutBranch(branch);
         let choice;
-        [state, choice] = await planui.selectPlan(state, "Pending");
+        [state, choice] = await selectPlan(state, "Pending");
         if (menu.doExit(choice)) {
           return state;
         }

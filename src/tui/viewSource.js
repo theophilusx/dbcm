@@ -3,17 +3,17 @@
 const moduleName = "viewSource";
 
 const VError = require("verror");
-const planui = require("./planUI");
 const menu = require("./textMenus");
 const path = require("path");
 const edit = require("../edit");
+const selectPlan = require("./selectPlan");
 
 async function viewSource(state, group) {
   const logName = `${moduleName}.viewSource`;
 
   try {
     let choice;
-    [state, choice] = await planui.selectPlan(state, group);
+    [state, choice] = await selectPlan(state, group);
     if (menu.doExit(choice)) {
       return state;
     }

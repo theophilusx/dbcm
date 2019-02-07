@@ -10,6 +10,7 @@ const Plan = require("../Plan");
 const psql = require("../psql");
 const path = require("path");
 const edit = require("../edit");
+const selectPlan = require("./selectPlan");
 
 function commitWarning() {
   let title = "Uncommitted Changes";
@@ -19,13 +20,6 @@ exists. Either commit the changes or revert the changes before attempting to cre
 a new plan or switch to an alternative plan
 `;
   screen.warningMsg(title, msg);
-}
-
-function emptyGroupWarning(type) {
-  screen.infoMsg(
-    "Empty Plan Group",
-    `There are currently no plans defined in the ${type} group for this repository`
-  );
 }
 
 async function createPlan(state) {
@@ -66,61 +60,6 @@ async function createPlan(state) {
     return state;
   } catch (err) {
     throw new VError(err, `${logName} Failed to create new change plan`);
-  }
-}
-
-async function listPlans(state, type) {
-  const logName = `${moduleName}.listPlans`;
-
-  try {
-    if (state.changePlans().count(type) === 0) {
-      emptyGroupWarning(type);
-      return state;
-    }
-    let planChoices = menu.buildChoices(state.changePlans().plansUIList(type));
-    let choice;
-    do {
-      choice = await menu.listMenu(
-        state,
-        "Change Plans",
-        "Select Plan:",
-        planChoices
-      );
-      if (!menu.doExit(choice)) {
-        state.planDef(choice).textDisplay();
-      }
-    } while (!menu.doExit(choice));
-    state.setMenuChoice("");
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to display list menu`);
-  }
-}
-
-async function selectPlan(state, type) {
-  const logName = `${moduleName}.selectPlan`;
-
-  try {
-    if (state.changePlans().count(type) === 0) {
-      emptyGroupWarning(type);
-      return [state, undefined];
-    }
-    let planChoices = menu.buildChoices(state.changePlans().plansUIList(type));
-    let choice = await menu.listMenu(
-      state,
-      "Change Plans",
-      "Select Plan:",
-      planChoices
-    );
-    if (menu.doExit(choice)) {
-      return [state. undefined];
-    }
-    if (choice !== state.currentPlanUUID()) {
-      state.setCurrentPlanUUID(choice);
-    }
-    return [state, choice];
-  } catch (err) {
-    throw new VError(err, `${logName} Error selecting change set`);
   }
 }
 
@@ -218,8 +157,6 @@ async function submitPlanForApproval(state) {
 
 module.exports = {
   createPlan,
-  listPlans,
-  selectPlan,
   editPlan,
   applyChangePlan,
   rollbackChangePlan,

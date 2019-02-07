@@ -3,20 +3,20 @@
 const moduleName = "rejectUI";
 
 const VError = require("verror");
-const planui = require("./planUI");
 const menu = require("./textMenus");
 const inquirer = require("inquirer");
 const screen = require("./textScreen");
 const moment = require("moment");
 const fse = require("fse");
 const path = require("path");
+const selectPlan = require("./selectPlan");
 
 async function rejectPlan(state) {
   const logName = `${moduleName}.rejectPlan`;
 
   try {
     let planId;
-    [state, planId] = await planui.selectPlan(state, "Pending");
+    [state, planId] = await selectPlan(state, "Pending");
     if (menu.doExit(planId)) {
       return state;
     }
