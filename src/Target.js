@@ -4,6 +4,7 @@ const moduleName = "Target";
 
 const VError = require("verror");
 const db = require("./db");
+const queries = require("./database");
 
 function Target(name, db, user, pwd, host="localhost", port=5432) {
   const logName = `${moduleName}.Target`;
@@ -49,6 +50,37 @@ Target.prototype.isInitialised = async function() {
       return false;
     }
     throw new VError(err, `${logName} `);
+  }
+};
+
+Target.prototype.appliedPlans = async function() {
+  const logName = `${moduleName}.appliedPlans`;
+
+  try {
+    let appliedList = await queries.getAppliedPlans(this.params());
+    return appliedList;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+Target.prototype.unappliedPlans = async function(repo, plans) {
+  const logName = `${moduleName}.unappliedPlans`;
+
+  try {
+    let appliedList = this.appliedPlans();
+    for (let plan in appliedList) {
+      if (plans.has(plan.uuid)) {
+        let definedPlan = plans.get(plan.uuid);
+        let currentSHA = await repo.gitRepo.getChangeFileSHA(definedPlan);
+        if (plan.changeSHA === currentSHA) {
+          plans.delete(plan.uuid);
+        }
+      }
+    }
+    return plans;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
   }
 };
 
