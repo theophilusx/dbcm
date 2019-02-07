@@ -18,6 +18,7 @@ const rollbackChange = require("./rollbackChange");
 const submitPlan = require("./submitPlan");
 const commitHistory = require("./commitHistory");
 const planDiff = require("./planDiff");
+const reworkPlan = require("./reworkPlan");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -185,10 +186,7 @@ function approvedPlanActions(state) {
           state = await planDiff(state, "Approved");
           break;
         case "reworkApprovedPlan":
-          screen.warningMsg(
-            "Not Yet Implemented",
-            "This feature has not yet been implemented"
-          );
+          state = await reworkPlan(state, "Approved");
           break;
         default:
           screen.errorMsg(
@@ -222,10 +220,7 @@ function rejectedPlanActions(state) {
           state = await viewSource(state, "Rejected");
           break;
         case "reworkRejectedPlan":
-          screen.warningMsg(
-            "Not Implemented",
-            "This feature has not yet been implemented"
-          );
+          state = await reworkPlan(state, "Rejected");
           break;
         default:
           screen.errorMsg(
