@@ -14,6 +14,8 @@ const gitui = require("./gitUI");
 const selectPlan = require("./selectPlan");
 const viewPlan = require("./viewPlan");
 const viewSource = require("./viewSource");
+const createPlan = require("./createPlan");
+const editPlan = require("./editPlan");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -84,10 +86,10 @@ function developmentPlanActions(state) {
       } else {
         switch (answer.choice) {
         case "newPlan":
-          state = await planui.createPlan(state);
+          state = await createPlan(state);
           break;
         case "editPlan":
-          state = await planui.editPlan(state, "Development");
+          state = await editPlan(state, "Development");
           break;
         case "testDevPlan":
           state = await planui.applyChangePlan(state, "Development");

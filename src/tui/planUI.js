@@ -3,86 +3,10 @@
 const moduleName = "planUI";
 
 const VError = require("verror");
-const inquirer = require("inquirer");
 const screen = require("./textScreen");
 const menu = require("./textMenus");
-const Plan = require("../Plan");
 const psql = require("../psql");
-const path = require("path");
-const edit = require("../edit");
 const selectPlan = require("./selectPlan");
-
-function commitWarning() {
-  let title = "Uncommitted Changes";
-  let msg = `
-Cannot create a new plan or switch to a different plan when uncommitted plan data
-exists. Either commit the changes or revert the changes before attempting to create
-a new plan or switch to an alternative plan
-`;
-  screen.warningMsg(title, msg);
-}
-
-async function createPlan(state) {
-  const logName = `${moduleName}.createPlan`;
-  const questions = [
-    {
-      type: "input",
-      name: "name",
-      message: "Plan name:"
-    },
-    {
-      type: "input",
-      name: "description",
-      message: "Description:"
-    }];
-
-  try {
-    let answers = await inquirer.prompt(questions);
-    let changePlan = new Plan({
-      name: answers.name,
-      description: answers.description,
-      author: state.username(),
-      authorEmail: state.email()
-    });
-    changePlan.textDisplay();
-    answers = await inquirer.prompt([{
-      type: "confirm",
-      name: "createPlan",
-      message: "Create this change record:"
-    }]);
-    if (answers.createPlan) {
-      await state.addChangePlan(changePlan);
-      state.setCurrentPlanUUID(changePlan.uuid);
-      await state.writeChangePlans();
-    } else {
-      screen.infoMsg("Cancelled", "Plan creation cancelled");
-    }
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName} Failed to create new change plan`);
-  }
-}
-
-async function editPlan(state) {
-  const logName = `${moduleName}.editPlan`;
-  let choice;
-  
-  try {
-    [state, choice] = await selectPlan(state, "Development");
-    if (!menu.doExit(choice)) {
-      let plan = state.currentPlanDef();
-      let files = [
-        path.join(state.home(), state.currentRepositoryName(), plan.change),
-        path.join(state.home(), state.currentRepositoryName(), plan.verify),
-        path.join(state.home(), state.currentRepositoryName(), plan.rollback)
-      ];
-      edit.editFiles(files);
-    }
-    return state;
-  } catch (err) {
-    throw new VError(err, `${logName} `);
-  }
-}
 
 async function applyChangePlan(state, type) {
   const logName = `${moduleName}.applyChangePlan`;
@@ -156,8 +80,6 @@ async function submitPlanForApproval(state) {
 }
 
 module.exports = {
-  createPlan,
-  editPlan,
   applyChangePlan,
   rollbackChangePlan,
   submitPlanForApproval  
