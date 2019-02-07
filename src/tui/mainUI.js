@@ -11,6 +11,7 @@ const targetStateui = require("./targetStateUI");
 const repoui = require("./repoUI");
 const approvalsui = require("./approvalsUI");
 const gitui = require("./gitUI");
+const viewSource = require("./viewSource");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -49,7 +50,7 @@ const approvedPlanChoices = menu.buildChoices([
 
 const rejectedPlanChoices = menu.buildChoices([
   ["List Rejected Plans", "listRejectedPlans"],
-  ["View Rejection Notice", "viewRejectNotice"],
+  ["View Rejected Plan", "viewRejected"],
   ["Rework Rejected Plan", "reworkRejectedPlan"]
 ]);
 
@@ -168,10 +169,7 @@ function approvedPlanActions(state) {
           state = await planui.listPlans(state, "Approved");
           break;
         case "viewSource":
-          screen.warningMsg(
-            "Not Yet Implemented",
-            "This feature has not yet been implemented"
-          );
+          state = await viewSource(state, "Approved");
           break;
         case "viewHistory": {
           let planId;
@@ -217,11 +215,8 @@ function rejectedPlanActions(state) {
         case "listRejectedPlans":
           state = await planui.listPlans(state, "Rejected");
           break;
-        case "viewRejectNotice":
-          screen.warningMsg(
-            "Not Implemented",
-            "This feature has not yet been implemented"
-          );
+        case "viewRejected":
+          state = await viewSource(state, "Rejected");
           break;
         case "reworkRejectedPlan":
           screen.warningMsg(

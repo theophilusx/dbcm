@@ -6,10 +6,9 @@ const VError = require("verror");
 const menu = require("./textMenus");
 const screen = require("./textScreen");
 const planui = require("./planUI");
-const path = require("path");
-const edit = require("../edit");
 const gitui = require("./gitUI");
 const rejectui = require("./rejectUI");
+const viewSource = require("./viewSource");
 
 const actionChoices = menu.buildChoices([
   ["Review Plan Source", "viewPlan"],
@@ -29,18 +28,7 @@ function approvalActions(state) {
       }
       switch (answer.choice) {
       case "viewPlan": {
-        let choice = "";
-        [state, choice] = await planui.selectPlan(state, "Pending");
-        if (menu.doExit(choice)) {
-          return state;
-        }
-        let planDef = state.currentPlanDef();
-        let fileList = [
-          path.join(state.home(), state.currentRepositoryName(), planDef.change),
-          path.join(state.home(), state.currentRepositoryName(), planDef.verify),
-          path.join(state.home(), state.currentRepositoryName(), planDef.rollback)
-        ];
-        edit.viewFiles(fileList);
+        state = await viewSource(state, "Approved");
         break;
       }
       case "comparePlan": {
