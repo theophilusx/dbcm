@@ -5,11 +5,11 @@ const moduleName = "approvalsUI";
 const VError = require("verror");
 const menu = require("../utils/textMenus");
 const screen = require("../utils/textScreen");
-const rejectui = require("./rejectUI");
 const viewSource = require("./viewSource");
 const commitHistory = require("../repo/commitHistory");
 const planDiff = require("../repo/planDiff");
 const approvePlan = require("./approvePlan");
+const rejectPlan = require("./rejectPlan");
 
 const actionChoices = menu.buildChoices([
   ["Review Plan Source", "viewPlan"],
@@ -42,7 +42,7 @@ function approvalActions(state) {
         state = await approvePlan(state);
         break;
       case "rejectPlan":
-        state = rejectui.rejectPlan(state);
+        state = await rejectPlan(state);
         break;
       default:
         screen.errorMsg(
