@@ -11,23 +11,11 @@ async function applyChange(state, group) {
   try {
     [state, choice] = await selectPlan(state, group);
     if (choice) {
-      let applied = await psql.applyPlan(
-        state,
-        state.planDef(choice),
-        state.currentTargetDef()
-      );
+      let applied = await psql.applyPlan(state, state.planDef(choice));
       if (applied) {
-        await psql.verifyPlan(
-          state,
-          state.planDef(choice),
-          state.currentTargetDef()
-        );
+        await psql.verifyPlan(state, state.planDef(choice));
       } else {                    // change plan applied with errors
-        await psql.rollbackPlan(
-          state,
-          state.planDef(choice),
-          state.currentTargetDef()
-        );
+        await psql.rollbackPlan(state, state.planDef(choice));
       }
     }
     return state;

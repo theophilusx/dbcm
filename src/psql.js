@@ -83,10 +83,11 @@ function psqlExec(state, script) {
   });
 }
 
-async function applyPlan(state, plan, target) {
+async function applyPlan(state, plan) {
   const logName = `${moduleName}.applyPlan`;
 
   try {
+    let target = state.currentTargetDef();
     let changeFile = path.join(
       state.home(),
       state.currentRepositoryName(),
@@ -115,10 +116,11 @@ async function applyPlan(state, plan, target) {
   }
 }
 
-async function verifyPlan(state, plan, target) {
+async function verifyPlan(state, plan) {
   const logName = `${moduleName}.verifyPlan`;
 
   try {
+    let target = state.currentTargetDef();
     let verifyFile = path.join(
       state.home(),
       state.currentRepositoryName(),
@@ -146,10 +148,11 @@ async function verifyPlan(state, plan, target) {
   }
 }
 
-async function rollbackPlan(state, plan, target) {
+async function rollbackPlan(state, plan) {
   const logName = `${moduleName}.rollbackCurrentPlan`;
 
   try {
+    let target = state.currentTargetDef();
     let rollbackFile = path.join(
       state.home(),
       state.currentRepositoryName(),
