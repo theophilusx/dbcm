@@ -11,12 +11,12 @@ async function targetState(state) {
   const logName = "targetState";
   const width = cliWidth({defaultWidth: 80}) - 6;
   const fmt = "YYYY-MM-DD HH:mm";
+  const fixedWidth = 18 + 10 + 12 + 30 + 10;
+  const extraSpace = Math.floor((width - fixedWidth) / 2);
+  const nameSize = parseInt(30 + extraSpace);
+  const bySize = parseInt(10 + extraSpace);
   
   try {
-    let fixedWidth = 18 + 10 + 12 + 30 + 10;
-    let extraSpace = Math.floor((width - fixedWidth) / 2);
-    let nameSize = parseInt(30 + extraSpace);
-    let bySize = parseInt(10 + extraSpace);
     console.log(`width: ${width} Fixed: ${fixedWidth} extra: `
                 + `${extraSpace} Name: ${nameSize} By: ${bySize}`);
     const table = new Table({
