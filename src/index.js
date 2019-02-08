@@ -6,11 +6,10 @@ const userOptions = require("./tui/userOptions");
 const repo = require("./tui/repo/repoUI.js");
 const dumper = require("./dumper");
 const path = require("path");
-const target = require("./tui/targets/targetUI");
+const selectTarget = require("./tui/targets/selectTarget");
 const mainui = require("./tui/mainUI");
 
 // const repoui = require("./repoUI");
-// const targetui = require("./targetUI");
 // const configui = require("./configUI");
 // const state = require("./state");
 
@@ -60,7 +59,7 @@ async function main() {
       await appState.writeUserInit();
     }
     await repo.selectRepository(appState);
-    await target.selectTarget(appState);
+    await selectTarget(appState);
     await mainui.mainMenu(appState);
     console.log(dumper.dumpValue(appState, "", "appState"));
   } catch (err) {

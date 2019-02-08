@@ -5,7 +5,6 @@ const moduleName = "mainUI";
 const VError = require("verror");
 const menu = require("./utils/textMenus");
 const screen = require("./utils/textScreen");
-const targetui = require("./targets/targetUI");
 const repoui = require("./repo/repoUI");
 const approvalsui = require("./plans/approvalsUI");
 const viewPlan = require("./plans/viewPlan");
@@ -21,6 +20,7 @@ const reworkPlan = require("./plans/reworkPlan");
 const targetState = require("./targets/targetState");
 const unappliedPlans = require("./targets/unappliedPlans");
 const applyNextChange = require("./targets/applyNextChange");
+const selectTarget = require("./targets/selectTarget");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -265,7 +265,10 @@ function targetAction(state) {
           );
           break;
         case "rollbackChange":
-          state = await targetui.performPlanRollback(state);
+          screen.warningMsg(
+            "Not Yet Implemented",
+            "This feature has not yet been implemented"
+          );          
           break;
         case "displayChangelog":
           screen.warningMsg(
@@ -274,7 +277,7 @@ function targetAction(state) {
           );          
           break;
         case "selectDbTarget":
-          state = await targetui.selectTarget(state);
+          state = await selectTarget(state);
           break;
         default:
           screen.errorMsg(
