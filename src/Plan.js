@@ -51,6 +51,11 @@ function Plan(params) {
         "rollback",
         `${params.name.replace(/\s+/g, "-")}.sql`
       );
+    this.doc = params.doc ?
+      params.doc : path.join(
+        "doc",
+        `${params.name.replace(/\s+/g, "-")}.md`
+      );
   } catch (err) {
     throw new VError(err, `${logName} Params:`);
   }
@@ -148,6 +153,7 @@ Plan.prototype.fromObject = function(pObj) {
     this.change = pObj.change;
     this.verify = pObj.verify;
     this.rollback = pObj.rollback;
+    this.doc = pObj.doc;
   } catch (err) {
     throw new VError(err, `${logName} Failed to create plan from object`);
   }
@@ -168,11 +174,12 @@ Plan.prototype.toObject = function() {
       approvals: this.approvals.toObject(),
       change: this.change,
       verify: this.verify,
-      rollback: this.rollback
+      rollback: this.rollback,
+      doc: this.doc
     };
     return pObj;
   } catch (err) {
-   throw new VError(err, `${logName}`);
+    throw new VError(err, `${logName}`);
   }
 };
 

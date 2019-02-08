@@ -108,6 +108,25 @@ function createRollbackDir(rootPath) {
     });
 }
 
+function createDocDir(rootPath) {
+  const logName = `${moduleName}.createDocDir`;
+  const contents = "This directory contains documentation on DB changes";
+  const dir = path.join(rootPath, "doc");
+
+  return fse.mkdir(dir)
+    .then(() => {
+      let filePath = path.join(dir, "README");
+      return fse.writeFile(filePath, contents, "utf-8");
+    })
+    .then(() => {
+      console.log("Documentation directory created");
+      return true;
+    })
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create doc directory in ${rootPath}`);
+    });
+}
+
 function isInitialised(rootPath) {
   const logName = `${moduleName}.isInitialised`;
   const planFile = path.join(rootPath, "change-plans.json");
@@ -133,6 +152,7 @@ async function initialiseRepo(rootPath) {
     await createChangesDir(rootPath);
     await createVerifyDir(rootPath);
     await createRollbackDir(rootPath);
+    await createDocDir(rootPath);
     return true;
   } catch (err) {
     throw new VError(err, `${logName} Failed to initialise repository ${rootPath}`);
@@ -207,6 +227,25 @@ COMMIT;
     });
 }
 
+function makeDocFile(rootPath, changeRecord) {
+  const logName = `${moduleName}.makeDocFile`;
+  const docFile = path.join(rootPath, changeRecord.doc);
+  const content = `
+# ${changeRecord.name}
+
+| **UUID** | ${changeRecord.name} |
+| **Created** | ${changeRecord.createdDate} |
+| **Author** | ${changeRecord.author} <${changeRecord.authorEmail}> |
+
+${changeRecord.description}
+
+`;
+
+  return fse.writeFile(docFile, content, "utf-8")
+    .catch(err => {
+      throw new VError(err, `${logName} Failed to create doc file ${changeRecord.doc}`);
+    });
+}
 
 function createChangeFiles(root, changeRecord) {
   const logName = `${moduleName}.createchangeFiles`;
@@ -217,6 +256,9 @@ function createChangeFiles(root, changeRecord) {
     })
     .then(() => {
       return makeRollbackFile(root, changeRecord);
+    })
+    .then(() => {
+      return makeDocFile(root, changeRecord);
     })
     .catch(err => {
       throw new VError(err, `${logName} Failed to create change files`);
