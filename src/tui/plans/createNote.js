@@ -19,8 +19,10 @@ async function createNote(state, plan, title="Note", prompt="Enter note") {
     if (answer.note.length) {
       let content = `\n## ${title}
 
-+ ${moment().format("YYYY-MM-DD HH:mm:ss")}
-+ ${state.username()} <${state.email()}>
+- ${moment().format("YYYY-MM-DD HH:mm:ss")}
+- ${state.username()} <${state.email()}>
+
+------
 
 ${answer.note}
 `;

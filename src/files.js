@@ -233,9 +233,11 @@ function makeDocFile(rootPath, changeRecord) {
   const content = `
 # ${changeRecord.name}
 
-| **UUID** | ${changeRecord.name} |
-| **Created** | ${changeRecord.createdDate} |
-| **Author** | ${changeRecord.author} <${changeRecord.authorEmail}> |
+- **UUID** ${changeRecord.uuid} 
+- **Created** ${changeRecord.createdDate} 
+- **Author** ${changeRecord.author} <${changeRecord.authorEmail}> 
+
+-------
 
 ${changeRecord.description}
 

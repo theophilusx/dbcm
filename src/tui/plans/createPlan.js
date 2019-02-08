@@ -29,7 +29,7 @@ async function createPlan(state) {
       authorEmail: state.email()
     });
     changePlan.textDisplay();
-    let doCreate = menu.confirmMenu("Create Plan", "Create this change plan");
+    let doCreate = await menu.confirmMenu("Create Plan", "Create this change plan");
     if (doCreate) {
       await state.addChangePlan(changePlan);
       state.setCurrentPlanUUID(changePlan.uuid);
