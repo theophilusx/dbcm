@@ -20,10 +20,9 @@ async function applyNextChange(state) {
         "Apply Change Record",
         "Apply this change record:");
       if (choice) {
-        state.setCurrentPlanUUID(plan.uuid);
-        let applyStatus = await psql.applyCurrentPlan(state);
+        let applyStatus = await psql.applyPlan(state, plan);
         if (applyStatus) {
-          await psql.verifyCurrentPlan(state);
+          await psql.verifyPlan(state, plan);
         } else {
           await psql.rollbackPlan(state, plan);
         }

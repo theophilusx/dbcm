@@ -117,6 +117,7 @@ async function updateAppliedPlanStatus(state, plan, status, sha) {
         + "VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
   const updateSQL = "UPDATE dbcm.change_plans "
         + "SET applied_by = $1, "
+        + "applied_dt = current_timestamp, "
         + "status = $2, "
         + "plan_type = $3, "
         + "repository_version = $4, "
@@ -227,6 +228,18 @@ async function addLogRecord(target, plan, msg) {
   }
 }
 
+async function getLogRecords(target) {
+  const logName = `${moduleName}.getLogRecords`;
+  const sql = "SELECT * FROM dbcm.change_log";
+  
+  try {
+    let rslt = await db.execSQL(target.params(), sql);
+    return rslt.rows;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+}
+
 module.exports = {
   getTargetState,
   getRollbackCandidates,
@@ -236,5 +249,6 @@ module.exports = {
   updateAppliedPlanStatus,
   updateVerifiedPlanStatus,
   updateRollbackPlanStatus,
-  addLogRecord
+  addLogRecord,
+  getLogRecords
 };

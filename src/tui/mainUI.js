@@ -21,6 +21,8 @@ const targetState = require("./targets/targetState");
 const unappliedPlans = require("./targets/unappliedPlans");
 const applyNextChange = require("./targets/applyNextChange");
 const selectTarget = require("./targets/selectTarget");
+const rollbackLastChange = require("./targets/rollbackLastChange");
+const changeLog = require("./targets/changeLog");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -38,7 +40,7 @@ const planTypeChoices = menu.buildChoices([
 const developmentPlanChoices = menu.buildChoices([
   ["Create New Change Plan", "newPlan"],
   ["Edit Change Plan", "editPlan"],
-  ["Test Change Plan", "testDevPlan"],
+  ["Apply Change Plan", "testDevPlan"],
   ["Rollback Change Plan", "rollbackDevPlan"],
   ["Submit Change Plan for Approval", "commitPlan"],
   ["List Development Change Plans", "listDevPlans"]
@@ -60,7 +62,7 @@ const approvedPlanChoices = menu.buildChoices([
 
 const rejectedPlanChoices = menu.buildChoices([
   ["List Rejected Plans", "listRejectedPlans"],
-  ["View Rejected Plan", "viewRejected"],
+  ["View Rejected Plan Source", "viewRejected"],
   ["Rework Rejected Plan", "reworkRejectedPlan"]
 ]);
 
@@ -69,16 +71,16 @@ const dbTargetChoices = menu.buildChoices([
   ["List Unapplied Change Plans", "listUnappliedChanges"],
   ["Apply Next Unapplied Change", "applyNextChange"],
   ["Apply All Unapplied Changes", "applyAllChanges"],
-  ["Rollback Applied Change", "rollbackChange"],
+  ["Rollback Last Applied Change", "rollbackChange"],
   ["Display Change Log", "displayChangelog"],
-  ["Select New Database Target", "selectDbTarget"] 
+  ["Change Database Target", "selectDbTarget"] 
 ]);
 
 const repositoryChoices = menu.buildChoices([
   ["Show Repository Details", "showRepo"],
   ["Edit Approvals Setting", "editApprovals"],
   ["List Known Repositories", "listRepos"],
-  ["Select Repository", "selectRepo"]
+  ["Change Repository", "selectRepo"]
 ]);
 
 function developmentPlanActions(state) {
@@ -265,16 +267,10 @@ function targetAction(state) {
           );
           break;
         case "rollbackChange":
-          screen.warningMsg(
-            "Not Yet Implemented",
-            "This feature has not yet been implemented"
-          );          
+          state = await rollbackLastChange(state);
           break;
         case "displayChangelog":
-          screen.warningMsg(
-            "Not Yet Implemented",
-            "This feature has not yet been implemented"
-          );          
+          state = await changeLog(state);
           break;
         case "selectDbTarget":
           state = await selectTarget(state);
