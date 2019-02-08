@@ -113,7 +113,8 @@ Plan.prototype.textDisplay = function() {
       {"Type": chalk.green(this.planType)},
       {"Change File": chalk.green(this.change)},
       {"Verify File": chalk.green(this.verify)},
-      {"Rollback File": chalk.green(this.rollback)}
+      {"Rollback File": chalk.green(this.rollback)},
+      {"Documentation": chalk.green(this.doc)}
     );
     console.log(table.toString());
     this.approvals.currentApproval().textDisplay();
