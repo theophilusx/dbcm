@@ -57,8 +57,7 @@ Target.prototype.appliedPlans = async function() {
   const logName = `${moduleName}.appliedPlans`;
 
   try {
-    let appliedList = await queries.getAppliedPlans(this);
-    return appliedList;
+    return await queries.getAppliedPlans(this);
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
