@@ -29,18 +29,21 @@ async function reworkPlan(state, group) {
         let currentType = plan.planType;
         plan.setType("Development");
         plan.resetApproval();
-        let msg = `moved from ${currentType} to Development for re-working by\n`
-            + `${state.username()} on ${moment().format("YYYY-MM-DD HH:mm:ss")}`;
-        let changeFile = path.join(
+        let msg = `Plan ${plan.name} moved from ${currentType} to Development for re-working`;
+        let noteMsg = `
+## Re-work Plan
+
+- ${moment().format("YYYY-MM-DD HH:mm:ss")}
+- ${state.username()} <${state.email()}>
+-----
+${msg}
+`;
+        let noteFile = path.join(
           state.home(),
           state.currentRepositoryName(),
-          plan.change
+          plan.doc
         );
-        await fse.appendFile(
-          changeFile,
-          `\n-- ${msg.split("\n").join("\n-- ")}\n`,
-          {encoding: "utf-8"}
-        );
+        await fse.appendFile(noteFile, noteMsg, {encoding: "utf-8"});
         state.writeChangePlans();
         let files = await repo.getStatus();
         repo.commit(files, `Plan ${plan.name} ${msg}`, state.username(), state.email());
