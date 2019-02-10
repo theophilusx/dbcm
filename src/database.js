@@ -70,7 +70,8 @@ async function getRollbackSets(target, pId) {
 
 async function getAppliedPlans(target) {
   const logName = `${moduleName}.getAppliedPlans`;
-  const sql = "SELECT plan_id, status, change_sha, applied_dt FROM dbcm.change_plans "
+  const sql = "SELECT plan_id, status, repository_version, "
+        + "change_sha, applied_dt FROM dbcm.change_plans "
         + "WHERE status IN ('Applied', 'Verified') "
         + "ORDER BY applied_dt DESC";
   
@@ -81,6 +82,7 @@ async function getAppliedPlans(target) {
       result.push({
         uuid: r.plan_id,
         status: r.status,
+        version: r.repository_version,
         changeSHA: r.change_sha,
         appliedDate: moment(r.applied_dt).format("YYYY-MM-DD HH:mm:ss") 
       });
@@ -133,7 +135,7 @@ async function updateAppliedPlanStatus(state, plan, status, sha) {
         state.email(),
         status,
         plan.planType,
-        state.currentReleaseTag(),
+        plan.version,
         sha,
         plan.uuid
       ]);
@@ -146,7 +148,7 @@ async function updateAppliedPlanStatus(state, plan, status, sha) {
         plan.description,
         status,
         plan.planType,
-        state.currentReleaseTag(),
+        plan.version,
         sha
       ]);
       rowCount = rslt.rowCount;

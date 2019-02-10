@@ -22,6 +22,7 @@ function Plan(params) {
     assert.ok(params.authorEmail, "Missing authorEmail argument");
     this.uuid = params.uuid ? params.uuid : short().new();
     this.name = params.name;
+    this.version = params.version ? params.version : "0.0.1";
     this.description = params.description;
     this.createdDate = params.createdDate ?
       params.createdDate : moment().format("YYYY-MM-DD HH:mm:ss");
@@ -109,6 +110,7 @@ Plan.prototype.textDisplay = function() {
       {"Author": chalk.green(this.author)},
       {"Plan Name": chalk.green(this.name)},
       {"UUID": chalk.green(this.uuid)},
+      {"Version": chalk.green(this.version)},
       {"Description": chalk.green(this.description)},
       {"Type": chalk.green(this.planType)},
       {"Change File": chalk.green(this.change)},
@@ -131,8 +133,8 @@ Plan.prototype.summaryLine = function() {
   const logName = `${moduleName}.summaryLine`;
 
   try {
-    let line = `${this.name} : ${this.author} : ${this.createdDate} : `
-        + `${this.planType} : ${this.approvals.currentApproval().approved ? "Approved" : "Unapproved"}`;
+    let line = `${this.name} : ${this.author} : ${this.version} : `
+        + `${this.createdDate} : ${this.planType}`;
     return line;
   } catch (err) {
     throw new VError(err, `${logName}`);
@@ -146,6 +148,7 @@ Plan.prototype.fromObject = function(pObj) {
     this.uuid = pObj.uuid;
     this.name = pObj.name;
     this.description = pObj.description;
+    this.version = pObj.version;
     this.createdDate = pObj.createdDate;
     this.author = pObj.author;
     this.authorEmail = pObj.authorEmail;
@@ -167,6 +170,7 @@ Plan.prototype.toObject = function() {
     let pObj = {
       uuid: this.uuid,
       name: this.name,
+      version: this.version,
       description: this.description,
       createdDate: this.createdDate,
       author: this.author,
