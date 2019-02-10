@@ -212,6 +212,12 @@ function approvedPlanActions(state) {
         case "viewDiff":
           state = await planDiff(state, "Approved");
           break;
+        case "showNotes":
+          screen.infoMsg(
+            "Not Implemented",
+            "This functionality has not yet been implemented"
+          );
+          break;
         case "reworkApprovedPlan":
           state = await reworkPlan(state, "Approved");
           break;
@@ -245,6 +251,12 @@ function rejectedPlanActions(state) {
           break;
         case "viewRejected":
           state = await viewSource(state, "Rejected");
+          break;
+        case "showNotes":
+          screen.infoMsg(
+            "Not Implemented",
+            "This functionality has not yet been implemented"
+          );
           break;
         case "reworkRejectedPlan":
           state = await reworkPlan(state, "Rejected");
