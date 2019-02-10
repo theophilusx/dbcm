@@ -24,6 +24,9 @@ const rollbackLastChange = require("./targets/rollbackLastChange");
 const changeLog = require("./targets/changeLog");
 const approvePlan = require("./plans/approvePlan");
 const rejectPlan = require("./plans/rejectPlan");
+const selectPlan = require("./plans/selectPlan");
+const viewNote = require("./plans/viewNote");
+const createNote = require("./plans/createNote");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -108,12 +111,15 @@ function developmentPlanActions(state) {
         case "editPlan":
           state = await editPlan(state, "Development");
           break;
-        case "addNote":
-          screen.warningMsg(
-            "Not Implemented",
-            "This functionality not yet implemented"
-          );
+        case "addNote": {
+          let choice;
+          [state, choice] = selectPlan(state, "Development");
+          if (choice) {
+            let plan = state.planDef(choice);
+            await createNote(state, plan);
+          }
           break;
+        }
         case "testDevPlan":
           state = await applyChange(state, "Development");
           break;
@@ -127,10 +133,7 @@ function developmentPlanActions(state) {
           state = await viewPlan(state, "Development");
           break;
         case "showNotes":
-          screen.warningMsg(
-            "Not Implemented",
-            "This functionality has not yet been implemented"
-          );
+          state = await viewNote(state, "Development");
           break;
         default:
           screen.errorMsg(
@@ -213,10 +216,7 @@ function approvedPlanActions(state) {
           state = await planDiff(state, "Approved");
           break;
         case "showNotes":
-          screen.warningMsg(
-            "Not Implemented",
-            "This functionality has not yet been implemented"
-          );
+          state = await viewNote(state, "Approved");
           break;
         case "reworkApprovedPlan":
           state = await reworkPlan(state, "Approved");
@@ -253,10 +253,7 @@ function rejectedPlanActions(state) {
           state = await viewSource(state, "Rejected");
           break;
         case "showNotes":
-          screen.warningMsg(
-            "Not Implemented",
-            "This functionality has not yet been implemented"
-          );
+          state = await viewNote(state, "Rejected");
           break;
         case "reworkRejectedPlan":
           state = await reworkPlan(state, "Rejected");

@@ -38,9 +38,23 @@ async function viewFiles(files) {
   }
 }
 
+function openFile(filePath) {
+  const logName = `${moduleName}.openFile`;
+
+  const child = execFile("open", [filePath], (err, stdout, stderr) => {
+    if (err) {
+      throw new VError(err, `${logName} Error opening file for viewing`);
+    }
+    if (stderr.length) {
+      console.log(`${logName} ${stderr}`);
+    }
+  });
+}
+
 module.exports = {
   editFiles,
-  viewFiles
+  viewFiles,
+  openFile
 };
 
 
