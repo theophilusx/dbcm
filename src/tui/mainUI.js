@@ -59,7 +59,8 @@ const pendingPlanChoices = menu.buildChoices([
   ["View Commit History", "planHistory"],
   ["View Plan Diff", "planDiff"],
   ["Approve Plan", "approvePlan"],
-  ["Reject Plan", "rejectPlan"]
+  ["Reject Plan", "rejectPlan"],
+  ["Make New Release", "newRelease"]
 ]);
 
 const approvedPlanChoices = menu.buildChoices([
@@ -177,6 +178,12 @@ function pendingPlanActions(state) {
           break;
         case "rejectPlan":
           state = await rejectPlan(state);
+          break;
+        case "newRelease":
+          screen.warningMsg(
+            "Not Implemented",
+            "This functionality has not yet been implemented"
+          );
           break;
         default:
           screen.errorMsg(
