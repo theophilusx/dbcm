@@ -6,7 +6,6 @@ const VError = require("verror");
 const menu = require("./utils/textMenus");
 const screen = require("./utils/textScreen");
 const repoui = require("./repo/repoUI");
-const approvalsui = require("./plans/approvalsUI");
 const viewPlan = require("./plans/viewPlan");
 const viewSource = require("./plans/viewSource");
 const createPlan = require("./plans/createPlan");
@@ -23,6 +22,8 @@ const applyNextChange = require("./targets/applyNextChange");
 const selectTarget = require("./targets/selectTarget");
 const rollbackLastChange = require("./targets/rollbackLastChange");
 const changeLog = require("./targets/changeLog");
+const approvePlan = require("./plans/approvePlan");
+const rejectPlan = require("./plans/rejectPlan");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -38,37 +39,45 @@ const planTypeChoices = menu.buildChoices([
 ]);
 
 const developmentPlanChoices = menu.buildChoices([
-  ["Create New Change Plan", "newPlan"],
-  ["Edit Change Plan", "editPlan"],
-  ["Apply Change Plan", "testDevPlan"],
-  ["Rollback Change Plan", "rollbackDevPlan"],
-  ["Submit Change Plan for Approval", "commitPlan"],
-  ["List Development Change Plans", "listDevPlans"]
+  ["Create New Plan", "newPlan"],
+  ["Edit Plan", "editPlan"],
+  ["Add Note", "addNote"],
+  ["Apply Plan", "testDevPlan"],
+  ["Rollback Plan", "rollbackDevPlan"],
+  ["Submit Plan for Approval", "commitPlan"],
+  ["List Development Plans", "listDevPlans"],
+  ["Show Plan Notes", "showNotes"]
 ]);
 
 const pendingPlanChoices = menu.buildChoices([
-  ["List Pending Change Plans", "listPendingPlans"],
-  ["List My Approval Requests", "approvalRequests"],
-  ["Review/Approve/Reject Plan", "approveActions"]
+  ["List Plans", "listPendingPlans"],
+  ["Review Plan Source", "viewPlan"],
+  ["Review Plan Notes", "showNotes"],
+  ["View Commit History", "planHistory"],
+  ["View Plan Diff", "planDiff"],
+  ["Approve Plan", "approvePlan"],
+  ["Reject Plan", "rejectPlan"]
 ]);
 
 const approvedPlanChoices = menu.buildChoices([
-  ["List Approved Change Plans", "listApprovedPlans"],
-  ["View Change Sources", "viewSource"],
-  ["View Change History", "viewHistory"],
+  ["List Approved Plans", "listApprovedPlans"],
+  ["View Plan Sources", "viewSource"],
+  ["View Commit History", "viewHistory"],
   ["View Plan Diff", "viewDiff"],
-  ["Rweork Approved Change Plan", "reworkApprovedPlan"]
+  ["View Plan Notes", "showNotes"],
+  ["Rweork Approved Plan", "reworkApprovedPlan"]
 ]);
 
 const rejectedPlanChoices = menu.buildChoices([
   ["List Rejected Plans", "listRejectedPlans"],
-  ["View Rejected Plan Source", "viewRejected"],
+  ["View Plan Source", "viewRejected"],
+  ["View Plan Notes", "showNotes"],
   ["Rework Rejected Plan", "reworkRejectedPlan"]
 ]);
 
 const dbTargetChoices = menu.buildChoices([
   ["List Target State", "listTargetState"],
-  ["List Unapplied Change Plans", "listUnappliedChanges"],
+  ["List Unapplied Plans", "listUnappliedChanges"],
   ["Apply Next Unapplied Change", "applyNextChange"],
   ["Apply All Unapplied Changes", "applyAllChanges"],
   ["Rollback Last Applied Change", "rollbackChange"],
@@ -99,6 +108,12 @@ function developmentPlanActions(state) {
         case "editPlan":
           state = await editPlan(state, "Development");
           break;
+        case "addNote":
+          screen.infoMsg(
+            "Not Implemented",
+            "This functionality not yet implemented"
+          );
+          break;
         case "testDevPlan":
           state = await applyChange(state, "Development");
           break;
@@ -110,6 +125,12 @@ function developmentPlanActions(state) {
           break;
         case "listDevPlans":
           state = await viewPlan(state, "Development");
+          break;
+        case "showNotes":
+          screen.infoMsg(
+            "Not Implemented",
+            "This functionality has not yet been implemented"
+          );
           break;
         default:
           screen.errorMsg(
@@ -139,18 +160,20 @@ function pendingPlanActions(state) {
         case "listPendingPlans":
           state = await viewPlan(state, "Pending");
           break;
-        case "approvalRequests":
-          if (!state.currentRepositoryDef().isApprover(state.email())) {
-            screen.warningMsg(
-              "You Are Not An Approver",
-              "You are not a registered approver for this repository"
-            );
-          } else {
-            state = await viewPlan(state, "Pending");
-          }
+        case "viewPlan": 
+          state = await viewSource(state, "Approved");
           break;
-        case "approveActions":
-          state = await approvalsui.processPlanApproval(state);
+        case "planHistory": 
+          state = await commitHistory(state, "Pending");
+          break;
+        case "planDiff":
+          state = await planDiff(state, "Pending");
+          break;
+        case "approvePlan":
+          state = await approvePlan(state);
+          break;
+        case "rejectPlan":
+          state = await rejectPlan(state);
           break;
         default:
           screen.errorMsg(
