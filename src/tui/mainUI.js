@@ -109,7 +109,7 @@ function developmentPlanActions(state) {
           state = await editPlan(state, "Development");
           break;
         case "addNote":
-          screen.infoMsg(
+          screen.warningMsg(
             "Not Implemented",
             "This functionality not yet implemented"
           );
@@ -127,7 +127,7 @@ function developmentPlanActions(state) {
           state = await viewPlan(state, "Development");
           break;
         case "showNotes":
-          screen.infoMsg(
+          screen.warningMsg(
             "Not Implemented",
             "This functionality has not yet been implemented"
           );
@@ -213,7 +213,7 @@ function approvedPlanActions(state) {
           state = await planDiff(state, "Approved");
           break;
         case "showNotes":
-          screen.infoMsg(
+          screen.warningMsg(
             "Not Implemented",
             "This functionality has not yet been implemented"
           );
@@ -253,7 +253,7 @@ function rejectedPlanActions(state) {
           state = await viewSource(state, "Rejected");
           break;
         case "showNotes":
-          screen.infoMsg(
+          screen.warningMsg(
             "Not Implemented",
             "This functionality has not yet been implemented"
           );
@@ -336,19 +336,19 @@ function repositoryActions(state) {
       }
       switch (answer.choice) {
       case "showRepo":
-        screen.infoMsg(
+        screen.warningMsg(
           "Not Implemented",
           "This function has not yet been implemented"
         );
         break;
       case "editApprovals":
-        screen.infoMsg(
+        screen.warningMsg(
           "Not Implemented",
           "This function has not yet been implemented"
         );
         break;
       case "listRepos":
-        screen.infoMsg(
+        screen.warningMsg(
           "Not Implemented",
           "This function has not yet been implemented"
         );
