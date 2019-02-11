@@ -1,7 +1,5 @@
 "use strict";
 
-const moduleName = "repoUI";
-
 const VError = require("verror");
 const inquirer = require("inquirer");
 const menu = require("../utils/textMenus");
@@ -11,7 +9,7 @@ const path = require("path");
 const approversui = require("../approversUI");
 
 function setupQuestions(state) {
-  const logName = `${moduleName}.setup`;
+  const logName = "setupQuestions";
 
   try {
     let repoChoices = state.repositoryNames();
@@ -54,7 +52,7 @@ function setupQuestions(state) {
 }
 
 function repoAction(appState) {
-  const logName = `${moduleName}.repoAction`;
+  const logName = "repoAction";
   
   return async answers => {
     try {
@@ -110,7 +108,7 @@ function repoAction(appState) {
 }
 
 function selectRepository(state) {
-  const logName = `${moduleName}.selectRepository`;
+  const logName = "selectRepository";
   let questions = setupQuestions(state);
 
   return menu.genericMenu(state, "Repository Menu", questions, repoAction)
@@ -120,6 +118,5 @@ function selectRepository(state) {
 }
 
 
-module.exports = {
-  selectRepository,
-};
+module.exports = selectRepository;
+

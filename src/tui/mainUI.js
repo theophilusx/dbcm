@@ -5,7 +5,7 @@ const moduleName = "mainUI";
 const VError = require("verror");
 const menu = require("./utils/textMenus");
 const screen = require("./utils/textScreen");
-const repoui = require("./repo/repoUI");
+const selectRepository = require("./repo/selectRepository");
 const viewPlan = require("./plans/viewPlan");
 const viewSource = require("./plans/viewSource");
 const createPlan = require("./plans/createPlan");
@@ -358,7 +358,7 @@ function repositoryActions(state) {
         );
         break;
       case "selectRepo":
-        state = await repoui.selectRepository(state);
+        state = await selectRepository(state);
         break;
       default:
         screen.errorMsg(

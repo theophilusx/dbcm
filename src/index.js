@@ -3,7 +3,7 @@
 const VError = require("verror");
 const AppState = require("./AppState");
 const userOptions = require("./tui/userOptions");
-const repo = require("./tui/repo/repoUI.js");
+const selectRepository = require("./tui/repo/selectRepository");
 const dumper = require("./dumper");
 const path = require("path");
 const selectTarget = require("./tui/targets/selectTarget");
@@ -51,14 +51,14 @@ async function main() {
   const logName = "main";
   const appState = new AppState();
   const rcFile = path.join(process.env.HOME, ".dbcmrc");
-  
+
   try {
     await appState.init(rcFile);
     if (!appState.username()) {
       await userOptions(appState);
       await appState.writeUserInit();
     }
-    await repo.selectRepository(appState);
+    await selectRepository(appState);
     await selectTarget(appState);
     await mainui.mainMenu(appState);
     console.log(dumper.dumpValue(appState, "", "appState"));
@@ -67,8 +67,6 @@ async function main() {
   }
 }
 
-main()
-  .catch(err => {
-    console.error(err.message);
-  });
-
+main().catch(err => {
+  console.error(err.message);
+});
