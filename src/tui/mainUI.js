@@ -114,7 +114,7 @@ function developmentPlanActions(state) {
           break;
         case "addNote": {
           let choice;
-          [state, choice] = selectPlan(state, "Development");
+          [state, choice] = await selectPlan(state, "Development");
           if (choice) {
             let plan = state.planDef(choice);
             await createNote(state, plan);
@@ -165,7 +165,10 @@ function pendingPlanActions(state) {
           state = await viewPlan(state, "Pending");
           break;
         case "viewPlan": 
-          state = await viewSource(state, "Approved");
+          state = await viewSource(state, "Pending");
+          break;
+        case "showNotes":
+          state = await viewNote(state, "Pending");
           break;
         case "planHistory": 
           state = await commitHistory(state, "Pending");
