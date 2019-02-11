@@ -11,7 +11,7 @@ async function approvePlan(state) {
   try {
     let repo = state.currentRepositoryDef();
     let branch = `${process.env.USER}-local`;
-    if (!repo.isApprover(state.email())) {
+    if (repo.approvalType !== "none" && !repo.isApprover(state.email())) {
       screen.errorMsg(
         "Not Approved",
         "You are not one of the registered approvers "
@@ -26,6 +26,7 @@ async function approvePlan(state) {
       let SHA = await repo.gitRepo.getChangeFileSHA(plan);
       plan.addApproval(state.username(), state.email(), SHA);
       if (repo.approvalType === "any"
+          || repo.approvalType === "none"
           || (repo.approvalType === "all"
               && repo.approvers.size === plan.currentApprovalCount())) {
         plan.setCurrentApprovalState(true, SHA);
