@@ -2,12 +2,19 @@
 
 BEGIN;
 
+-- roles are per server, not per database. Therefore, this role may already
+-- exist. Unfortunately, PG does not support IF NOT EXIST for roles, so
+-- we will do this in its own transaction. 
 CREATE ROLE dbcm_user
   WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
 
-CREATE SCHEMA dbcm AUTHORIZATION dbcm_user;
+COMMIT;
 
-CREATE TABLE dbcm.change_plans (
+BEGIN;
+
+CREATE SCHEMA IF NOT EXISTS dbcm AUTHORIZATION dbcm_user;
+
+CREATE TABLE IF NOT EXISTS dbcm.change_plans (
     plan_id VARCHAR(22) NOT NULL
   , applied_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
   , applied_by VARCHAR(64) NOT NULL  
@@ -24,7 +31,7 @@ CREATE TABLE dbcm.change_plans (
   , CONSTRAINT change_plans_pkey PRIMARY KEY (plan_id, repository_version)
 );
 
-CREATE TABLE dbcm.change_log (
+CREATE TABLE IF NOT EXISTS dbcm.change_log (
     log_id SERIAL
   , log_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
   , plan_id VARCHAR(22) NOT NULL
@@ -34,4 +41,3 @@ CREATE TABLE dbcm.change_log (
 );
 
 COMMIT;
-
