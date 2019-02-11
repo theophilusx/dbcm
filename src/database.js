@@ -76,7 +76,7 @@ async function getAppliedPlans(target) {
         + "ORDER BY applied_dt DESC";
   
   try {
-    let rslt = await db.execSQL(target.params, sql);
+    let rslt = await db.execSQL(target.params(), sql);
     let result = [];
     for (let r of rslt.rows) {
       result.push({

@@ -68,6 +68,8 @@ Target.prototype.unappliedPlans = async function(repo, plans) {
 
   try {
     let appliedList = await this.appliedPlans();
+    console.log("appliedList");
+    console.dir(appliedList);
     for (let p of appliedList) {
       if (plans.has(p.uuid)) {
         let plan = plans.get(p.uuid);
