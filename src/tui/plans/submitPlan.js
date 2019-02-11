@@ -13,7 +13,7 @@ async function updateVersion(plan) {
   try {
     let question = {
       type: "input",
-      name: "versino",
+      name: "version",
       default: plan.version,
       message: "Release version number"
     };
