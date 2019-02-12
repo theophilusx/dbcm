@@ -56,7 +56,7 @@ ${msg}
         }
         state.writeChangePlans();
         let files = await repo.getStatus();
-        repo.commit(files, `Plan ${plan.name} ${msg}`, state.username(), state.email());
+        repo.commit(files, msg, state.username(), state.email());
       } else {
         screen.infoMsg("Cancelled", "Re-working of plan cancelled");
       }
