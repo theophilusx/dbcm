@@ -22,9 +22,9 @@ async function createNote(state, plan, title="Note", prompt="Enter note") {
 - ${moment().format("YYYY-MM-DD HH:mm:ss")}
 - ${state.username()} <${state.email()}>
 
-------
-
 ${answer.note}
+
+------
 `;
       let docFile = path.join(
         state.home(),
