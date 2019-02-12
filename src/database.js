@@ -73,7 +73,7 @@ async function getAppliedPlans(target) {
   const sql = "SELECT plan_id, status, repository_version, "
         + "change_sha, applied_dt FROM dbcm.change_plans "
         + "WHERE status IN ('Applied', 'Verified') "
-        + "ORDER BY applied_dt DESC";
+        + "ORDER BY applied_dt";
   
   try {
     let rslt = await db.execSQL(target.params(), sql);
