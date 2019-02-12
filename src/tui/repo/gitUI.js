@@ -101,7 +101,7 @@ async function displayDiff(diffList) {
     for (let diff of diffList) {
       let patches = await diff.patches();
       for (let patch of patches) {
-        if (patch.oldFile().path().match(/change-plans.json/)) {
+        if (patch.oldFile().path().match(/.*\.json|.*\.md/)) {
           continue;
         }
         let hunks = await patch.hunks();
