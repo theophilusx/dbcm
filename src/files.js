@@ -237,9 +237,9 @@ function makeDocFile(rootPath, changeRecord) {
 - **Created** ${changeRecord.createdDate} 
 - **Author** ${changeRecord.author} <${changeRecord.authorEmail}> 
 
--------
-
 ${changeRecord.description}
+
+-------
 
 `;
 
