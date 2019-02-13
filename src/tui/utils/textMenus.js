@@ -65,7 +65,7 @@ function listMenu(state, title, prompt, choices, actionFN) {
     message: prompt
   }];
 
-  screen.status(state);
+  screen.status(state, title);
   
   return doMenu(title, question, fn)
     .catch(err => {
