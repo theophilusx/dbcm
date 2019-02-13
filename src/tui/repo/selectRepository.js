@@ -6,7 +6,7 @@ const menu = require("../utils/textMenus");
 const screen = require("../utils/textScreen");
 const Repository = require("../../Repository");
 const path = require("path");
-const approversui = require("../approversUI");
+const selectApprovalMethod = require("./selectApprovalMethod");
 
 function setupQuestions(state) {
   const logName = "setupQuestions";
@@ -72,7 +72,13 @@ function repoAction(appState) {
         let type = await repo.initGit(branch, appState.username(), appState.email());
         if (type === "new") {
           // hve initialised a clean repo
-          appState = await approversui.getApprovalConfig(appState);
+          let hasApproval = await menu.confirmMenu(
+            "Approval Method",
+            "Does this repository require change approval"
+          );
+          if (hasApproval) {
+            await selectApprovalMethod(appState);
+          }
           let files = await repo.gitRepo.getStatus();
           await repo.gitRepo.addCommit(
             files,

@@ -27,6 +27,7 @@ const rejectPlan = require("./plans/rejectPlan");
 const selectPlan = require("./plans/selectPlan");
 const viewNote = require("./plans/viewNote");
 const createNote = require("./plans/createNote");
+const selectApprovalMethod = require("./repo/selectApprovalMethod");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -347,12 +348,23 @@ function repositoryActions(state) {
           "This function has not yet been implemented"
         );
         break;
-      case "editApprovals":
-        screen.warningMsg(
-          "Not Implemented",
-          "This function has not yet been implemented"
-        );
+      case "editApprovals": {
+        await selectApprovalMethod(state);
+        let files = await state.currentRepositoryDef().getStatus();
+        let [appFile] = files.filter(f => f.path() === "approval.json");
+        if (appFile.isModified()) {
+          let repo = state.currentRepositoryDef();
+          await repo.commit(
+            [appFile],
+            "Updated approval method",
+            state.username(),
+            state.email()
+          );
+          let branch = `${process.env.USER}-local`;
+          await repo.gitRepo.mergeIntoMaster(branch, state.username(), state.email());
+        }
         break;
+      }
       case "selectRepo":
         await selectRepository(state);
         await selectTarget(state);
