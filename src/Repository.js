@@ -48,7 +48,8 @@ Repository.prototype.setApprovers = function(approversList) {
   const logName = `${moduleName}.setApprovers`;
 
   try {
-    if (Array.isArray(approversList)) {
+    if (Array.isArray(approversList)
+        && approversList.length) {
       approversList.forEach(approver => {
         if (approver.name === undefined || approver.email === undefined) {
           throw new Error("Missing properties. Approvers must have "
@@ -56,6 +57,8 @@ Repository.prototype.setApprovers = function(approversList) {
         }
         this.approvers.set(approver.email, approver);
       });
+    } else {
+      this.approvers.clear();
     }
   } catch (err) {
     throw new VError(err, `${logName} Failed to set approvers for repositorhy `
