@@ -5,6 +5,7 @@ const moduleName = "Target";
 const VError = require("verror");
 const db = require("./db");
 const queries = require("./database");
+const screen = require("./tui/utils/textScreen");
 
 function Target(name, db, user, pwd, host="localhost", port=5432) {
   const logName = `${moduleName}.Target`;
@@ -43,10 +44,19 @@ Target.prototype.isInitialised = async function() {
   const sql = "SELECT count(*) cnt from dbcm.change_plans";
   
   try {
-    let rslt = await db.execSQL(this.params(), sql);
+    await db.execSQL(this.params(), sql);
     return true;
   } catch (err) {
     if (err.message.match(/relation .* does not exist/)) {
+      return false;
+    }
+    if (err.message.match(/connect ECONNREFUSED/)) {
+      screen.errorMsg(
+        "Databae Connection Failure",
+        `Connection to ${this.database} refused `
+          + `Host: ${this.host}:${this.port} `
+          + `User: ${this.user}`
+      );
       return false;
     }
     throw new VError(err, `${logName} `);
