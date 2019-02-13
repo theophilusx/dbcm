@@ -470,7 +470,7 @@ function mainAction(state) {
           do {
             state = await menu.listMenu(
               state,
-              "Plan Menu",
+              "Plan Management Menu",
               "Select Change Plan Group",
               planTypeChoices,
               planTypeAction(state)
@@ -482,7 +482,7 @@ function mainAction(state) {
           do {
             state = await menu.listMenu(
               state,
-              "Database Target Menu",
+              "Database Management Menu",
               "Select Target Action",
               dbTargetChoices,
               targetAction(state)
