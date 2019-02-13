@@ -92,7 +92,6 @@ const dbTargetChoices = menu.buildChoices([
 const repositoryChoices = menu.buildChoices([
   ["Show Repository Details", "showRepo"],
   ["Edit Approvals Setting", "editApprovals"],
-  ["List Known Repositories", "listRepos"],
   ["Change Repository", "selectRepo"]
 ]);
 
@@ -354,14 +353,9 @@ function repositoryActions(state) {
           "This function has not yet been implemented"
         );
         break;
-      case "listRepos":
-        screen.warningMsg(
-          "Not Implemented",
-          "This function has not yet been implemented"
-        );
-        break;
       case "selectRepo":
-        state = await selectRepository(state);
+        await selectRepository(state);
+        await selectTarget(state);
         break;
       default:
         screen.errorMsg(
