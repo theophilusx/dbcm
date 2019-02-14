@@ -28,11 +28,12 @@ const selectPlan = require("./plans/selectPlan");
 const viewNote = require("./plans/viewNote");
 const createNote = require("./plans/createNote");
 const selectApprovalMethod = require("./repo/selectApprovalMethod");
+const markPlanApplied = require("./targets/markPlanApplied");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
   ["Manage DB Targets", "manageTargets"],
-  ["Manage Repositories", "manageRepositories"],
+  ["Manage Repositories", "manageRepositories"]
 ]);
 
 const planTypeChoices = menu.buildChoices([
@@ -86,8 +87,9 @@ const dbTargetChoices = menu.buildChoices([
   ["Apply Next Unapplied Change", "applyNextChange"],
   ["Apply All Unapplied Changes", "applyAllChanges"],
   ["Rollback Last Applied Change", "rollbackChange"],
+  ["Mark Plan as Applied", "markApplied"],
   ["Display Change Log", "displayChangelog"],
-  ["Change Database Target", "selectDbTarget"] 
+  ["Change Database Target", "selectDbTarget"]
 ]);
 
 const repositoryChoices = menu.buildChoices([
@@ -106,41 +108,41 @@ function developmentPlanActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "newPlan":
-          state = await createPlan(state);
-          break;
-        case "editPlan":
-          state = await editPlan(state, "Development");
-          break;
-        case "addNote": {
-          let choice;
-          [state, choice] = await selectPlan(state, "Development");
-          if (choice) {
-            let plan = state.planDef(choice);
-            await createNote(state, plan);
+          case "newPlan":
+            state = await createPlan(state);
+            break;
+          case "editPlan":
+            state = await editPlan(state, "Development");
+            break;
+          case "addNote": {
+            let choice;
+            [state, choice] = await selectPlan(state, "Development");
+            if (choice) {
+              let plan = state.planDef(choice);
+              await createNote(state, plan);
+            }
+            break;
           }
-          break;
-        }
-        case "testDevPlan":
-          state = await applyChange(state, "Development");
-          break;
-        case "rollbackDevPlan":
-          state = await rollbackChange(state, "Development");
-          break;
-        case "commitPlan":
-          state = await submitPlan(state);
-          break;
-        case "listDevPlans":
-          state = await viewPlan(state, "Development");
-          break;
-        case "showNotes":
-          state = await viewNote(state, "Development");
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`
-          );
+          case "testDevPlan":
+            state = await applyChange(state, "Development");
+            break;
+          case "rollbackDevPlan":
+            state = await rollbackChange(state, "Development");
+            break;
+          case "commitPlan":
+            state = await submitPlan(state);
+            break;
+          case "listDevPlans":
+            state = await viewPlan(state, "Development");
+            break;
+          case "showNotes":
+            state = await viewNote(state, "Development");
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
+            );
         }
       }
       return state;
@@ -161,38 +163,38 @@ function pendingPlanActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listPendingPlans":
-          state = await viewPlan(state, "Pending");
-          break;
-        case "viewPlan": 
-          state = await viewSource(state, "Pending");
-          break;
-        case "showNotes":
-          state = await viewNote(state, "Pending");
-          break;
-        case "planHistory": 
-          state = await commitHistory(state, "Pending");
-          break;
-        case "planDiff":
-          state = await planDiff(state, "Pending");
-          break;
-        case "approvePlan":
-          state = await approvePlan(state);
-          break;
-        case "rejectPlan":
-          state = await rejectPlan(state);
-          break;
-        case "newRelease":
-          screen.warningMsg(
-            "Not Implemented",
-            "This functionality has not yet been implemented"
-          );
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`
-          );
+          case "listPendingPlans":
+            state = await viewPlan(state, "Pending");
+            break;
+          case "viewPlan":
+            state = await viewSource(state, "Pending");
+            break;
+          case "showNotes":
+            state = await viewNote(state, "Pending");
+            break;
+          case "planHistory":
+            state = await commitHistory(state, "Pending");
+            break;
+          case "planDiff":
+            state = await planDiff(state, "Pending");
+            break;
+          case "approvePlan":
+            state = await approvePlan(state);
+            break;
+          case "rejectPlan":
+            state = await rejectPlan(state);
+            break;
+          case "newRelease":
+            screen.warningMsg(
+              "Not Implemented",
+              "This functionality has not yet been implemented"
+            );
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
+            );
         }
       }
       return state;
@@ -213,29 +215,29 @@ function approvedPlanActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listApprovedPlans":
-          state = await viewPlan(state, "Approved");
-          break;
-        case "viewSource":
-          state = await viewSource(state, "Approved");
-          break;
-        case "viewHistory":
-          state = await commitHistory(state, "Approved");
-          break;
-        case "viewDiff":
-          state = await planDiff(state, "Approved");
-          break;
-        case "showNotes":
-          state = await viewNote(state, "Approved");
-          break;
-        case "reworkApprovedPlan":
-          state = await reworkPlan(state, "Approved");
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`
-          );
+          case "listApprovedPlans":
+            state = await viewPlan(state, "Approved");
+            break;
+          case "viewSource":
+            state = await viewSource(state, "Approved");
+            break;
+          case "viewHistory":
+            state = await commitHistory(state, "Approved");
+            break;
+          case "viewDiff":
+            state = await planDiff(state, "Approved");
+            break;
+          case "showNotes":
+            state = await viewNote(state, "Approved");
+            break;
+          case "reworkApprovedPlan":
+            state = await reworkPlan(state, "Approved");
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
+            );
         }
       }
       return state;
@@ -256,23 +258,23 @@ function rejectedPlanActions(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listRejectedPlans":
-          state = await viewPlan(state, "Rejected");
-          break;
-        case "viewRejected":
-          state = await viewSource(state, "Rejected");
-          break;
-        case "showNotes":
-          state = await viewNote(state, "Rejected");
-          break;
-        case "reworkRejectedPlan":
-          state = await reworkPlan(state, "Rejected");
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`
-          );
+          case "listRejectedPlans":
+            state = await viewPlan(state, "Rejected");
+            break;
+          case "viewRejected":
+            state = await viewSource(state, "Rejected");
+            break;
+          case "showNotes":
+            state = await viewNote(state, "Rejected");
+            break;
+          case "reworkRejectedPlan":
+            state = await reworkPlan(state, "Rejected");
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
+            );
         }
       }
       return state;
@@ -293,35 +295,38 @@ function targetAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "listTargetState":
-          state = await targetState(state);
-          break;
-        case "listUnappliedChanges":
-          state = await unappliedPlans(state);
-          break;
-        case "applyNextChange":
-          state = await applyNextChange(state);
-          break;
-        case "applyAllChanges":
-          screen.warningMsg(
-            "Not Yet Implemented",
-            "This feature has not yet been implemented"
-          );
-          break;
-        case "rollbackChange":
-          state = await rollbackLastChange(state);
-          break;
-        case "displayChangelog":
-          state = await changeLog(state);
-          break;
-        case "selectDbTarget":
-          state = await selectTarget(state);
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`
-          );
+          case "listTargetState":
+            state = await targetState(state);
+            break;
+          case "listUnappliedChanges":
+            state = await unappliedPlans(state);
+            break;
+          case "applyNextChange":
+            state = await applyNextChange(state);
+            break;
+          case "applyAllChanges":
+            screen.warningMsg(
+              "Not Yet Implemented",
+              "This feature has not yet been implemented"
+            );
+            break;
+          case "rollbackChange":
+            state = await rollbackLastChange(state);
+            break;
+          case "markApplied":
+            state = await markPlanApplied(state);
+            break;
+          case "displayChangelog":
+            state = await changeLog(state);
+            break;
+          case "selectDbTarget":
+            state = await selectTarget(state);
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
+            );
         }
       }
       return state;
@@ -342,38 +347,42 @@ function repositoryActions(state) {
         return state;
       }
       switch (answer.choice) {
-      case "showRepo":
-        screen.warningMsg(
-          "Not Implemented",
-          "This function has not yet been implemented"
-        );
-        break;
-      case "editApprovals": {
-        await selectApprovalMethod(state);
-        let files = await state.currentRepositoryDef().getStatus();
-        let [appFile] = files.filter(f => f.path() === "approval.json");
-        if (appFile.isModified()) {
-          let repo = state.currentRepositoryDef();
-          await repo.commit(
-            [appFile],
-            "Updated approval method",
-            state.username(),
-            state.email()
+        case "showRepo":
+          screen.warningMsg(
+            "Not Implemented",
+            "This function has not yet been implemented"
           );
-          let branch = `${process.env.USER}-local`;
-          await repo.gitRepo.mergeIntoMaster(branch, state.username(), state.email());
+          break;
+        case "editApprovals": {
+          await selectApprovalMethod(state);
+          let files = await state.currentRepositoryDef().getStatus();
+          let [appFile] = files.filter(f => f.path() === "approval.json");
+          if (appFile.isModified()) {
+            let repo = state.currentRepositoryDef();
+            await repo.commit(
+              [appFile],
+              "Updated approval method",
+              state.username(),
+              state.email()
+            );
+            let branch = `${process.env.USER}-local`;
+            await repo.gitRepo.mergeIntoMaster(
+              branch,
+              state.username(),
+              state.email()
+            );
+          }
+          break;
         }
-        break;
-      }
-      case "selectRepo":
-        await selectRepository(state);
-        await selectTarget(state);
-        break;
-      default:
-        screen.errorMsg(
-          "Unrecognised Action",
-          `${logName}: No associated action for choice ${answer.choice}`
-        );
+        case "selectRepo":
+          await selectRepository(state);
+          await selectTarget(state);
+          break;
+        default:
+          screen.errorMsg(
+            "Unrecognised Action",
+            `${logName}: No associated action for choice ${answer.choice}`
+          );
       }
       return state;
     } catch (err) {
@@ -393,59 +402,59 @@ function planTypeAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "developmentPlans":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Development Plan Menu",
-              "Select Plan Action",
-              developmentPlanChoices,
-              developmentPlanActions(state)
+          case "developmentPlans":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Development Plan Menu",
+                "Select Plan Action",
+                developmentPlanChoices,
+                developmentPlanActions(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          case "pendingPlans":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Pending Plan Menu",
+                "Select Plan Action",
+                pendingPlanChoices,
+                pendingPlanActions(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          case "approvedPlans":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Approved Plan Menu",
+                "Selet Plan Action",
+                approvedPlanChoices,
+                approvedPlanActions(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          case "rejectedPlans":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Rejected Plans Menu",
+                "Select Plan Action",
+                rejectedPlanChoices,
+                rejectedPlanActions(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
             );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        case "pendingPlans":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Pending Plan Menu",
-              "Select Plan Action",
-              pendingPlanChoices,
-              pendingPlanActions(state)
-            );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        case "approvedPlans":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Approved Plan Menu",
-              "Selet Plan Action",
-              approvedPlanChoices,
-              approvedPlanActions(state)
-            );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        case "rejectedPlans":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Rejected Plans Menu",
-              "Select Plan Action",
-              rejectedPlanChoices,
-              rejectedPlanActions(state)
-            );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`
-          );
         }
       }
       return state;
@@ -466,46 +475,47 @@ function mainAction(state) {
         return state;
       } else {
         switch (answer.choice) {
-        case "managePlans":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Plan Management Menu",
-              "Select Change Plan Group",
-              planTypeChoices,
-              planTypeAction(state)
+          case "managePlans":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Plan Management Menu",
+                "Select Change Plan Group",
+                planTypeChoices,
+                planTypeAction(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          case "manageTargets":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Database Management Menu",
+                "Select Target Action",
+                dbTargetChoices,
+                targetAction(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          case "manageRepositories":
+            do {
+              state = await menu.listMenu(
+                state,
+                "Repository Management Menu",
+                "Select Repository Action",
+                repositoryChoices,
+                repositoryActions(state)
+              );
+            } while (!menu.doExit(state.menuChoice()));
+            state.setMenuChoice("");
+            break;
+          default:
+            screen.errorMsg(
+              "Unrecognised Action",
+              `${logName} No associated action for choice ${answer.choice}`
             );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        case "manageTargets":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Database Management Menu",
-              "Select Target Action",
-              dbTargetChoices,
-              targetAction(state)
-            );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        case "manageRepositories":
-          do {
-            state = await menu.listMenu(
-              state,
-              "Repository Management Menu",
-              "Select Repository Action",
-              repositoryChoices,
-              repositoryActions(state)
-            );
-          } while (!menu.doExit(state.menuChoice()));
-          state.setMenuChoice("");
-          break;
-        default:
-          screen.errorMsg(
-            "Unrecognised Action",
-            `${logName} No associated action for choice ${answer.choice}`);
         }
       }
       return state;
