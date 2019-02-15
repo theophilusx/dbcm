@@ -15,10 +15,8 @@ async function targetState(state) {
   const extraSpace = Math.floor((width - fixedWidth) / 2);
   const nameSize = parseInt(30 + extraSpace);
   const bySize = parseInt(10 + extraSpace);
-  
+
   try {
-    console.log(`width: ${width} Fixed: ${fixedWidth} extra: `
-                + `${extraSpace} Name: ${nameSize} By: ${bySize}`);
     const table = new Table({
       head: ["Applied Date", "Plan Name", "Version", "Status", "Applied By"],
       colWidths: [18, nameSize, 10, 12, bySize]

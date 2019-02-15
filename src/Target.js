@@ -7,16 +7,20 @@ const db = require("./db");
 const queries = require("./database");
 const screen = require("./tui/utils/textScreen");
 
-function Target(name, db, user, pwd, host="localhost", port=5432) {
+function Target(name, db, user, pwd, host = "localhost", port = 5432) {
   const logName = `${moduleName}.Target`;
 
   try {
-    if (name === undefined
-        || db === undefined
-        || user === undefined
-        || pwd === undefined) {
-      throw new Error("Missing arguments. Must specify a name, database, user "
-                      + "and password");
+    if (
+      name === undefined ||
+      db === undefined ||
+      user === undefined ||
+      pwd === undefined
+    ) {
+      throw new Error(
+        "Missing arguments. Must specify a name, database, user " +
+          "and password"
+      );
     }
     this.name = name;
     this.database = db;
@@ -42,7 +46,7 @@ Target.prototype.params = function() {
 Target.prototype.isInitialised = async function() {
   const logName = `${moduleName}.isInitialised`;
   const sql = "SELECT count(*) cnt from dbcm.change_plans";
-  
+
   try {
     await db.execSQL(this.params(), sql);
     return true;
@@ -53,9 +57,9 @@ Target.prototype.isInitialised = async function() {
     if (err.message.match(/connect ECONNREFUSED/)) {
       screen.errorMsg(
         "Databae Connection Failure",
-        `Connection to ${this.database} refused `
-          + `Host: ${this.host}:${this.port} `
-          + `User: ${this.user}`
+        `Connection to ${this.database} refused ` +
+          `Host: ${this.host}:${this.port} ` +
+          `User: ${this.user}`
       );
       return false;
     }
@@ -78,8 +82,6 @@ Target.prototype.unappliedPlans = async function(repo, plans) {
 
   try {
     let appliedList = await this.appliedPlans();
-    console.log("appliedList");
-    console.dir(appliedList);
     for (let p of appliedList) {
       if (plans.has(p.uuid)) {
         let plan = plans.get(p.uuid);
@@ -96,4 +98,3 @@ Target.prototype.unappliedPlans = async function(repo, plans) {
 };
 
 module.exports = Target;
-
