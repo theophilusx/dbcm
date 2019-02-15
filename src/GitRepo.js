@@ -7,7 +7,7 @@ const VError = require("verror");
 const Git = require("nodegit");
 
 const cloneOptions = {
-  fetchOpts : {
+  fetchOpts: {
     callbacks: {
       // This is a required callback for OS X machines.  There is a known issue
       // with libgit2 being able to verify certificates from GitHub.
@@ -21,7 +21,7 @@ const cloneOptions = {
         return Git.Cred.sshKeyFromAgent(userName);
       }
     }
-  } 
+  }
 };
 
 function GitRepo(name, url, repoPath) {
@@ -56,7 +56,11 @@ GitRepo.prototype.branchExists = async function(branchName) {
 
   try {
     assert.ok(this.repoObj, "Repository not initialised");
-    let ref = await Git.Branch.lookup(this.repoObj, branchName, Git.Branch.BRANCH.LOCAL);
+    let ref = await Git.Branch.lookup(
+      this.repoObj,
+      branchName,
+      Git.Branch.BRANCH.LOCAL
+    );
     return ref;
   } catch (err) {
     if (err.message.match(/cannot locate local branch/)) {
@@ -150,7 +154,12 @@ GitRepo.prototype.addCommit = async function(files, commitMsg, author, email) {
   }
 };
 
-GitRepo.prototype.mergeBranches = async function(toBranch, fromBranch, author, email) {
+GitRepo.prototype.mergeBranches = async function(
+  toBranch,
+  fromBranch,
+  author,
+  email
+) {
   const logName = `${moduleName}.mergeBranches`;
 
   try {
@@ -209,9 +218,11 @@ GitRepo.prototype.addReleaseTag = async function(name, msg) {
     );
     return name;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to add tag ${name} `
-                     + "to repository");
-  } 
+    throw new VError(
+      err,
+      `${logName} Failed to add tag ${name} ` + "to repository"
+    );
+  }
 };
 
 GitRepo.prototype.getChangeFileSHA = async function(plan) {
@@ -224,7 +235,7 @@ GitRepo.prototype.getChangeFileSHA = async function(plan) {
     return entry.sha();
   } catch (err) {
     if (err.message.match(/the path .* does not exist in the given tree/)) {
-      return "Unknown";      
+      return "Unknown";
     }
     throw new VError(err, `${logName}`);
   }
@@ -232,7 +243,7 @@ GitRepo.prototype.getChangeFileSHA = async function(plan) {
 
 GitRepo.prototype.fileHistory = async function(fileName) {
   const logName = `${moduleName}.fileHistory`;
-  
+
   async function compileHistory(repo, newCommits, commitHistory, file, depth) {
     const logName = `${moduleName}.fileHistory.compileHistory`;
 
@@ -260,7 +271,7 @@ GitRepo.prototype.fileHistory = async function(fileName) {
       throw new VError(err, `${logName}`);
     }
   }
-  
+
   try {
     assert.ok(this.repoObj, "Repository not initialised");
     let masterCommit = await this.repoObj.getMasterCommit();
@@ -280,7 +291,7 @@ GitRepo.prototype.fileHistory = async function(fileName) {
     throw new VError(err, `${logName} Failed to get history for ${fileName}`);
   }
 };
- 
+
 GitRepo.prototype.fileDiff = async function(commitSha) {
   const logName = `${moduleName}.fileDiff`;
 
@@ -307,7 +318,7 @@ GitRepo.prototype.getStatus = async function() {
 
 GitRepo.prototype.statusString = async function() {
   const logName = `${moduleName}.statusString`;
-  
+
   function statusItem(s) {
     let words = [];
     if (s.isConflicted()) {
@@ -331,7 +342,7 @@ GitRepo.prototype.statusString = async function() {
     if (s.isTypechange()) {
       words.push("TYPECHANGE");
     }
-    return `${words.join(" ")} ${s.path()}`; 
+    return `${words.join(" ")} ${s.path()}`;
   }
 
   try {
@@ -365,4 +376,3 @@ GitRepo.prototype.init = async function() {
 };
 
 module.exports = GitRepo;
-
