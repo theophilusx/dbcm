@@ -88,6 +88,7 @@ const dbTargetChoices = menu.buildChoices([
   ["Apply All Unapplied Changes", "applyAllChanges"],
   ["Rollback Last Applied Change", "rollbackChange"],
   ["Mark Plan as Applied", "markApplied"],
+  ["Mark Plan as Rolledback", "markRolledback"],
   ["Display Change Log", "displayChangelog"],
   ["Change Database Target", "selectDbTarget"]
 ]);
@@ -315,6 +316,9 @@ function targetAction(state) {
             break;
           case "markApplied":
             state = await markPlanApplied(state);
+            break;
+          case "markRolledback":
+            state = await markPlanRolledback(state);
             break;
           case "displayChangelog":
             state = await changeLog(state);
