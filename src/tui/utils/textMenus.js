@@ -35,13 +35,13 @@ function buildChoices(choiceData) {
 function doMenu(title, question, actionFN) {
   const logName = `${moduleName}.displayMenu`;
 
-  return inquirer.prompt(question)
+  return inquirer
+    .prompt(question)
     .then(actionFN)
     .catch(err => {
       throw new VError(err, `${logName} Error processing menu ${title}`);
     });
 }
-
 
 function listMenu(state, title, prompt, choices, actionFN) {
   const logName = `${moduleName}.listMenu`;
@@ -58,19 +58,20 @@ function listMenu(state, title, prompt, choices, actionFN) {
   }
 
   let fn = actionFN || defaultAction;
-  let question = [{
-    type: "list",
-    name: "choice",
-    choices: choices,
-    message: prompt
-  }];
+  let question = [
+    {
+      type: "list",
+      name: "choice",
+      choices: choices,
+      message: prompt
+    }
+  ];
 
   screen.status(state, title);
-  
-  return doMenu(title, question, fn)
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to display menu ${title}`);
-    });
+
+  return doMenu(title, question, fn).catch(err => {
+    throw new VError(err, `${logName} Failed to display menu ${title}`);
+  });
 }
 
 function genericMenu(state, title, questions, actionFN) {
@@ -90,34 +91,35 @@ function genericMenu(state, title, questions, actionFN) {
 
   let fn = actionFN === undefined ? defaultAction : actionFN;
   screen.status(state);
-  return doMenu(title, questions, fn(state))
-    .catch(err => {
-      throw new VError(err, `${logName} `);
-    });
+  return doMenu(title, questions, fn(state)).catch(err => {
+    throw new VError(err, `${logName} `);
+  });
 }
 
 async function collectionMenu(title, questions) {
+  const logName = `${moduleName}.collectionMenu`;
+
   try {
     questions.push({
       type: "confirm",
-      name: "more",
+      name: "menuGetMore",
       message: "Add another:"
     });
-    let answers = {};
+    let data = {};
     let result = [];
     do {
-      answers = await inquirer.prompt(questions);
+      data = await inquirer.prompt(questions);
       let tmpObj = {};
-      for (let k of Object.keys(answers)) {
-        if (k !== "more") {
-          tmpObj[k] = answers[k];
+      for (let k of Object.keys(data)) {
+        if (k !== "menuGetMore") {
+          tmpObj[k] = data[k];
         }
       }
       result.push(tmpObj);
-    } while (answers.more);
+    } while (data.menuGetMore);
     return result;
   } catch (err) {
-    throw new Error(err.message);
+    throw new VError(err, `${logName}`);
   }
 }
 
@@ -139,7 +141,7 @@ async function selectMenu(state, title, selectItems) {
     let answer = await inquirer.prompt(question);
     return answer.choice;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to execute menu ${title}`);    
+    throw new VError(err, `${logName} Failed to execute menu ${title}`);
   }
 }
 
@@ -147,11 +149,13 @@ async function confirmMenu(title, msg) {
   const logName = `${moduleName}.confirmMenu`;
 
   try {
-    let answer = await inquirer.prompt([{
-      type: "confirm",
-      name: "choice",
-      message: msg
-    }]);
+    let answer = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "choice",
+        message: msg
+      }
+    ]);
     return answer.choice;
   } catch (err) {
     throw new VError(err, `${logName} Failed to get confirmation choice`);

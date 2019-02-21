@@ -361,7 +361,7 @@ function repositoryActions(state) {
           await selectApprovalMethod(state);
           let files = await state.currentRepositoryDef().getStatus();
           let [appFile] = files.filter(f => f.path() === "approval.json");
-          if (appFile.isModified()) {
+          if (appFile && appFile.isModified()) {
             let repo = state.currentRepositoryDef();
             await repo.commit(
               [appFile],
