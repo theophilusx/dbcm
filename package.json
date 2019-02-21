@@ -28,8 +28,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "mocha": "^5.2.0",
-    "prettier": "^1.16.4"
+    "mocha": "^5.2.0"
   },
   "dependencies": {
     "boxen": "^2.1.0",
