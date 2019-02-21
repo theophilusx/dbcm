@@ -130,10 +130,25 @@ Plan.prototype.approvalSHA = function() {
 
 Plan.prototype.summaryLine = function() {
   const logName = `${moduleName}.summaryLine`;
+  const width = cliWidth({defaultWidth: 80}) - 35;
+  const nameWidth = this.name.length;
+  const authorWidth = this.author.length;
+  const versionWidth = this.version.length;
+  const typeWidth = this.planType.length;
+  const overRun = width - nameWidth - authorWidth - versionWidth - typeWidth;
 
   try {
+    let name = this.name;
+    let author = this.author;
+    if (overRun < 0) {
+      let x = Math.abs(Math.floor(overRun));
+      let y = Math.floor(x / 2) + 2;
+      let z = x - y + 2;
+      author = author.substring(0, authorWidth - y) + "..";
+      name = name.substring(0, nameWidth - z) + "..";
+    }
     let line =
-      `${this.name} : ${this.author} : ${this.version} : ` +
+      `${name} : ${author} : ${this.version} : ` +
       `${this.createdDate} : ${this.planType}`;
     return line;
   } catch (err) {
