@@ -10,6 +10,7 @@ const Table = require("cli-table3");
 const chalk = require("chalk");
 const ApprovalHistory = require("./ApprovalHistory");
 const assert = require("assert");
+const cliWidth = require("cli-width");
 
 function Plan(params) {
   const logName = `${moduleName}.Plan`;
@@ -24,8 +25,9 @@ function Plan(params) {
     this.name = params.name;
     this.version = params.version ? params.version : "0.0.1";
     this.description = params.description;
-    this.createdDate = params.createdDate ?
-      params.createdDate : moment().format("YYYY-MM-DD HH:mm:ss");
+    this.createdDate = params.createdDate
+      ? params.createdDate
+      : moment().format("YYYY-MM-DD HH:mm:ss");
     this.author = params.author;
     this.authorEmail = params.authorEmail;
     this.planType = params.planType ? params.planType : "Development";
@@ -37,26 +39,18 @@ function Plan(params) {
     } else {
       this.approvals = new ApprovalHistory();
     }
-    this.change = params.change ?
-      params.change : path.join(
-        "changes",
-        `${params.name.replace(/\s+/g, "-")}.sql`
-      );
-    this.verify = params.verify ?
-      params.verify : path.join(
-        "verify",
-        `${params.name.replace(/\s+/g, "-")}.sql`
-      );
-    this.rollback = params.rollback ?
-      params.rollback : path.join(
-        "rollback",
-        `${params.name.replace(/\s+/g, "-")}.sql`
-      );
-    this.doc = params.doc ?
-      params.doc : path.join(
-        "doc",
-        `${params.name.replace(/\s+/g, "-")}.md`
-      );
+    this.change = params.change
+      ? params.change
+      : path.join("changes", `${params.name.replace(/\s+/g, "-")}.sql`);
+    this.verify = params.verify
+      ? params.verify
+      : path.join("verify", `${params.name.replace(/\s+/g, "-")}.sql`);
+    this.rollback = params.rollback
+      ? params.rollback
+      : path.join("rollback", `${params.name.replace(/\s+/g, "-")}.sql`);
+    this.doc = params.doc
+      ? params.doc
+      : path.join("doc", `${params.name.replace(/\s+/g, "-")}.md`);
   } catch (err) {
     throw new VError(err, `${logName} Params:`);
   }
@@ -66,9 +60,13 @@ Plan.prototype.setType = function(type) {
   const logName = `${moduleName}.setType`;
 
   try {
-    if (type === "Development" || type === "Pending"
-        || type === "Approved" || type === "Rejected") {
-      return this.planType = type;
+    if (
+      type === "Development" ||
+      type === "Pending" ||
+      type === "Approved" ||
+      type === "Rejected"
+    ) {
+      return (this.planType = type);
     }
     throw new Error(`Unknown plan type ${type}`);
   } catch (err) {
@@ -102,21 +100,22 @@ Plan.prototype.resetApproval = function() {
 
 Plan.prototype.textDisplay = function() {
   const logName = `${moduleName}.textDisplay`;
-
+  const width = cliWidth({defaultWidth: 80}) - 4;
+  const dataWidth = width - 16;
   try {
-    const table = new Table();
+    const table = new Table({colWidths: [15, dataWidth], wordWrap: true});
     table.push(
       {"Created Date": chalk.green(this.createdDate)},
-      {"Author": chalk.green(this.author)},
+      {Author: chalk.green(this.author)},
       {"Plan Name": chalk.green(this.name)},
-      {"UUID": chalk.green(this.uuid)},
-      {"Version": chalk.green(this.version)},
-      {"Description": chalk.green(this.description)},
-      {"Type": chalk.green(this.planType)},
-      {"Change File": chalk.green(this.change)},
-      {"Verify File": chalk.green(this.verify)},
-      {"Rollback File": chalk.green(this.rollback)},
-      {"Documentation": chalk.green(this.doc)}
+      {UUID: chalk.green(this.uuid)},
+      {Version: chalk.green(this.version)},
+      {Description: chalk.green(this.description)},
+      {Type: chalk.green(this.planType)},
+      {Change: chalk.green(this.change)},
+      {Verify: chalk.green(this.verify)},
+      {Rollback: chalk.green(this.rollback)},
+      {Documentation: chalk.green(this.doc)}
     );
     console.log(table.toString());
     this.approvals.currentApproval().textDisplay();
@@ -133,8 +132,9 @@ Plan.prototype.summaryLine = function() {
   const logName = `${moduleName}.summaryLine`;
 
   try {
-    let line = `${this.name} : ${this.author} : ${this.version} : `
-        + `${this.createdDate} : ${this.planType}`;
+    let line =
+      `${this.name} : ${this.author} : ${this.version} : ` +
+      `${this.createdDate} : ${this.planType}`;
     return line;
   } catch (err) {
     throw new VError(err, `${logName}`);
@@ -189,4 +189,3 @@ Plan.prototype.toObject = function() {
 };
 
 module.exports = Plan;
-
