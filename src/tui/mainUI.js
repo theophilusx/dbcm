@@ -29,6 +29,7 @@ const viewNote = require("./plans/viewNote");
 const createNote = require("./plans/createNote");
 const selectApprovalMethod = require("./repo/selectApprovalMethod");
 const markPlanApplied = require("./targets/markPlanApplied");
+const markPlanRolledback = require("./targets/markPlanRolledback");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -86,7 +87,9 @@ const dbTargetChoices = menu.buildChoices([
   ["List Unapplied Plans", "listUnappliedChanges"],
   ["Apply Next Unapplied Change", "applyNextChange"],
   ["Apply All Unapplied Changes", "applyAllChanges"],
-  ["Rollback Last Applied Change", "rollbackChange"],
+  ["Rollback Last Applied Change", "rollbackLastChange"],
+  ["Apply Specific Change", "applyChange"],
+  ["Rollback Specific Change", "rollbackChange"],
   ["Mark Plan as Applied", "markApplied"],
   ["Mark Plan as Rolledback", "markRolledback"],
   ["Display Change Log", "displayChangelog"],
@@ -311,8 +314,14 @@ function targetAction(state) {
               "This feature has not yet been implemented"
             );
             break;
-          case "rollbackChange":
+          case "rollbackLastChange":
             state = await rollbackLastChange(state);
+            break;
+          case "applyChange":
+            state = await applyChange(state, "Approved");
+            break;
+          case "rollbackChange":
+            state = await rollbackChange(state, "Approved");
             break;
           case "markApplied":
             state = await markPlanApplied(state);
