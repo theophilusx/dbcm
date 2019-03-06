@@ -41,6 +41,17 @@ PlanMap.prototype.add = async function(repoPath, plan) {
   }
 };
 
+PlanMap.prototype.remove = function(repoPath, plan) {
+  const logName = `${moduleName}.remove`;
+
+  try {
+    files.deletePlan(repoPath, plan);
+    this.plans.delete(plan.uuid);
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 PlanMap.prototype.get = function(key) {
   return this.plans.get(key);
 };
@@ -100,7 +111,10 @@ PlanMap.prototype.writePlans = async function(filePath) {
     };
     await fse.writeFile(filePath, JSON.stringify(plansObj, null, " "));
   } catch (err) {
-    throw new VError(err, `${logName} Failed to write change plans: ${filePath}`);
+    throw new VError(
+      err,
+      `${logName} Failed to write change plans: ${filePath}`
+    );
   }
 };
 
@@ -111,10 +125,7 @@ PlanMap.prototype.plansUIList = function(type) {
     let choices = [];
     for (let p of this.plans.values()) {
       if (p.planType === type) {
-        choices.push([
-          p.summaryLine(),
-          p.uuid
-        ]);
+        choices.push([p.summaryLine(), p.uuid]);
       }
     }
     return choices;
@@ -136,9 +147,7 @@ PlanMap.prototype.planGroupMap = function(type) {
     return planMap;
   } catch (err) {
     throw new VError(err, `${logName}`);
-
   }
 };
 
 module.exports = PlanMap;
-

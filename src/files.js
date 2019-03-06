@@ -15,14 +15,17 @@ function createPlanFile(rootPath) {
   };
   const planFile = path.join(rootPath, "change-plans.json");
 
-  return fse.writeFile(planFile, JSON.stringify(contents, null, " "), "utf-8")
+  return fse
+    .writeFile(planFile, JSON.stringify(contents, null, " "), "utf-8")
     .then(() => {
       console.log("Created change-plans.json file");
       return true;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create change-plans.json file `
-                       + `in ${rootPath}`);
+      throw new VError(
+        err,
+        `${logName} Failed to create change-plans.json file ` + `in ${rootPath}`
+      );
     });
 }
 
@@ -35,8 +38,9 @@ function createApprovalFile(rootPath) {
     approvers: []
   };
   const approvalFile = path.join(rootPath, "approval.json");
-  
-  return fse.writeFile(approvalFile, JSON.stringify(content, null, " "), "utf-8")
+
+  return fse
+    .writeFile(approvalFile, JSON.stringify(content, null, " "), "utf-8")
     .then(() => {
       console.log("Created approval.json file");
     })
@@ -48,10 +52,11 @@ function createApprovalFile(rootPath) {
 function createChangesDir(rootPath) {
   const logName = `${moduleName}.createChangesDir`;
   const contents =
-        "This directory contains SQL scripts representing DB structure changes";
+    "This directory contains SQL scripts representing DB structure changes";
   const dir = path.join(rootPath, "changes");
-  
-  return fse.mkdir(dir)
+
+  return fse
+    .mkdir(dir)
     .then(() => {
       let filePath = path.join(dir, "README");
       return fse.writeFile(filePath, contents, "utf-8");
@@ -61,18 +66,21 @@ function createChangesDir(rootPath) {
       return true;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create changes directory `
-                       + `in ${rootPath}`);
+      throw new VError(
+        err,
+        `${logName} Failed to create changes directory ` + `in ${rootPath}`
+      );
     });
 }
 
 function createVerifyDir(rootPath) {
   const logName = `${moduleName}.createVerifyDir`;
   const contents =
-        "This directory contains SQL scripts to verify DB structure changes";
+    "This directory contains SQL scripts to verify DB structure changes";
   const dir = path.join(rootPath, "verify");
-  
-  return fse.mkdir(dir)
+
+  return fse
+    .mkdir(dir)
     .then(() => {
       let filePath = path.join(dir, "README");
       return fse.writeFile(filePath, contents, "utf-8");
@@ -82,18 +90,21 @@ function createVerifyDir(rootPath) {
       return true;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create verify directory`
-                       + ` in ${rootPath}`);
+      throw new VError(
+        err,
+        `${logName} Failed to create verify directory` + ` in ${rootPath}`
+      );
     });
 }
 
 function createRollbackDir(rootPath) {
   const logName = `${moduleName}.createRollbackDir`;
   const contents =
-        "This directory contains SQL scripts to rollback DB structure changes";
+    "This directory contains SQL scripts to rollback DB structure changes";
   const dir = path.join(rootPath, "rollback");
-  
-  return fse.mkdir(dir)
+
+  return fse
+    .mkdir(dir)
     .then(() => {
       let filePath = path.join(dir, "README");
       return fse.writeFile(filePath, contents, "utf-8");
@@ -103,8 +114,10 @@ function createRollbackDir(rootPath) {
       return true;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create rollback directory `
-                       + `in ${rootPath}`);
+      throw new VError(
+        err,
+        `${logName} Failed to create rollback directory ` + `in ${rootPath}`
+      );
     });
 }
 
@@ -113,7 +126,8 @@ function createDocDir(rootPath) {
   const contents = "This directory contains documentation on DB changes";
   const dir = path.join(rootPath, "doc");
 
-  return fse.mkdir(dir)
+  return fse
+    .mkdir(dir)
     .then(() => {
       let filePath = path.join(dir, "README");
       return fse.writeFile(filePath, contents, "utf-8");
@@ -123,15 +137,19 @@ function createDocDir(rootPath) {
       return true;
     })
     .catch(err => {
-      throw new VError(err, `${logName} Failed to create doc directory in ${rootPath}`);
+      throw new VError(
+        err,
+        `${logName} Failed to create doc directory in ${rootPath}`
+      );
     });
 }
 
 function isInitialised(rootPath) {
   const logName = `${moduleName}.isInitialised`;
   const planFile = path.join(rootPath, "change-plans.json");
-  
-  return fse.access(planFile, fse.constants.R_OK | fse.constants.W_OK)
+
+  return fse
+    .access(planFile, fse.constants.R_OK | fse.constants.W_OK)
     .then(() => {
       return true;
     })
@@ -155,7 +173,10 @@ async function initialiseRepo(rootPath) {
     await createDocDir(rootPath);
     return true;
   } catch (err) {
-    throw new VError(err, `${logName} Failed to initialise repository ${rootPath}`);
+    throw new VError(
+      err,
+      `${logName} Failed to initialise repository ${rootPath}`
+    );
   }
 }
 
@@ -177,10 +198,12 @@ COMMIT;
 
 `;
 
-  return fse.writeFile(changeFile, content, "utf-8")
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to create change file ${changeRecord.change}`);
-    });
+  return fse.writeFile(changeFile, content, "utf-8").catch(err => {
+    throw new VError(
+      err,
+      `${logName} Failed to create change file ${changeRecord.change}`
+    );
+  });
 }
 
 function makeVerifyFile(rootPath, changeRecord) {
@@ -197,10 +220,12 @@ function makeVerifyFile(rootPath, changeRecord) {
 
 `;
 
-  return fse.writeFile(verifyFile, content, "utf-8")
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to create verify file ${changeRecord.change}`);
-    });
+  return fse.writeFile(verifyFile, content, "utf-8").catch(err => {
+    throw new VError(
+      err,
+      `${logName} Failed to create verify file ${changeRecord.change}`
+    );
+  });
 }
 
 function makeRollbackFile(rootPath, changeRecord) {
@@ -221,10 +246,12 @@ COMMIT;
 
 `;
 
-  return fse.writeFile(rollbackFile, content, "utf-8")
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to create rollback file ${changeRecord.rollback}`);
-    });
+  return fse.writeFile(rollbackFile, content, "utf-8").catch(err => {
+    throw new VError(
+      err,
+      `${logName} Failed to create rollback file ${changeRecord.rollback}`
+    );
+  });
 }
 
 function makeDocFile(rootPath, changeRecord) {
@@ -243,10 +270,12 @@ ${changeRecord.description}
 
 `;
 
-  return fse.writeFile(docFile, content, "utf-8")
-    .catch(err => {
-      throw new VError(err, `${logName} Failed to create doc file ${changeRecord.doc}`);
-    });
+  return fse.writeFile(docFile, content, "utf-8").catch(err => {
+    throw new VError(
+      err,
+      `${logName} Failed to create doc file ${changeRecord.doc}`
+    );
+  });
 }
 
 function createChangeFiles(root, changeRecord) {
@@ -267,8 +296,23 @@ function createChangeFiles(root, changeRecord) {
     });
 }
 
+function deletePlan(root, plan) {
+  const logName = `${moduleName}.deletePlan`;
+
+  try {
+    fse.unlinkSync(path.join(root, plan.change));
+    fse.unlinkSync(path.join(root, plan.verify));
+    fse.unlinkSync(path.join(root, plan.rollback));
+    fse.unlinkSync(path.join(root, plan.doc));
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+}
+
 module.exports = {
   isInitialised,
   initialiseRepo,
-  createChangeFiles
+  createChangeFiles,
+  deletePlan
 };

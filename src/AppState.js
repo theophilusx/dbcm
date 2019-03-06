@@ -17,7 +17,7 @@ function AppState() {
   this.initialised = false;
 }
 
-AppState.prototype.init = async function(rc=defaultInit) {
+AppState.prototype.init = async function(rc = defaultInit) {
   const logName = `${moduleName}.init`;
 
   async function readConfig(fileName) {
@@ -27,7 +27,7 @@ AppState.prototype.init = async function(rc=defaultInit) {
       return config;
     } catch (err) {
       if (err.code === "ENOENT" || err.code === undefined) {
-        // no rc file - return default 
+        // no rc file - return default
         return {
           version: "1.0.0",
           user: {
@@ -39,13 +39,13 @@ AppState.prototype.init = async function(rc=defaultInit) {
           psqlPath: undefined,
           currentRepositoryName: undefined,
           currentTargetName: undefined,
-          currentPlanUUID: undefined,
+          currentPlanUUID: undefined
         };
       }
       throw new VError(err, `${logName} Failed to access ${fileName}`);
     }
   }
-  
+
   try {
     if (this.initialised) {
       this.state.clear();
@@ -101,7 +101,10 @@ AppState.prototype.set = function(key, value) {
     }
     this.state.set(key, value);
   } catch (err) {
-    throw new VError(err, `${logName} Failed to set state value for key ${key}`);
+    throw new VError(
+      err,
+      `${logName} Failed to set state value for key ${key}`
+    );
   }
 };
 
@@ -134,7 +137,7 @@ AppState.prototype.setRepositoryMap = function(repoMap) {
 
   try {
     if (repoMap instanceof RepositoryMap) {
-      return this.set("repositories", repoMap);      
+      return this.set("repositories", repoMap);
     }
     throw new Error("Argument must be an instance of RepositoryMap");
   } catch (err) {
@@ -155,7 +158,7 @@ AppState.prototype.repositoryDef = function(repoName) {
 
   try {
     if (this.get("repositories").has(repoName)) {
-      return this.get("repositories").getRepo(repoName);    
+      return this.get("repositories").getRepo(repoName);
     }
     throw new Error(`Unknown repository ${repoName}`);
   } catch (err) {
@@ -177,7 +180,7 @@ AppState.prototype.setRepositoryDef = function(defObject) {
 };
 
 AppState.prototype.currentRepositoryName = function() {
-  return this.get("currentRepositoryName");    
+  return this.get("currentRepositoryName");
 };
 
 AppState.prototype.setCurrentRepositoryName = function(repoName) {
@@ -189,8 +192,9 @@ AppState.prototype.currentRepositoryDef = function() {
 
   try {
     if (this.get("currentRepositoryName")) {
-      return this.get("repositories")
-        .getRepo(this.get("currentRepositoryName"));    
+      return this.get("repositories").getRepo(
+        this.get("currentRepositoryName")
+      );
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -203,8 +207,8 @@ AppState.prototype.currentRepositoryUrl = function() {
 
   try {
     if (this.get("currentRepositoryName")) {
-      return this.get("repositories")
-        .getRepo(this.get("currentRepositoryName")).url;
+      return this.get("repositories").getRepo(this.get("currentRepositoryName"))
+        .url;
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -217,7 +221,7 @@ AppState.prototype.currentReleaseTag = function() {
 };
 
 AppState.prototype.setCurrentReleaseTag = function(tag) {
-  return this.currentRpositoryDef().releaseTag = tag;
+  return (this.currentRpositoryDef().releaseTag = tag);
 };
 
 AppState.prototype.currentRepositoryTargets = function() {
@@ -225,8 +229,8 @@ AppState.prototype.currentRepositoryTargets = function() {
 
   try {
     if (this.get("currentRepositoryName")) {
-      return this.get("repositories")
-        .getRepo(this.get("currentRepositoryName")).targets;
+      return this.get("repositories").getRepo(this.get("currentRepositoryName"))
+        .targets;
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -236,8 +240,9 @@ AppState.prototype.currentRepositoryTargets = function() {
 
 AppState.prototype.setCurrentRepositoryTargets = function(targetMap) {
   if (this.get("currentRepositoryName")) {
-    return this.get("repositories")
-      .getRepo(this.get("currentRepositoryName")).targets = targetMap;
+    return (this.get("repositories").getRepo(
+      this.get("currentRepositoryName")
+    ).targets = targetMap);
   }
   throw new Error("Current repository not defined");
 };
@@ -265,9 +270,13 @@ AppState.prototype.currentTargetDef = function() {
 
   try {
     if (this.get("currentRepositoryName") && this.get("currentTargetName")) {
-      return this.currentRepositoryDef().getTarget(this.get("currentTargetName"));
+      return this.currentRepositoryDef().getTarget(
+        this.get("currentTargetName")
+      );
     }
-    throw new Error("Either current repository or current target is not defined");
+    throw new Error(
+      "Either current repository or current target is not defined"
+    );
   } catch (err) {
     throw new VError(err, `${logName}`);
   }
@@ -318,7 +327,7 @@ AppState.prototype.setApprovers = function(appMap) {
   try {
     assert.ok(appMap instanceof Map, "Argument must be a Map() instance");
     if (this.get("currentRepositoryName")) {
-      return this.currentRepositoryDef().approvers = appMap;
+      return (this.currentRepositoryDef().approvers = appMap);
     }
     throw new Error("Current repository not defined");
   } catch (err) {
@@ -334,7 +343,10 @@ AppState.prototype.setChangePlans = function(plansMap) {
   const logName = `${moduleName}.setChangePlans`;
 
   try {
-    assert.ok(plansMap instanceof PlanMap, "Argument must be a PlanMap() instance");
+    assert.ok(
+      plansMap instanceof PlanMap,
+      "Argument must be a PlanMap() instance"
+    );
     return this.set("changePlans", plansMap);
   } catch (err) {
     throw new VError(err, `${logName}`);
@@ -346,7 +358,10 @@ AppState.prototype.readChangePlans = async function() {
 
   try {
     assert.ok(this.currentRepositoryName(), "Current repositorhy not defined");
-    let plansFile = path.join(this.currentRepositoryDef().path, "change-plans.json");
+    let plansFile = path.join(
+      this.currentRepositoryDef().path,
+      "change-plans.json"
+    );
     await this.changePlans().readPlans(plansFile);
     return true;
   } catch (err) {
@@ -359,7 +374,10 @@ AppState.prototype.writeChangePlans = async function() {
 
   try {
     assert.ok(this.currentRepositoryName(), "Current repository not defined");
-    let plansFile = path.join(this.currentRepositoryDef().path, "change-plans.json");
+    let plansFile = path.join(
+      this.currentRepositoryDef().path,
+      "change-plans.json"
+    );
     await this.changePlans().writePlans(plansFile);
     return true;
   } catch (err) {
@@ -372,10 +390,20 @@ AppState.prototype.addChangePlan = async function(plan) {
 
   try {
     assert.ok(this.currentRepositoryName(), "Current repository not defined");
-    let branch = `${process.env.USER}-local`;
-    await this.currentRepositoryDef().gitRepo.checkoutBranch(branch);
     let rootPath = path.join(this.home(), this.currentRepositoryName());
     await this.get("changePlans").add(rootPath, plan);
+    return true;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
+AppState.prototype.deleteChangePlan = function(plan) {
+  const logName = `${moduleName}.deleteChangePlan`;
+
+  try {
+    let rootPath = path.join(this.home(), this.currentRepositoryName());
+    this.get("changePlans").remove(rootPath, plan);
     return true;
   } catch (err) {
     throw new VError(err, `${logName}`);
@@ -399,7 +427,7 @@ AppState.prototype.currentPlanDef = function() {
 
   try {
     if (this.get("changePlans") && this.get("currentPlanUUID")) {
-      return this.get("changePlans").get(this.get("currentPlanUUID"));    
+      return this.get("changePlans").get(this.get("currentPlanUUID"));
     }
     throw new Error("Both changePlans and currentPlanUUID must be defined");
   } catch (err) {
@@ -442,7 +470,7 @@ AppState.prototype.setMenuChoice = function(choice) {
 
 AppState.prototype.writeUserInit = async function(rc) {
   const logName = `${moduleName}.writeConfig`;
-  
+
   try {
     let initFile = rc ? rc : this.get("initFile");
     let newConfig = {
@@ -475,4 +503,3 @@ AppState.prototype.saveRepoMetadata = async function() {
 };
 
 module.exports = AppState;
-

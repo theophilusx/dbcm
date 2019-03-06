@@ -30,6 +30,7 @@ const createNote = require("./plans/createNote");
 const selectApprovalMethod = require("./repo/selectApprovalMethod");
 const markPlanApplied = require("./targets/markPlanApplied");
 const markPlanRolledback = require("./targets/markPlanRolledback");
+const deletePlan = require("./plans/deletePlan");
 
 const mainChoices = menu.buildChoices([
   ["Manage Change Plans", "managePlans"],
@@ -52,7 +53,8 @@ const developmentPlanChoices = menu.buildChoices([
   ["Rollback Plan", "rollbackDevPlan"],
   ["Submit Plan for Approval", "commitPlan"],
   ["List Development Plans", "listDevPlans"],
-  ["Show Plan Notes", "showNotes"]
+  ["Show Plan Notes", "showNotes"],
+  ["Delete Plan", "deletePlan"]
 ]);
 
 const pendingPlanChoices = menu.buildChoices([
@@ -119,8 +121,7 @@ function developmentPlanActions(state) {
             state = await editPlan(state, "Development");
             break;
           case "addNote": {
-            let choice;
-            [state, choice] = await selectPlan(state, "Development");
+            let choice = await selectPlan(state, "Development");
             if (choice) {
               let plan = state.planDef(choice);
               await createNote(state, plan);
@@ -141,6 +142,9 @@ function developmentPlanActions(state) {
             break;
           case "showNotes":
             state = await viewNote(state, "Development");
+            break;
+          case "deletePlan":
+            state = await deletePlan(state, "Development");
             break;
           default:
             screen.errorMsg(
