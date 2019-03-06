@@ -296,14 +296,14 @@ function createChangeFiles(root, changeRecord) {
     });
 }
 
-function deletePlan(root, plan) {
+async function deletePlan(root, plan) {
   const logName = `${moduleName}.deletePlan`;
 
   try {
-    fse.unlinkSync(path.join(root, plan.change));
-    fse.unlinkSync(path.join(root, plan.verify));
-    fse.unlinkSync(path.join(root, plan.rollback));
-    fse.unlinkSync(path.join(root, plan.doc));
+    await fse.unlink(path.join(root, plan.change));
+    await fse.unlink(path.join(root, plan.verify));
+    await fse.unlink(path.join(root, plan.rollback));
+    await fse.unlink(path.join(root, plan.doc));
     return true;
   } catch (err) {
     throw new VError(err, `${logName}`);
