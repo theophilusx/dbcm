@@ -41,11 +41,11 @@ PlanMap.prototype.add = async function(repoPath, plan) {
   }
 };
 
-PlanMap.prototype.remove = function(repoPath, plan) {
+PlanMap.prototype.remove = async function(repoPath, plan) {
   const logName = `${moduleName}.remove`;
 
   try {
-    files.deletePlan(repoPath, plan);
+    await files.deletePlan(repoPath, plan);
     this.plans.delete(plan.uuid);
   } catch (err) {
     throw new VError(err, `${logName}`);

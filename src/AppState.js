@@ -398,12 +398,12 @@ AppState.prototype.addChangePlan = async function(plan) {
   }
 };
 
-AppState.prototype.deleteChangePlan = function(plan) {
+AppState.prototype.deleteChangePlan = async function(plan) {
   const logName = `${moduleName}.deleteChangePlan`;
 
   try {
     let rootPath = path.join(this.home(), this.currentRepositoryName());
-    this.get("changePlans").remove(rootPath, plan);
+    await this.get("changePlans").remove(rootPath, plan);
     return true;
   } catch (err) {
     throw new VError(err, `${logName}`);

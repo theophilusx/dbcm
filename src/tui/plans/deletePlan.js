@@ -21,8 +21,8 @@ async function deletePlan(state, group) {
         "Permanently delete this plan"
       );
       if (doDelete) {
-        state.deleteChangePlan(plan);
-        state.writeChangePlans();
+        await state.deleteChangePlan(plan);
+        await state.writeChangePlans();
         let msg = `Delete plan ${plan.name}`;
         await repo.commitAndMerge(branch, msg, state.username(), state.email());
       } else {
