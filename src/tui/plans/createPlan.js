@@ -36,7 +36,7 @@ async function createPlan(state) {
     );
     if (doCreate) {
       let branch = `${process.env.USER}-local`;
-      await this.currentRepositoryDef().gitRepo.checkoutBranch(branch);
+      await state.currentRepositoryDef().gitRepo.checkoutBranch(branch);
       await state.addChangePlan(changePlan);
       state.setCurrentPlanUUID(changePlan.uuid);
       await state.writeChangePlans();
