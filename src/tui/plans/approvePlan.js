@@ -6,29 +6,29 @@ const screen = require("../utils/textScreen");
 
 async function approvePlan(state) {
   const logName = "approvePlan";
-  let choice;
-  
+
   try {
     let repo = state.currentRepositoryDef();
     let branch = `${process.env.USER}-local`;
     if (repo.approvalType !== "none" && !repo.isApprover(state.email())) {
       screen.errorMsg(
         "Not Approved",
-        "You are not one of the registered approvers "
-          + "for this repository"
+        "You are not one of the registered approvers " + "for this repository"
       );
       return state;
     }
-    [state, choice] = await selectPlan(state, "Pending");
+    let choice = await selectPlan(state, "Pending");
     if (choice) {
       await repo.gitRepo.checkoutBranch(branch);
       let plan = state.planDef(choice);
       let SHA = await repo.gitRepo.getChangeFileSHA(plan);
       plan.addApproval(state.username(), state.email(), SHA);
-      if (repo.approvalType === "any"
-          || repo.approvalType === "none"
-          || (repo.approvalType === "all"
-              && repo.approvers.size === plan.currentApprovalCount())) {
+      if (
+        repo.approvalType === "any" ||
+        repo.approvalType === "none" ||
+        (repo.approvalType === "all" &&
+          repo.approvers.size === plan.currentApprovalCount())
+      ) {
         plan.setCurrentApprovalState(true, SHA);
         plan.setType("Approved");
       }

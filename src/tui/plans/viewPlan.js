@@ -9,9 +9,9 @@ async function viewPlan(state, group) {
   try {
     let choice;
     do {
-      [state, choice] = await selectPlan(state, group);
+      choice = await selectPlan(state, group);
       if (choice) {
-        state.planDef(choice).textDisplay();      
+        state.planDef(choice).textDisplay();
       }
     } while (choice);
     state.setMenuChoice("");

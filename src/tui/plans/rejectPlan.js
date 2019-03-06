@@ -10,8 +10,7 @@ async function rejectPlan(state) {
   const logName = "rejectPlan";
 
   try {
-    let planId;
-    [state, planId] = await selectPlan(state, "Pending");
+    let planId = await selectPlan(state, "Pending");
     if (planId) {
       let plan = state.planDef(planId);
       plan.textDisplay();
@@ -36,7 +35,10 @@ async function rejectPlan(state) {
         );
         await repo.gitRepo.checkoutBranch(branch);
       } else {
-        screen.infoMsg("Rejection Cancelled", "Rejection of this plan was cancelled");
+        screen.infoMsg(
+          "Rejection Cancelled",
+          "Rejection of this plan was cancelled"
+        );
       }
     }
     return state;
@@ -46,4 +48,3 @@ async function rejectPlan(state) {
 }
 
 module.exports = rejectPlan;
-

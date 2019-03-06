@@ -7,10 +7,9 @@ const menu = require("../utils/textMenus");
 
 async function rollbackChange(state, group) {
   const logName = "rollbackChange";
-  let choice;
 
   try {
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let plan = state.planDef(choice);
       plan.textDisplay();

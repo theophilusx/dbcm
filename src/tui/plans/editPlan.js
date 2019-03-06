@@ -7,10 +7,9 @@ const edit = require("../../edit");
 
 async function editPlan(state) {
   const logName = "editPlan";
-  let choice;
-  
+
   try {
-    [state, choice] = await selectPlan(state, "Development");
+    let choice = await selectPlan(state, "Development");
     if (choice) {
       if (choice !== state.currentPlanUUID()) {
         state.setCurrentPlanUUID(choice);

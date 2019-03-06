@@ -11,13 +11,12 @@ const createNote = require("./createNote");
 
 async function reworkPlan(state, group) {
   const logName = "reworkPlan";
-  let choice;
-  
+
   try {
     let repo = state.currentRepositoryDef();
     let branch = `${process.env.USER}-local`;
     await repo.gitRepo.checkoutBranch(branch);
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let plan = state.planDef(choice);
       plan.textDisplay();
@@ -29,7 +28,9 @@ async function reworkPlan(state, group) {
         let currentType = plan.planType;
         plan.setType("Development");
         plan.resetApproval();
-        let msg = `Plan ${plan.name} moved from ${currentType} to Development for re-working`;
+        let msg = `Plan ${
+          plan.name
+        } moved from ${currentType} to Development for re-working`;
         let doNote = await menu.confirmMenu(
           "Add Note",
           "Add a note about this re-work"

@@ -17,7 +17,7 @@ async function selectPlan(state, group) {
   try {
     if (state.changePlans().count(group) === 0) {
       emptyGroupWarning(group);
-      return [state, undefined];
+      return undefined;
     }
     let planChoices = menu.buildChoices(state.changePlans().plansUIList(group));
     let choice = await menu.listMenu(
@@ -27,9 +27,9 @@ async function selectPlan(state, group) {
       planChoices
     );
     if (menu.doExit(choice)) {
-      return [state, undefined];
+      return undefined;
     }
-    return [state, choice];
+    return choice;
   } catch (err) {
     throw new VError(err, `${logName}`);
   }

@@ -18,7 +18,8 @@ async function createPlan(state) {
       type: "input",
       name: "description",
       message: "Description:"
-    }];
+    }
+  ];
 
   try {
     let answers = await inquirer.prompt(questions);
@@ -29,8 +30,13 @@ async function createPlan(state) {
       authorEmail: state.email()
     });
     changePlan.textDisplay();
-    let doCreate = await menu.confirmMenu("Create Plan", "Create this change plan");
+    let doCreate = await menu.confirmMenu(
+      "Create Plan",
+      "Create this change plan"
+    );
     if (doCreate) {
+      let branch = `${process.env.USER}-local`;
+      await this.currentRepositoryDef().gitRepo.checkoutBranch(branch);
       await state.addChangePlan(changePlan);
       state.setCurrentPlanUUID(changePlan.uuid);
       await state.writeChangePlans();

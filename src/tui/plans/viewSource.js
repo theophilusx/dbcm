@@ -7,10 +7,9 @@ const selectPlan = require("./selectPlan");
 
 async function viewSource(state, group) {
   const logName = "viewSource";
-  let choice;
-  
+
   try {
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let plan = state.planDef(choice);
       let fileList = [

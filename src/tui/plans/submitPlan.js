@@ -29,10 +29,9 @@ async function updateVersion(plan) {
 
 async function submitPlan(state) {
   const logName = "submitPlan";
-  let choice;
-  
+
   try {
-    [state, choice] = await selectPlan(state, "Development");
+    let choice = await selectPlan(state, "Development");
     if (choice) {
       let branch = `${process.env.USER}-local`;
       let repo = state.currentRepositoryDef();
@@ -51,7 +50,12 @@ async function submitPlan(state) {
           "Do you want to add a promote note"
         );
         if (doNote) {
-          await createNote(state, plan, "Promote Note", "Enter notes for this change");
+          await createNote(
+            state,
+            plan,
+            "Promote Note",
+            "Enter notes for this change"
+          );
         }
         await state.writeChangePlans();
         await repo.commitAndMerge(
@@ -71,4 +75,3 @@ async function submitPlan(state) {
 }
 
 module.exports = submitPlan;
-

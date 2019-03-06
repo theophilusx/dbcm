@@ -7,9 +7,9 @@ const edit = require("../../edit");
 
 async function viewNote(state, group) {
   const logName = "viewNote";
-  let choice;
+
   try {
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let plan = state.planDef(choice);
       let noteFile = path.join(

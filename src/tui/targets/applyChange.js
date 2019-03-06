@@ -7,10 +7,9 @@ const menu = require("../utils/textMenus");
 
 async function applyChange(state, group) {
   const logName = "applyChange";
-  let choice;
 
   try {
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let plan = state.planDef(choice);
       plan.textDisplay();

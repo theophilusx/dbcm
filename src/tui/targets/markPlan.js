@@ -7,10 +7,9 @@ const queries = require("../../database");
 
 async function markPlan(state, status) {
   const logName = "markPlan";
-  let planId;
 
   try {
-    [state, planId] = await selectPlan(state, "Approved");
+    let planId = await selectPlan(state, "Approved");
     if (planId) {
       let plan = state.planDef(planId);
       plan.textDisplay();

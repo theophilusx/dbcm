@@ -6,10 +6,9 @@ const gitui = require("./gitUI");
 
 async function planDiff(state, group) {
   const logName = "planDiff";
-  let choice;
-  
+
   try {
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let repo = state.currentRepositoryDef();
       let plan = state.planDef(choice);

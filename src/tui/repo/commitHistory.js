@@ -6,10 +6,9 @@ const gitui = require("./gitUI");
 
 async function commitHistory(state, group) {
   const logName = "commitHistory";
-  let choice;
-  
+
   try {
-    [state, choice] = await selectPlan(state, group);
+    let choice = await selectPlan(state, group);
     if (choice) {
       let repo = state.currentRepositoryDef();
       let plan = state.planDef(choice);
