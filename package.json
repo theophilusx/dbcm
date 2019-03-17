@@ -28,10 +28,10 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "mocha": "^5.2.0"
+    "mocha": "^6.0.2"
   },
   "dependencies": {
-    "boxen": "^2.1.0",
+    "boxen": "^3.0.0",
     "chalk": "^2.4.2",
     "cli-table3": "^0.5.1",
     "cli-width": "^2.2.0",
@@ -40,11 +40,11 @@
     "inquirer": "^6.2.2",
     "minimist": "^1.2.0",
     "moment": "^2.24.0",
-    "nodegit": "^0.23.1",
-    "pg": "^7.8.0",
+    "nodegit": "^0.24.1",
+    "pg": "^7.9.0",
     "short-uuid": "^3.0.1",
     "sprintf-js": "^1.1.2",
     "verror": "^1.10.0",
-    "wrap-ansi": "^4.0.0"
+    "wrap-ansi": "^5.0.0"
   }
 }
