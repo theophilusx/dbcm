@@ -56,6 +56,16 @@ function Plan(params) {
   }
 }
 
+Plan.prototype.setCreatedDate = function() {
+  const logName = `${moduleName}.setCreatedDate`;
+
+  try {
+    return (this.createdDate = moment().format("YYYY-MM-DD HH:mm:ss"));
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+};
+
 Plan.prototype.setType = function(type) {
   const logName = `${moduleName}.setType`;
 
