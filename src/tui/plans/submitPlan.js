@@ -45,7 +45,9 @@ async function submitPlan(state) {
       );
       if (doSubmit) {
         plan.setType("Pending");
+        plan.setCreatedDate();
         plan = await updateVersion(plan);
+
         let doNote = await menu.confirmMenu(
           "Promote Note",
           "Do you want to add a promote note"
