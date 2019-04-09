@@ -6,6 +6,7 @@ const VError = require("verror");
 const db = require("./db");
 const queries = require("./database");
 const screen = require("./tui/utils/textScreen");
+const cloneDeep = require("lodash.clonedeep");
 
 function Target(name, db, user, pwd, host = "localhost", port = 5432) {
   const logName = `${moduleName}.Target`;
@@ -77,10 +78,11 @@ Target.prototype.appliedPlans = async function() {
   }
 };
 
-Target.prototype.unappliedPlans = async function(repo, plans) {
+Target.prototype.unappliedPlans = async function(repo, plansIn) {
   const logName = `${moduleName}.unappliedPlans`;
 
   try {
+    let plans = cloneDeep(plansIn);
     let appliedList = await this.appliedPlans();
     for (let p of appliedList) {
       if (plans.has(p.uuid)) {

@@ -14,11 +14,12 @@ async function applyNextChange(state) {
     let approvedPlans = state.changePlans().planGroupMap("Approved");
     let unappliedPlans = await target.unappliedPlans(repo, approvedPlans);
     if (unappliedPlans.size) {
-      let plan = approvedPlans.values().next().value;
+      let plan = unappliedPlans.values().next().value;
       plan.textDisplay();
       let choice = await menu.confirmMenu(
         "Apply Change Record",
-        "Apply this change record:");
+        "Apply this change record:"
+      );
       if (choice) {
         let applyStatus = await psql.applyPlan(state, plan);
         if (applyStatus) {
@@ -40,4 +41,3 @@ async function applyNextChange(state) {
 }
 
 module.exports = applyNextChange;
-
