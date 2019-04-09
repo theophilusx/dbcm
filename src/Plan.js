@@ -100,7 +100,7 @@ Plan.prototype.resetApproval = function() {
 
 Plan.prototype.textDisplay = function() {
   const logName = `${moduleName}.textDisplay`;
-  const width = cliWidth({defaultWidth: 80}) - 4;
+  const width = cliWidth({defaultWidth: 80}) - 5;
   const dataWidth = width - 16;
   try {
     const table = new Table({colWidths: [15, dataWidth], wordWrap: true});
