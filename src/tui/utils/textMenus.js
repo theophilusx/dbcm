@@ -169,6 +169,20 @@ function doExit(choice) {
   return false;
 }
 
+function plansUIList(planMap) {
+  const logName = `${moduleName}.plansUIList`;
+
+  try {
+    let choices = [];
+    for (let p of planMap.values()) {
+      choices.push([p.summaryLine(), p.uuid]);
+    }
+    return choices;
+  } catch (err) {
+    throw new VError(err, `${logName}`);
+  }
+}
+
 module.exports = {
   buildChoices,
   doMenu,
@@ -177,5 +191,6 @@ module.exports = {
   collectionMenu,
   selectMenu,
   confirmMenu,
-  doExit
+  doExit,
+  plansUIList
 };

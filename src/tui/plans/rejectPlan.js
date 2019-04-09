@@ -10,7 +10,8 @@ async function rejectPlan(state) {
   const logName = "rejectPlan";
 
   try {
-    let planId = await selectPlan(state, "Pending");
+    let planChoices = state.changePlans().planGroupMap("Pending");
+    let planId = await selectPlan(state, planChoices);
     if (planId) {
       let plan = state.planDef(planId);
       plan.textDisplay();

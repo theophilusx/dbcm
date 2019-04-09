@@ -16,7 +16,8 @@ async function reworkPlan(state, group) {
     let repo = state.currentRepositoryDef();
     let branch = `${process.env.USER}-local`;
     await repo.gitRepo.checkoutBranch(branch);
-    let choice = await selectPlan(state, group);
+    let planChoices = state.changePlans().planGroupMap(group);
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       let plan = state.planDef(choice);
       plan.textDisplay();

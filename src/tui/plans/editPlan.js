@@ -9,7 +9,8 @@ async function editPlan(state) {
   const logName = "editPlan";
 
   try {
-    let choice = await selectPlan(state, "Development");
+    let planChoices = state.changePlans().planGroupMap("Development");
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       if (choice !== state.currentPlanUUID()) {
         state.setCurrentPlanUUID(choice);

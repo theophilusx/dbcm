@@ -9,7 +9,8 @@ async function viewSource(state, group) {
   const logName = "viewSource";
 
   try {
-    let choice = await selectPlan(state, group);
+    let planChoices = state.changePlans().planGroupMap(group);
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       let plan = state.planDef(choice);
       let fileList = [

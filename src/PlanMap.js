@@ -118,22 +118,6 @@ PlanMap.prototype.writePlans = async function(filePath) {
   }
 };
 
-PlanMap.prototype.plansUIList = function(type) {
-  const logName = `${moduleName}.plansUIList`;
-
-  try {
-    let choices = [];
-    for (let p of this.plans.values()) {
-      if (p.planType === type) {
-        choices.push([p.summaryLine(), p.uuid]);
-      }
-    }
-    return choices;
-  } catch (err) {
-    throw new VError(err, `${logName}`);
-  }
-};
-
 PlanMap.prototype.planGroupMap = function(type) {
   const logName = `${moduleName}.planGroup`;
 

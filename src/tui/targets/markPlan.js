@@ -9,7 +9,8 @@ async function markPlan(state, status) {
   const logName = "markPlan";
 
   try {
-    let planId = await selectPlan(state, "Approved");
+    let planChoices = state.changePlans().planGroupMap("Approved");
+    let planId = await selectPlan(state, planChoices);
     if (planId) {
       let plan = state.planDef(planId);
       plan.textDisplay();

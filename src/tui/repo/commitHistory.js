@@ -8,7 +8,8 @@ async function commitHistory(state, group) {
   const logName = "commitHistory";
 
   try {
-    let choice = await selectPlan(state, group);
+    let planChoices = state.changePlans().planGroupMap(group);
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       let repo = state.currentRepositoryDef();
       let plan = state.planDef(choice);

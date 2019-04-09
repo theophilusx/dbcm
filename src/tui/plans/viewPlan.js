@@ -7,9 +7,10 @@ async function viewPlan(state, group) {
   const logName = "viewPlan";
 
   try {
+    let planChoices = state.changePlans().planGroupMap(group);
     let choice;
     do {
-      choice = await selectPlan(state, group);
+      choice = await selectPlan(state, planChoices);
       if (choice) {
         state.planDef(choice).textDisplay();
       }

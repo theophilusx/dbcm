@@ -9,7 +9,8 @@ async function rollbackChange(state, group) {
   const logName = "rollbackChange";
 
   try {
-    let choice = await selectPlan(state, group);
+    let planChoices = state.changePlans().planGroupMap(group);
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       let plan = state.planDef(choice);
       plan.textDisplay();

@@ -4,22 +4,22 @@ const VError = require("verror");
 const menu = require("../utils/textMenus");
 const screen = require("../utils/textScreen");
 
-function emptyGroupWarning(type) {
+function emptyGroupWarning() {
   screen.infoMsg(
     "Empty Plan Group",
-    `There are currently no plans defined in the ${type} group for this repository`
+    "There are currently no plans matching this category"
   );
 }
 
-async function selectPlan(state, group) {
+async function selectPlan(state, planMap) {
   const logName = "selectPlan";
 
   try {
-    if (state.changePlans().count(group) === 0) {
-      emptyGroupWarning(group);
+    if (planMap.size === 0) {
+      emptyGroupWarning();
       return undefined;
     }
-    let planChoices = menu.buildChoices(state.changePlans().plansUIList(group));
+    let planChoices = menu.buildChoices(menu.plansUIList(planMap));
     let choice = await menu.listMenu(
       state,
       "Change Plans",

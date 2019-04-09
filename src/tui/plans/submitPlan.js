@@ -31,7 +31,8 @@ async function submitPlan(state) {
   const logName = "submitPlan";
 
   try {
-    let choice = await selectPlan(state, "Development");
+    let planChoices = state.changePlans().planGroupMap("Development");
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       let branch = `${process.env.USER}-local`;
       let repo = state.currentRepositoryDef();

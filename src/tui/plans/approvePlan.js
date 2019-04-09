@@ -17,7 +17,8 @@ async function approvePlan(state) {
       );
       return state;
     }
-    let choice = await selectPlan(state, "Pending");
+    let planChoices = state.changePlans().planGroupMap("Pending");
+    let choice = await selectPlan(state, planChoices);
     if (choice) {
       await repo.gitRepo.checkoutBranch(branch);
       let plan = state.planDef(choice);

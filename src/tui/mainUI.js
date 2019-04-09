@@ -121,7 +121,8 @@ function developmentPlanActions(state) {
             state = await editPlan(state, "Development");
             break;
           case "addNote": {
-            let choice = await selectPlan(state, "Development");
+            let planChoices = state.changePlans().planGroupMap("Development");
+            let choice = await selectPlan(state, planChoices);
             if (choice) {
               let plan = state.planDef(choice);
               await createNote(state, plan);
