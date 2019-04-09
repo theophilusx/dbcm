@@ -140,7 +140,7 @@ Plan.prototype.approvalSHA = function() {
 
 Plan.prototype.summaryLine = function() {
   const logName = `${moduleName}.summaryLine`;
-  const width = cliWidth({defaultWidth: 80}) - 35;
+  const width = cliWidth({defaultWidth: 80}) - 36;
   const nameWidth = this.name.length;
   const authorWidth = this.author.length;
   const versionWidth = this.version.length;
