@@ -9,11 +9,16 @@ async function applyChange(state, group) {
   const logName = "applyChange";
 
   try {
+    let choice;
     let repo = state.currentRepositoryDef();
     let target = state.currentTargetDef();
-    let approvedPlans = state.changePlans().planGroupMap(group);
-    let unappliedPlans = await target.unappliedPlans(repo, approvedPlans);
-    let choice = await selectPlan(state, unappliedPlans);
+    if (group === "Development") {
+      choice = await selectPlan(state, state.changePlans().planGroupMap(group));
+    } else {
+      let approvedPlans = state.changePlans().planGroupMap(group);
+      let unappliedPlans = await target.unappliedPlans(repo, approvedPlans);
+      choice = await selectPlan(state, unappliedPlans);
+    }
     if (choice) {
       let plan = state.planDef(choice);
       plan.textDisplay();
