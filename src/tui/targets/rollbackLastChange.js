@@ -9,11 +9,14 @@ async function rollbackLastChange(state) {
 
   try {
     let target = state.currentTargetDef();
-    let appliedPlans = await target.appliedPlans();
+    let appliedPlans = await target.dbAppliedPlans();
     let lastPlan = appliedPlans.pop();
     let plan = state.planDef(lastPlan.uuid);
     plan.textDisplay();
-    let doRollback = await menu.confirmMenu("Rollback Change", "Rollback this plan");
+    let doRollback = await menu.confirmMenu(
+      "Rollback Change",
+      "Rollback this plan"
+    );
     if (doRollback) {
       await psql.rollbackPlan(state, plan);
     }

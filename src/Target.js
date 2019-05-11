@@ -127,4 +127,14 @@ Target.prototype.unappliedPlans = async function(repo, definedPlans) {
   }
 };
 
+Target.prototype.dbAppliedPlans = async function() {
+  const logName = "dbAppliedPlans";
+
+  try {
+    return await queries.getAppliedPlans(this);
+  } catch (err) {
+    throw new VError(err, logName);
+  }
+};
+
 module.exports = Target;
