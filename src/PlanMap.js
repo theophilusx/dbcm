@@ -124,7 +124,7 @@ PlanMap.prototype.planGroupMap = function(type) {
   try {
     let planMap = new Map();
     for (let p of this.plans.values()) {
-      if (p.planType === type) {
+      if (p.planType === type || type === "All") {
         planMap.set(p.uuid, p);
       }
     }
