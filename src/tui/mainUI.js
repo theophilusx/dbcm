@@ -118,7 +118,7 @@ function developmentPlanActions(state) {
             state = await createPlan(state);
             break;
           case "editPlan":
-            state = await editPlan(state, "Development");
+            state = await editPlan(state);
             break;
           case "addNote": {
             let planChoices = state.changePlans().planGroupMap("Development");
