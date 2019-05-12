@@ -92,14 +92,10 @@ Target.prototype.appliedPlans = async function(repo, definedPlans) {
 
   try {
     let dbAppliedPlans = await queries.getAppliedPlans(this);
-    console.log("dbAppliedPlans");
-    console.dir(dbAppliedPlans);
     let applied = new Map();
     for (let a of dbAppliedPlans) {
       if (definedPlans.has(a.uuid)) {
         let plan = definedPlans.get(a.uuid);
-        console.log("plan");
-        console.dir(plan);
         let currentSHA = await repo.gitRepo.getChangeFileSHA(plan);
         if (a.changeSHA === currentSHA) {
           applied.set(a.uuid, definedPlans.get(a.uuid));
