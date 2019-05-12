@@ -13,8 +13,6 @@ async function rollbackChange(state, group) {
     let repo = state.currentRepositoryDef();
     let target = state.currentTargetDef();
     let planChoices = await target.appliedPlans(repo, definedPlans);
-    console.log("planChoices");
-    console.dir(planChoices);
     let choice = await selectPlan(state, planChoices);
     if (choice) {
       let plan = state.planDef(choice);
