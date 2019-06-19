@@ -1,14 +1,32 @@
+
+# Table of Contents
+
+1.  [dbcm - Database Change Management](#orgf014227)
+    1.  [Objectives](#orgad5d19b)
+    2.  [Status](#orgd5ab40c)
+2.  [Usage](#orgb19433c)
+    1.  [Pre-requisites](#orgf61d0ea)
+    2.  [Installation](#orgc0b9116)
+        1.  [Tip](#orgdeb367f)
+3.  [Architecture and Requirements](#org56e551e)
+
+
+<a id="orgf014227"></a>
+
 # dbcm - Database Change Management
 
 A very basic database change management application used to encourage
 maintenance of database structure definitions with version control. 
 
+
+<a id="orgad5d19b"></a>
+
 ## Objectives
 
-- Use version control to manage database DDL statements.
-- Exclude data change management - leave data management to the database.
-- Provide a way to track what changes have been applied to a database structure
-- Provide a way to promote or rollback changes made to a database
+-   Use version control to manage database DDL statements.
+-   Exclude data change management - leave data management to the database.
+-   Provide a way to track what changes have been applied to a database structure
+-   Provide a way to promote or rollback changes made to a database
 
 The general idea is to use Git to track changes made to database definitions
 (tables, views, functions, triggers, schemas, roles etc). This is not about
@@ -22,36 +40,42 @@ have been applied successfully.
 At this stage, the focus is on Postgresql. Other RDBMS may be considered in the
 future. 
 
+
+<a id="orgd5ab40c"></a>
+
 ## Status
 
 Still very much under active development. However, some significant progress has
 been achieved. The current version provides a basic terminal/text based
 interface which enables 
 
-- Defining of git repository to be used to track database changes. Expects the
-  git server to be configured to support ssh access. To start, create a bare git
-  repository and note the ssh URL to access it. When you first run the program,
-  it will prompt you for the necessary details and then will configure the
-  repository for use as a DB change tracking system.
-- Defining database targets. The DB target is where changes will be
-  applied. Each repository can support multiple targets i.e. dev, uat and prod
-- Defining new change plan. A change plan consists of 3 files, each of which is
-  an SQL script. The application will setup stub scripts for each of the 3
-  scripts. The scripts are changes (e.g. DDL statements), verify (e.g. SQL to
-  verify changes have been applied successfully) and rollback, a script that
-  will undo/remove the changes implemented by the change script
-- The application will open the preferred edito to edit the scripts. This is
-  currently only supported on OSX. Other platforms will be added.
-- The first time you run the application, it will ask a number of configuration
-  questions. This information is stored in either a personal .dbcmrc file in the
-  user's home directory or in configuration files within each repository. 
-- When defining a repository, you are asked about approval process. Changes can
-  either be unapproved, require approval from at least one person on a list of
-  approvers or require approval from all members on the approval list. Youa re
-  prompted for the names of approvers when setting up a new repository.
-- Applying of chabnges and verifying them is support3ed
-- ROllback of changes is partially supported (WIP). 
-- Listing of changes applied to a target is implemented
+-   Defining of git repository to be used to track database changes. Expects the
+    git server to be configured to support ssh access. To start, create a bare git
+    repository and note the ssh URL to access it. When you first run the program,
+    it will prompt you for the necessary details and then will configure the
+    repository for use as a DB change tracking system.
+-   Defining database targets. The DB target is where changes will be
+    applied. Each repository can support multiple targets i.e. dev, uat and prod
+-   Defining new change plan. A change plan consists of 3 files, each of which is
+    an SQL script. The application will setup stub scripts for each of the 3
+    scripts. The scripts are changes (e.g. DDL statements), verify (e.g. SQL to
+    verify changes have been applied successfully) and rollback, a script that
+    will undo/remove the changes implemented by the change script
+-   The application will open the preferred edito to edit the scripts. This is
+    currently only supported on OSX. Other platforms will be added.
+-   The first time you run the application, it will ask a number of configuration
+    questions. Some of this information is stored in a personal .dbcmrc file in
+    the user's home directory and some is stored in configuration files within
+    each repository. The difference is that the information stored in the personal
+    .dbcmrc file is specific to th user, such as database target login credentials
+    and information stored in the repository is relevant to all users.
+-   When defining a repository, you are asked about approval process. Changes can
+    either be unapproved, require approval from at least one person on a list of
+    approvers or require approval from all members on the approval list. Youa re
+    prompted for the names of approvers when setting up a new repository.
+-   Applying of chabnges and verifying them is support3ed
+-   ROllback of changes is partially supported (WIP).
+-   Listing of changes applied to a target is implemented
 
 This application is still not ready for production use, but it is getting
 closer! There should be sufficient functionality to give a taste of what it will
@@ -60,52 +84,96 @@ basic functionality is all working, a GUI will be added (possibly using
 Electron). 
 
 
-## Usage
+<a id="orgb19433c"></a>
 
-### Pre-requisites 
+# Usage
 
-1. Nodejs v8.x
-2. Git and libgit installed
-3. A remote git repository server e.g. github, gitlab etc. with SSH access
-4. Postgres database server (local or remote)
-5. Locally installed psql
 
-### Installation
+<a id="orgf61d0ea"></a>
 
-1. Clone this repo somewhere
-2. In the root of the repository, run 
+## Pre-requisites
 
-````
-npm install
-````
+1.  Nodejs v8.x+ and NPM (you also need npm configured to use our Nexus server)
+2.  Git and libgit installed
+3.  SSH access configured for our GitLab server
+4.  Locally installed psql
+
+
+<a id="orgc0b9116"></a>
+
+## Installation
+
+1.  Clone this repo somewhere
+2.  In the root of the repository, run
+
+    npm install
 
 then, from the root of the repository, run
 
-````
-node src/index.js
-````
+    node src/index.js
 
 and see what doesn't work! There are still lots of bugs and error handling is
 very primitive. 
 
-## Architecture and Requirements
+When you start for the first time, you will be prompted for some basic
+information to create your initial .dbcmrc file. Once this is done, you will be
+prompted to select a repository. You will be presented with a list of already
+defined repositories. If you have not yet defined a repository, there is a menu
+option to add one. Selecting that option will prompt you for the repository
+details. The repository should already exist on the git server and must have at
+least one committed file i.e. cannot be an empty repository. If necessary, just
+commit a README.md file for a new repository. 
 
-For each *change*, maintain 3 files:
+After you have defined the repository, you will be requested to define database
+targets for the repository. Each repository can have multiple targets associated
+with it. These targets are local to the individual user. The targets can ahve
+any name which makes sense to you e.g. project-dev, project-uat, project-prof
+etc. 
 
-- update.sql :: An SQL script which will perform the change
-- validate.sql :: An SQL script which is able to verify the change was
-  successfully applied
-- rollback.sql :: A script which can roll back the change and return the
-  database structure to the previous state
+When creating the targets, you will be prompted for database name, host, port,
+username and password. To deal with remote databases which are accessed via an
+SSH tunnel, use the tunnel port and localhost as the hosst name. Note that in
+this situation, it will be important to make sure you create the tunnel before
+you try to run the application and remember to be consistent with port numbers. 
 
-The above 3 files make up a *change set*. A plan file will be maintained which
+
+<a id="orgdeb367f"></a>
+
+### Tip
+
+The easiest way to keep connection definitions consistent is to define them in
+your SSH config file. For example, I have the following in my ssh config file
+
+    Host wdp-dev
+      HostName sheepcrc-weatherdb-une-dev
+      User tcross8
+      LocalForward localhost:3330 localhost:5432
+    Host wdp-uat
+      HostName wdp-db-uat
+      User tcross8
+      LocalForward localhost:3331 localhost:5432
+
+
+<a id="org56e551e"></a>
+
+# Architecture and Requirements
+
+For each **change**, maintain 3 files:
+
+-   **update.sql:** An SQL script which will perform the change
+-   **validate.sql:** An SQL script which is able to verify the change was
+    successfully applied
+-   **rollback.sql:** A script which can roll back the change and return the
+    database structure to the previous state
+
+The above 3 files make up a **change set**. A plan file will be maintained which
 lists the change sets and determines the order changes need to be
 applied. Rolling back a change will roll back all changes performed since the
 change being targeted for rollback. Changes cannot be applied unless all changes
-which precede it have been applied. Every change requires a *friendly* name as
+which precede it have been applied. Every change requires a **friendly** name as
 well as some means of uniquely identifying the change. 
 
-Each database under change management will also have a *dbcm* schema, which will
+Each database under change management will also have a **dbcm** schema, which will
 hold database change management tables used to record metadata about changes. It
 is these tables which will be interrogated to determine the current database
 state. It should also be possible to get a complete log of changes and rollbacks
@@ -114,9 +182,4 @@ for a specific database.
 It should be possible to associate multiple databases with a specific repository
 i.e. dev, uat and prod instances. It should also be possible to bundle up
 changes into a script which can be applied without requiring any other tools. 
-
-
-
-
-
 
