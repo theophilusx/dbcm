@@ -31,7 +31,7 @@
     "mocha": "^6.1.4"
   },
   "dependencies": {
-    "boxen": "^3.2.0",
+    "boxen": "^4.0.0",
     "chalk": "^2.4.2",
     "cli-table3": "^0.5.1",
     "cli-width": "^2.2.0",
@@ -42,10 +42,10 @@
     "minimist": "^1.2.0",
     "moment": "^2.24.0",
     "nodegit": "^0.24.2",
-    "pg": "^7.10.0",
+    "pg": "^7.11.0",
     "short-uuid": "^3.1.1",
     "sprintf-js": "^1.1.2",
-    "tar": "^4.4.8",
+    "tar": "^4.4.10",
     "verror": "^1.10.0",
     "wrap-ansi": "^5.1.0"
   }
