@@ -28,25 +28,25 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "mocha": "^6.1.4"
+    "mocha": "^6.2.0"
   },
   "dependencies": {
-    "boxen": "^4.0.0",
+    "boxen": "^4.1.0",
     "chalk": "^2.4.2",
     "cli-table3": "^0.5.1",
     "cli-width": "^2.2.0",
-    "external-editor": "^3.0.3",
+    "external-editor": "^3.1.0",
     "fse": "^4.0.1",
-    "inquirer": "^6.3.1",
+    "inquirer": "^7.0.0",
     "lodash.clonedeep": "^4.5.0",
     "minimist": "^1.2.0",
     "moment": "^2.24.0",
-    "nodegit": "^0.24.2",
-    "pg": "^7.11.0",
+    "nodegit": "^0.25.1",
+    "pg": "^7.12.1",
     "short-uuid": "^3.1.1",
     "sprintf-js": "^1.1.2",
     "tar": "^4.4.10",
     "verror": "^1.10.0",
-    "wrap-ansi": "^5.1.0"
+    "wrap-ansi": "^6.0.0"
   }
 }
